@@ -1,0 +1,431 @@
+#include "CheckpointManager.hpp"
+#include "Geode/ui/Layout.hpp"
+
+#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
+#include <Geode/binding/FLAlertLayer.hpp>
+#include <Geode/binding/PlayLayer.hpp>
+#include <Geode/ui/GeodeUI.hpp>
+
+CheckpointManager* CheckpointManager::create() {
+	auto ret = new CheckpointManager();
+	if (ret->initAnchored(260.f, 280.f, "GJ_square02.png")) {
+		ret->autorelease();
+		return ret;
+	}
+
+	delete ret;
+	return nullptr;
+}
+
+bool CheckpointManager::setup() {
+	m_playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+	bool hasCheckpoints =
+		m_playLayer->m_fields->m_persistentCheckpointArray->count() > 0;
+
+	m_noElasticity = true;
+
+	setTitle("Persistent Checkpoints");
+
+	CCSprite* optionsSpr =
+		CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
+	CCMenuItemSpriteExtra* optionsButton =
+		CCMenuItemExt::createSpriteExtra(optionsSpr, [](CCNode* sender) {
+			geode::openSettingsPopup(Mod::get(), true);
+		});
+	optionsButton->m_baseScale = .6;
+	optionsButton->setScale(.6);
+
+	CCSprite* deleteSprite =
+		CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png");
+	m_deleteButton = CCMenuItemExt::createSpriteExtra(
+		deleteSprite, [this](CCMenuItemSpriteExtra* deleteButton) {
+			if (m_playLayer->m_fields->m_persistentCheckpointArray->count() > 0)
+				geode::createQuickPopup(
+					"Delete All",
+					"Delete all saved checkpoints for this layer?\n"
+					"This action cannot be undone.",
+					"Cancel", "Delete", [this](auto, bool confirmed) {
+						if (confirmed) {
+							m_playLayer->removeCurrentSaveLayer();
+							updateUIElements(true);
+						}
+					}
+				);
+			else
+				FLAlertLayer::create(
+					"No checkpoints", "Can't delete what doesn't exist!", "Ok"
+				)
+					->show();
+		}
+	);
+	m_deleteButton->m_baseScale = .6;
+	m_deleteButton->setScale(.6);
+
+	if (!hasCheckpoints) {
+		m_deleteButton->setColor(ccc3(90, 90, 90));
+		m_deleteButton->setOpacity(205);
+	}
+
+	m_saveLayerLabel = CCLabelBMFont::create("", "bigFont.fnt");
+	m_saveLayerLabel->setScale(.6);
+
+	CCSprite* previousLayerSpr =
+		CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+	CCSprite* nextLayerSpr =
+		CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
+	nextLayerSpr->setFlipX(true);
+
+	m_previousLayerBtn = CCMenuItemExt::createSpriteExtra(
+		previousLayerSpr, [this](CCMenuItemSpriteExtra* sender) {
+			m_playLayer->previousSaveLayer();
+			updateUIElements(true);
+		}
+	);
+	m_nextLayerBtn = CCMenuItemExt::createSpriteExtra(
+		nextLayerSpr, [this](CCMenuItemSpriteExtra* sender) {
+			m_playLayer->nextSaveLayer();
+			updateUIElements(true);
+		}
+	);
+	m_previousLayerBtn->m_baseScale = .6;
+	m_nextLayerBtn->m_baseScale = .6;
+	m_previousLayerBtn->setScale(.6);
+	m_nextLayerBtn->setScale(.6);
+
+	CCSprite* moveLayerBackSpr =
+		CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
+	CCSprite* moveLayerForwardSpr =
+		CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
+	moveLayerBackSpr->setFlipX(true);
+
+	m_moveLayerBackBtn = CCMenuItemExt::createSpriteExtra(
+		moveLayerBackSpr, [this](CCMenuItemSpriteExtra* sender) {
+			m_playLayer->updateSaveLayerCount();
+			unsigned int saveLayer = m_playLayer->m_fields->m_activeSaveLayer;
+			if (saveLayer > 0 &&
+				 saveLayer < m_playLayer->m_fields->m_saveLayerCount) {
+				m_playLayer->swapSaveLayers(saveLayer, saveLayer - 1);
+				m_playLayer->m_fields->m_activeSaveLayer--;
+
+				updateUIElements(true);
+			}
+		}
+	);
+	m_moveLayerForwardBtn = CCMenuItemExt::createSpriteExtra(
+		moveLayerForwardSpr, [this](CCMenuItemSpriteExtra* sender) {
+			m_playLayer->updateSaveLayerCount();
+			unsigned int saveLayer = m_playLayer->m_fields->m_activeSaveLayer;
+			if (saveLayer + 1 < m_playLayer->m_fields->m_saveLayerCount) {
+				m_playLayer->swapSaveLayers(saveLayer, saveLayer + 1);
+				m_playLayer->m_fields->m_activeSaveLayer++;
+
+				updateUIElements(true);
+			}
+		}
+	);
+	m_moveLayerBackBtn->m_baseScale = .4;
+	m_moveLayerForwardBtn->m_baseScale = .4;
+	m_moveLayerBackBtn->setScale(.4);
+	m_moveLayerForwardBtn->setScale(.4);
+
+	m_listContainer = CCLayerColor::create();
+	m_listContainer->setContentSize(ccp(230, 190));
+	m_listContainer->setAnchorPoint(ccp(.5, 1));
+	m_listContainer->setColor(ccc3(74, 97, 225));
+	m_listContainer->setOpacity(255);
+	m_listContainer->setZOrder(5);
+
+	m_buttonMenu->addChildAtPosition(
+		optionsButton, geode::Anchor::BottomLeft, ccp(3, 3)
+	);
+	m_buttonMenu->addChildAtPosition(
+		m_deleteButton, geode::Anchor::BottomRight, ccp(-3, 3)
+	);
+	m_buttonMenu->addChildAtPosition(
+		m_previousLayerBtn, geode::Anchor::Top, ccp(0, -45)
+	);
+	m_buttonMenu->addChildAtPosition(
+		m_nextLayerBtn, geode::Anchor::Top, ccp(0, -45)
+	);
+	m_buttonMenu->addChildAtPosition(
+		m_moveLayerBackBtn, geode::Anchor::TopLeft, ccp(15, -45)
+	);
+	m_buttonMenu->addChildAtPosition(
+		m_moveLayerForwardBtn, geode::Anchor::TopRight, ccp(-15, -45)
+	);
+	m_mainLayer->addChildAtPosition(
+		m_saveLayerLabel, geode::Anchor::Top, ccp(0, -45)
+	);
+	m_mainLayer->addChildAtPosition(
+		m_listContainer, geode::Anchor::Top, ccp(0, -65)
+	);
+
+	m_emptyListLabel = CCLabelBMFont::create("", "bigFont.fnt", 215);
+	m_emptyListLabel->setScale(.7);
+	m_emptyListLabel->setOpacity(150);
+	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
+	m_emptyListLabel->setVisible(!hasCheckpoints);
+
+	updateUIElements();
+
+	ListBorders* borders = ListBorders::create();
+	borders->setContentSize(m_listView->getContentSize() + ccp(7, 7));
+	borders->setZOrder(15);
+	borders->setSpriteFrames(
+		"GJ_commentTop2_001.png", "GJ_commentSide2_001.png"
+	);
+
+	m_listContainer->addChildAtPosition(borders, geode::Anchor::Center);
+	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
+
+	return true;
+}
+
+void CheckpointManager::createList(bool resetPosition) {
+	bool recreated = m_listView != nullptr;
+	bool carryPosition =
+		!resetPosition && recreated &&
+		m_listView->getChildByIndex(0)->getChildByIndex(0)->getChildrenCount() >
+			0;
+	float contentPosition;
+
+	if (recreated) {
+		m_cellsArray->removeAllObjects();
+		m_listView->removeFromParent();
+
+		if (carryPosition)
+			contentPosition =
+				m_listView->getChildByIndex(0)->getChildByIndex(0)->getPositionY();
+	}
+
+	CCArray* checkpointArray =
+		m_playLayer->m_fields->m_persistentCheckpointArray;
+	for (PersistentCheckpoint* checkpoint :
+		  CCArrayExt<PersistentCheckpoint*>(checkpointArray)) {
+		unsigned int index = checkpointArray->indexOfObject(checkpoint);
+
+		std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback = nullptr;
+		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback = nullptr;
+
+		if (index != 0)
+			moveUpCallback = [this, index](CCMenuItemSpriteExtra* sender) {
+				m_playLayer->swapPersistentCheckpoints(index, index - 1);
+				createList();
+			};
+		if (index != checkpointArray->count() - 1)
+			moveDownCallback = [this, index](CCMenuItemSpriteExtra* sender) {
+				m_playLayer->swapPersistentCheckpoints(index, index + 1);
+				createList();
+			};
+
+		m_cellsArray->addObject(createCheckpointCell(
+			checkpoint, moveUpCallback, moveDownCallback,
+			[this, checkpoint](CCMenuItemSpriteExtra* sender) {
+				unsigned int index =
+					m_playLayer->m_fields->m_persistentCheckpointArray
+						->indexOfObject(checkpoint) +
+					1;
+
+				if (m_playLayer->m_fields->m_activeCheckpoint == index)
+					index = 0;
+
+				m_playLayer->switchCurrentCheckpoint(index);
+				createList();
+			},
+			[this, checkpoint](CCMenuItemSpriteExtra* sender) {
+				bool updateLabel =
+					m_playLayer->m_fields->m_persistentCheckpointArray->count() == 1;
+				m_playLayer->removePersistentCheckpoint(checkpoint);
+
+				if (updateLabel)
+					updateUIElements();
+				else
+					createList();
+			}
+		));
+	}
+
+	m_listView = ListView::create(
+		m_cellsArray, 40, m_listContainer->getContentWidth(),
+		m_listContainer->getContentHeight()
+	);
+	m_listView->setPrimaryCellColor(ccc3(76, 105, 250));
+	m_listView->setSecondaryCellColor(ccc3(68, 91, 210));
+	m_listView->setZOrder(10);
+
+	CCNode* listContent = m_listView->getChildByIndex(0)->getChildByIndex(0);
+	if (carryPosition && checkpointArray->count() >= 5) {
+		listContent->setPositionY(contentPosition);
+		if (listContent->getPositionY() > 0)
+			listContent->setPositionY(0);
+	}
+
+	m_listContainer->addChildAtPosition(m_listView, geode::Anchor::BottomLeft);
+}
+
+void CheckpointManager::updateUIElements(bool resetListPosition) {
+	unsigned int saveLayer = m_playLayer->m_fields->m_activeSaveLayer;
+
+	m_saveLayerLabel->setString(
+		fmt::format(
+			"Layer: {}/{}", saveLayer + 1, m_playLayer->m_fields->m_saveLayerCount
+		)
+			.c_str()
+	);
+
+	createList(resetListPosition);
+
+	if (m_playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
+		const char* text;
+		if (saveLayer == 0)
+			text = "No checkpoints saved in this level.";
+		else
+			text = "No checkpoints saved in the current layer.";
+		m_emptyListLabel->setString(text);
+		m_emptyListLabel->setVisible(true);
+
+		m_deleteButton->setColor(ccc3(90, 90, 90));
+		m_deleteButton->setOpacity(200);
+	} else {
+		m_emptyListLabel->setVisible(false);
+
+		m_deleteButton->setColor(ccc3(255, 255, 255));
+		m_deleteButton->setOpacity(255);
+	}
+
+	float layerSwitchOffset =
+		m_saveLayerLabel->getScaledContentWidth() / 2.f + 15.f;
+	if (AnchorLayoutOptions* options = typeinfo_cast<AnchorLayoutOptions*>(
+			 m_previousLayerBtn->getLayoutOptions()
+		 ))
+		options->setOffset(ccp(-layerSwitchOffset, options->getOffset().y));
+	if (AnchorLayoutOptions* options = typeinfo_cast<AnchorLayoutOptions*>(
+			 m_nextLayerBtn->getLayoutOptions()
+		 ))
+		options->setOffset(ccp(layerSwitchOffset, options->getOffset().y));
+
+	if (m_playLayer->m_fields->m_saveLayerCount > 0) {
+		m_previousLayerBtn->m_animationEnabled = true;
+		m_previousLayerBtn->setColor(ccc3(255, 255, 255));
+		m_previousLayerBtn->setOpacity(255);
+		m_nextLayerBtn->m_animationEnabled = true;
+		m_nextLayerBtn->setColor(ccc3(255, 255, 255));
+		m_nextLayerBtn->setOpacity(255);
+	} else {
+		m_previousLayerBtn->m_animationEnabled = false;
+		m_previousLayerBtn->setColor(ccc3(90, 90, 90));
+		m_previousLayerBtn->setOpacity(200);
+		m_nextLayerBtn->m_animationEnabled = false;
+		m_nextLayerBtn->setColor(ccc3(90, 90, 90));
+		m_nextLayerBtn->setOpacity(200);
+	}
+	if (saveLayer > 0 && saveLayer < m_playLayer->m_fields->m_saveLayerCount) {
+		m_moveLayerBackBtn->m_animationEnabled = true;
+		m_moveLayerBackBtn->setColor(ccc3(255, 255, 255));
+		m_moveLayerBackBtn->setOpacity(255);
+	} else {
+		m_moveLayerBackBtn->m_animationEnabled = false;
+		m_moveLayerBackBtn->setColor(ccc3(90, 90, 90));
+		m_moveLayerBackBtn->setOpacity(200);
+	}
+	if (saveLayer + 1 < m_playLayer->m_fields->m_saveLayerCount) {
+		m_moveLayerForwardBtn->m_animationEnabled = true;
+		m_moveLayerForwardBtn->setColor(ccc3(255, 255, 255));
+		m_moveLayerForwardBtn->setOpacity(255);
+	} else {
+		m_moveLayerForwardBtn->m_animationEnabled = false;
+		m_moveLayerForwardBtn->setColor(ccc3(90, 90, 90));
+		m_moveLayerForwardBtn->setOpacity(200);
+	}
+
+	m_buttonMenu->updateLayout(false);
+}
+
+CCNode* createCheckpointCell(
+	PersistentCheckpoint* checkpoint,
+	std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
+	std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
+	std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
+	std::function<void(CCMenuItemSpriteExtra*)> removeCallback
+) {
+	PlayLayer* playLayer = PlayLayer::get();
+
+	CCMenu* menu = CCMenu::create();
+	menu->setContentSize(ccp(230, 40));
+
+	CCSprite* moveUpSpr =
+		CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
+	CCSprite* moveDownSpr =
+		CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
+	moveUpSpr->setFlipX(true);
+
+	CCNode* moveUpBtn;
+	CCNode* moveDownBtn;
+	if (moveUpCallback != nullptr) {
+		CCMenuItemSpriteExtra* button =
+			CCMenuItemExt::createSpriteExtra(moveUpSpr, moveUpCallback);
+		button->m_baseScale = .3;
+		moveUpBtn = button;
+	} else {
+		moveUpSpr->setColor(ccc3(90, 90, 90));
+		moveUpSpr->setOpacity(200);
+		moveUpBtn = moveUpSpr;
+	}
+	if (moveDownCallback != nullptr) {
+		CCMenuItemSpriteExtra* button =
+			CCMenuItemExt::createSpriteExtra(moveDownSpr, moveDownCallback);
+		button->m_baseScale = .3;
+		moveDownBtn = button;
+	} else {
+		moveDownSpr->setColor(ccc3(90, 90, 90));
+		moveDownSpr->setOpacity(200);
+		moveDownBtn = moveDownSpr;
+	}
+	moveUpBtn->setScale(.3);
+	moveDownBtn->setScale(.3);
+	moveUpBtn->setRotation(90);
+	moveDownBtn->setRotation(90);
+
+	std::string progressString;
+	if (playLayer->m_level->isPlatformer() || !playLayer->m_level->m_timestamp) {
+		int time = checkpoint->m_time;
+
+		progressString = fmt::format("{}s", time % 60);
+
+		if (time >= 60) {
+			progressString =
+				fmt::format("{}m", (time % 3600) / 60) + progressString;
+
+			if (time >= 3600)
+				progressString = fmt::format("{}h", time / 3600) + progressString;
+		}
+	} else {
+		progressString = fmt::format("{:.2f}%", (float)checkpoint->m_percent);
+	}
+
+	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(
+		checkpoint->m_physicalCheckpointObject->displayFrame()
+	);
+	CCMenuItemSpriteExtra* selectBtn =
+		CCMenuItemExt::createSpriteExtra(checkpointSprite, selectCallback);
+
+	CCLabelBMFont* label =
+		CCLabelBMFont::create(progressString.c_str(), "goldFont.fnt");
+	label->setAnchorPoint(ccp(0, .5));
+	label->setScale(.65);
+
+	CCSprite* removeSprite =
+		CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
+	CCMenuItemSpriteExtra* removeBtn =
+		CCMenuItemExt::createSpriteExtra(removeSprite, removeCallback);
+	removeBtn->m_baseScale = .75;
+	removeBtn->setScale(.75);
+
+	menu->addChildAtPosition(moveUpBtn, geode::Anchor::Left, ccp(15, 10));
+	menu->addChildAtPosition(moveDownBtn, geode::Anchor::Left, ccp(15, -10));
+	menu->addChildAtPosition(selectBtn, geode::Anchor::Left, ccp(35, 0));
+	menu->addChildAtPosition(label, geode::Anchor::Left, ccp(50, 0));
+	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-20, 0));
+
+	return menu;
+}
