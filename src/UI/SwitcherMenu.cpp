@@ -66,7 +66,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 			CCSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
 
 		checkpointLabelString = "2/5";
-		layerLabelString = "Layer 3/2";
+		layerLabelString = "Layer 2/3";
 	}
 	menu->m_checkpointSprite->setID("checkpoint");
 
@@ -112,19 +112,25 @@ SwitcherMenu* SwitcherMenu::createWithTouch(
 }
 
 bool SwitcherMenu::ccTouchBegan(CCTouch* touch, CCEvent* event) {
-	return m_touchBeganCallback(touch, event);
+	if (m_touchBeganCallback != nullptr)
+		return m_touchBeganCallback(touch, event);
+	else
+		return false;
 }
 
 void SwitcherMenu::ccTouchMoved(CCTouch* touch, CCEvent* event) {
-	m_touchMovedCallback(touch, event);
+	if (m_touchMovedCallback != nullptr)
+		m_touchMovedCallback(touch, event);
 }
 
 void SwitcherMenu::ccTouchEnded(CCTouch* touch, CCEvent* event) {
-	m_touchEndedCallback(touch, event);
+	if (m_touchEndedCallback != nullptr)
+		m_touchEndedCallback(touch, event);
 }
 
 void SwitcherMenu::ccTouchCancelled(CCTouch* touch, CCEvent* event) {
-	m_touchCancelledCallback(touch, event);
+	if (m_touchCancelledCallback != nullptr)
+		m_touchCancelledCallback(touch, event);
 }
 
 CCPoint getSwitcherPosition(CCDirector* director) {

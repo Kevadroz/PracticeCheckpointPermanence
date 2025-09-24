@@ -5,9 +5,12 @@
 	},
 	"id": "kevadroz.practicecheckpointpermanence",
 	"name": "Practice Checkpoint Permanence",
-	"version": "v1.0.1",
+	"version": "v1.0.2",
 	"developer": "Kevadroz",
 	"description": "Make checkpoints that persist across sessions",
+	"links": {
+		"source": "https://github.com/Kevadroz/PracticeCheckpointPermanence"
+	},
 	"dependencies": {
 		"geode.custom-keybinds": ">=v1.10.0",
 		"geode.node-ids": ">=v1.20.0",

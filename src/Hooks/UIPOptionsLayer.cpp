@@ -13,8 +13,10 @@ bool ModUIPOptionsLayer::init() {
 	m_fields->m_switcherMenu = SwitcherMenu::createWithTouch(
 		nullptr,
 		[this](CCTouch* touch, CCEvent* event) {
-			CCPoint touchPos = convertTouchToNodeSpace(touch);
-			float w = getContentWidth(), h = getContentHeight();
+			CCPoint touchPos =
+				m_fields->m_switcherMenu->convertTouchToNodeSpace(touch);
+			float w = m_fields->m_switcherMenu->getContentWidth();
+			float h = m_fields->m_switcherMenu->getContentHeight();
 			if (touchPos.x >= 0 && touchPos.x < w && touchPos.y >= 0 &&
 				 touchPos.y < h) {
 				m_fields->m_movingSwitcher = true;
@@ -26,8 +28,9 @@ bool ModUIPOptionsLayer::init() {
 		[this](CCTouch* touch, CCEvent* event) {
 			CCPoint touchPos = touch->getLocation();
 			CCPoint delta = touchPos - m_fields->m_lastPos;
-			setPositionX(getPositionX() + delta.x);
-			setPositionY(getPositionY() + delta.y);
+			m_fields->m_switcherMenu->setPosition(
+				m_fields->m_switcherMenu->getPosition() + delta
+			);
 
 			m_fields->m_lastPos = touchPos;
 		},

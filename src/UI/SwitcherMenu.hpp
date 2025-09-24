@@ -21,10 +21,10 @@ public:
 	);
 
 private:
-	std::function<bool(CCTouch* touch, CCEvent* event)> m_touchBeganCallback;
-	std::function<void(CCTouch* touch, CCEvent* event)> m_touchMovedCallback;
-	std::function<void(CCTouch* touch, CCEvent* event)> m_touchEndedCallback;
-	std::function<void(CCTouch* touch, CCEvent* event)> m_touchCancelledCallback;
+	std::function<bool(CCTouch* touch, CCEvent* event)> m_touchBeganCallback = nullptr;
+	std::function<void(CCTouch* touch, CCEvent* event)> m_touchMovedCallback = nullptr;
+	std::function<void(CCTouch* touch, CCEvent* event)> m_touchEndedCallback = nullptr;
+	std::function<void(CCTouch* touch, CCEvent* event)> m_touchCancelledCallback = nullptr;
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) override;
 	void ccTouchMoved(CCTouch* touch, CCEvent* event) override;
