@@ -64,9 +64,10 @@ void ModUIPOptionsLayer::onClose(CCObject* sender) {
 
 void ModUIPOptionsLayer::onReset(CCObject* sender) {
 	CCDirector* director = CCDirector::sharedDirector();
-	m_fields->m_switcherMenu->setPosition(
-		ccp(director->getScreenLeft() + 45.f, director->getScreenTop() - 50.f)
-	);
+	m_fields->m_switcherMenu->setPosition(ccp(
+		director->getScreenLeft() + SWITCHER_OFFSET_X,
+		director->getScreenTop() - SWITCHER_OFFSET_Y
+	));
 	saveSwitcherPosition();
 	UIPOptionsLayer::onReset(sender);
 }

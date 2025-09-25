@@ -14,6 +14,7 @@ class $modify(ModUILayer, UILayer) {
 
 	bool init(GJBaseGameLayer*);
 	void updateSwitcher();
+	void resetSwitcherOpacity();
 };
 
 // If playLayer is nullptr then it will be
