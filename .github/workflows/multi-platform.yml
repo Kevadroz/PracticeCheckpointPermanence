@@ -12,23 +12,23 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - name: Windows
-          os: windows-latest
+          - name: Windows
+            os: windows-latest
 
-        # - name: macOS
-        #   os: macos-latest
-        #
-        # - name: iOS
-        #   os: macos-latest
-        #   target: iOS
-        #
-        # - name: Android32
-        #   os: ubuntu-latest
-        #   target: Android32
-        #
-        # - name: Android64
-        #   os: ubuntu-latest
-        #   target: Android64
+          # - name: macOS
+          #   os: macos-latest
+          #
+          # - name: iOS
+          #   os: macos-latest
+          #   target: iOS
+          #
+          - name: Android32
+            os: ubuntu-latest
+            target: Android32
+
+          - name: Android64
+            os: ubuntu-latest
+            target: Android64
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
@@ -45,7 +45,7 @@ jobs:
   package:
     name: Package builds
     runs-on: ubuntu-latest
-    needs: ['build']
+    needs: ["build"]
 
     steps:
       - uses: geode-sdk/build-geode-mod/combine@main
