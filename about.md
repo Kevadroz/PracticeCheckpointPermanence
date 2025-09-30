@@ -25,6 +25,8 @@ On the pause menu there's a new button that opens the <cg>persistent checkpoint 
 
 ## Additional Notes
 
+ - You can change the position of the switcher menu in the <cg>Practice Options menu</c>.
+
  - There's <cp>no limit</c> of how many <cp>checkpoints or layers</c> you can have.
 
  - You can press a checkpoint icon in the checkpoint list to switch to it.

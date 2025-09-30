@@ -53,8 +53,6 @@ void ModPlayLayer::deserializeCheckpoints() {
 	if (!std::filesystem::exists(savePath))
 		return;
 
-	log::info("REACHED4");
-
 	persistenceAPI::Stream stream;
 	stream.setFile(savePath, 2);
 
@@ -64,14 +62,10 @@ void ModPlayLayer::deserializeCheckpoints() {
 
 	unsigned int saveVersion = verificationResult.value();
 
-	log::info("REACHED5");
-
 	removeAllCheckpoints();
 
 	unsigned int checkpointCount;
 	stream >> checkpointCount;
-
-	log::info("REACHED6");
 
 	for (unsigned int i = checkpointCount; i > 0; i--) {
 		PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
@@ -82,13 +76,9 @@ void ModPlayLayer::deserializeCheckpoints() {
 		storePersistentCheckpoint(checkpoint);
 	}
 
-	log::info("REACHED7");
-
 	stream.end();
 
 	updateUISwitcher();
-
-	log::info("REACHED8");
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {
@@ -97,12 +87,9 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 		  )) {
 		checkpoint->m_checkpoint->m_physicalCheckpointObject->removeFromParent();
 	}
-	log::info("REACHED");
 	m_fields->m_activeCheckpoint = 0;
 
-	log::info("REACHED2");
 	m_fields->m_persistentCheckpointArray->removeAllObjects();
-	log::info("REACHED3");
 }
 
 std::optional<unsigned int>
