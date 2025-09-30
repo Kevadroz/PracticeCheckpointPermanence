@@ -52,6 +52,7 @@ bool ModUIPOptionsLayer::init() {
 		CCLabelBMFont::create("Switcher Scale:", "chatFont.fnt");
 	switcherScaleLabel->setScale(0.8f);
 	switcherScaleLabel->setAnchorPoint(ccp(1, .5f));
+	switcherScaleLabel->setID("switcher_scale_label"_spr);
 
 	m_fields->m_switcherScaleSlider = Slider::create(
 		this, menu_selector(ModUIPOptionsLayer::onSwitcherScaleSliderUpdated),
@@ -66,6 +67,7 @@ bool ModUIPOptionsLayer::init() {
 		->getChildByIndex(0)
 		->setScale(.64f);
 	updateSwitcherScaleSlider(m_fields->m_switcherMenu->getScaleX());
+	m_fields->m_switcherScaleSlider->setID("switcher_scale_slider"_spr);
 
 	
 	m_fields->m_switcherScaleInput = TextInput::create(54, "Num");
@@ -87,6 +89,7 @@ bool ModUIPOptionsLayer::init() {
 		updateSwitcherScaleSlider(scale);
 		saveSwitcherSettings();
 	});
+	m_fields->m_switcherScaleInput->setID("switcher_scale_input"_spr);
 
 	m_fields->m_switcherScaleInput->getChildByIndex(0)->setContentSize(
 		ccp(112 / .8f, 48 / .8f)
