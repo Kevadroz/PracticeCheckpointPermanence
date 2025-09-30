@@ -8,7 +8,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 
 	SwitcherMenu* menu = new SwitcherMenu();
 	menu->setContentSize(size);
-	menu->setScale(SWITCHER_SCALE);
+	menu->setScale(getSwitcherScale());
 	menu->setPosition(getSwitcherPosition(director));
 	menu->setZOrder(15);
 	menu->setID("switcher_menu"_spr);
@@ -150,5 +150,11 @@ CCPoint getSwitcherPosition(CCDirector* director) {
 		mod->getSavedValue<double>(
 			"switcherMenuPositionY", director->getScreenTop() - SWITCHER_OFFSET_Y
 		)
+	);
+}
+
+float getSwitcherScale() {
+	return Mod::get()->getSavedValue<double>(
+		"switcherMenuScale", SWITCHER_SCALE
 	);
 }

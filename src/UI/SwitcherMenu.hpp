@@ -48,3 +48,4 @@ private:
 };
 
 CCPoint getSwitcherPosition(CCDirector* director);
+float getSwitcherScale();
