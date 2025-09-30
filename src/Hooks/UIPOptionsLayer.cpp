@@ -69,7 +69,6 @@ bool ModUIPOptionsLayer::init() {
 	updateSwitcherScaleSlider(m_fields->m_switcherMenu->getScaleX());
 	m_fields->m_switcherScaleSlider->setID("switcher_scale_slider"_spr);
 
-	
 	m_fields->m_switcherScaleInput = TextInput::create(54, "Num");
 	m_fields->m_switcherScaleInput->setCommonFilter(CommonFilter::Float);
 	m_fields->m_switcherScaleInput->setMaxCharCount(7);
@@ -111,12 +110,15 @@ void ModUIPOptionsLayer::onClose(CCObject* sender) {
 	saveSwitcherSettings();
 
 	if (PlayLayer* playLayer = PlayLayer::get()) {
-		SwitcherMenu* playSwitcher =
-			static_cast<ModUILayer*>(playLayer->m_uiLayer)
-				->m_fields->m_switcherMenu;
+		ModUILayer* uiLayer = static_cast<ModUILayer*>(playLayer->m_uiLayer);
+		SwitcherMenu* playSwitcher = uiLayer->m_fields->m_switcherMenu;
 
 		playSwitcher->setPosition(m_fields->m_switcherMenu->getPosition());
 		playSwitcher->setScale(m_fields->m_switcherMenu->getScaleX());
+
+		GLubyte opacity = GameManager::get()->m_practiceOpacity * 255;
+		uiLayer->m_fields->m_createCheckpointButton->setOpacity(opacity);
+		uiLayer->m_fields->m_removeCheckpointButton->setOpacity(opacity);
 	}
 
 	UIPOptionsLayer::onClose(sender);
@@ -157,7 +159,9 @@ void ModUIPOptionsLayer::saveSwitcherSettings() {
 void ModUIPOptionsLayer::onSwitcherScaleSliderUpdated(CCObject* object) {
 	float scale = std::lerp(
 		SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX,
-		inverseLerp(.265265265f, .734734735f, m_fields->m_switcherScaleSlider->getValue())
+		inverseLerp(
+			.265265265f, .734734735f, m_fields->m_switcherScaleSlider->getValue()
+		)
 	);
 
 	m_fields->m_switcherMenu->setScale(scale);

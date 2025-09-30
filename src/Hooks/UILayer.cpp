@@ -37,7 +37,7 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 
 	m_fields->m_switcherMenu = SwitcherMenu::create(playLayer);
 	m_fields->m_switcherMenu->setVisible(false);
-	
+
 	m_fields->m_switcherMenu->m_buttonMenu->setTouchEnabled(
 #if defined(GEODE_IS_MOBILE)
 		true
@@ -48,10 +48,10 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 
 	addChild(m_fields->m_switcherMenu);
 
-	createCheckpointCreateButton(
+	m_fields->m_createCheckpointButton = createCheckpointCreateButton(
 		m_checkpointMenu->getChildByID("add-checkpoint-button"), playLayer
 	);
-	createCheckpointRemoveButton(
+	m_fields->m_removeCheckpointButton = createCheckpointRemoveButton(
 		m_checkpointMenu->getChildByID("remove-checkpoint-button"), playLayer
 	);
 
@@ -177,7 +177,8 @@ void ModUILayer::resetSwitcherOpacity() {
 	updateSwitcher();
 }
 
-void createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
+CCNodeRGBA*
+createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	CCNodeRGBA* button;
 
 	CCSprite* sprite =
@@ -202,11 +203,17 @@ void createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 
 	if (playLayer != nullptr)
 		createButtonBindsLabel(button, "create_checkpoint"_spr, false);
+	
+	button->setCascadeOpacityEnabled(true);
+	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
 
 	sibling->getParent()->addChild(button);
+
+	return button;
 }
 
-void createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
+CCNodeRGBA*
+createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	CCNodeRGBA* button;
 
 	CCSprite* sprite =
@@ -232,14 +239,19 @@ void createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	if (playLayer != nullptr)
 		createButtonBindsLabel(button, "remove_checkpoint"_spr, true);
 
+	button->setCascadeOpacityEnabled(true);
+	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
+
 	sibling->getParent()->addChild(button);
+
+	return button;
 }
 
 // Code adapted from the Rewind mod https://github.com/undefined06855/Rewind
 void createButtonBindsLabel(
 	CCNode* parent, const keybinds::ActionID& action, bool right
 ) {
-	CCNode* bindContainer = cocos2d::CCNode::create();
+	CCNodeRGBA* bindContainer = cocos2d::CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
 	for (auto& bind : keybinds::BindManager::get()->getBindsFor(action)) {
@@ -265,4 +277,5 @@ void createButtonBindsLabel(
 			bindContainer, geode::Anchor::BottomRight, {4.f, -1.f}
 		);
 	}
+	bindContainer->setCascadeOpacityEnabled(true);
 }
