@@ -85,7 +85,7 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
 		  )) {
-		checkpoint->m_physicalCheckpointObject->removeFromParent();
+		checkpoint->m_checkpoint->m_physicalCheckpointObject->removeFromParent();
 	}
 	m_fields->m_activeCheckpoint = 0;
 

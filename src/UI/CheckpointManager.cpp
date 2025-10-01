@@ -387,7 +387,7 @@ CCNode* createCheckpointCell(
 	moveDownBtn->setRotation(90);
 
 	std::string progressString;
-	if (playLayer->m_level->isPlatformer() || !playLayer->m_level->m_timestamp) {
+	if (playLayer->m_level->isPlatformer()) {
 		int time = checkpoint->m_time;
 
 		progressString = fmt::format("{}s", time % 60);
@@ -404,7 +404,7 @@ CCNode* createCheckpointCell(
 	}
 
 	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(
-		checkpoint->m_physicalCheckpointObject->displayFrame()
+		checkpoint->m_checkpoint->m_physicalCheckpointObject->displayFrame()
 	);
 	CCMenuItemSpriteExtra* selectBtn =
 		CCMenuItemExt::createSpriteExtra(checkpointSprite, selectCallback);

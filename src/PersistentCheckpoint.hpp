@@ -1,20 +1,22 @@
 #pragma once
 #include <Geode/binding/CheckpointObject.hpp>
-#include <Geode/binding/GameObject.hpp>
 #include <Geode/modify/CheckpointObject.hpp>
 
 #include <sabe.persistenceapi/include/util/Stream.hpp>
 
-using namespace cocos2d;
+using namespace geode::prelude;
 
-class PersistentCheckpoint : public CheckpointObject {
+class PersistentCheckpoint : public CCObject {
 public:
+	CheckpointObject* m_checkpoint = nullptr;
 	CCPoint m_objectPos;
 	int m_attempts;
 	double m_time;
 	double m_percent;
 	gd::unordered_map<int, int> m_persistentItemCountMap;
 	gd::unordered_set<int> m_persistentTimerItemSet;
+
+	~PersistentCheckpoint();
 
 	static PersistentCheckpoint* create();
 	static PersistentCheckpoint* createFromCheckpoint(
@@ -27,6 +29,4 @@ public:
 	void deserialize(persistenceAPI::Stream& in, unsigned int saveVersion);
 	void createPhysicalObject();
 	void toggleActive(bool);
-
-	GameObject* getPhysicalObject();
 };

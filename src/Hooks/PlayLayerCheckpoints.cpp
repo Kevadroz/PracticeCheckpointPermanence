@@ -82,7 +82,7 @@ void ModPlayLayer::storePersistentCheckpoint(PersistentCheckpoint* checkpoint) {
 		}
 
 	m_fields->m_persistentCheckpointBatchNode->addChild(
-		checkpoint->getPhysicalObject()
+		checkpoint->m_checkpoint->m_physicalCheckpointObject
 	);
 	if (index < array->count())
 		array->insertObject(checkpoint, index);
@@ -98,7 +98,7 @@ void ModPlayLayer::removePersistentCheckpoint(
 										m_fields->m_activeCheckpoint - 1
 									) == checkpoint;
 
-	checkpoint->getPhysicalObject()->removeFromParent();
+	checkpoint->m_checkpoint->m_physicalCheckpointObject->removeFromParent();
 	m_fields->m_persistentCheckpointArray->removeObject(checkpoint);
 
 	if (switchCheckpoint)

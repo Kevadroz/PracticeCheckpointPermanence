@@ -10,16 +10,19 @@ using namespace geode::prelude;
 class $modify(ModUILayer, UILayer) {
 	struct Fields {
 		SwitcherMenu* m_switcherMenu = nullptr;
+		CCNodeRGBA* m_createCheckpointButton = nullptr;
+		CCNodeRGBA* m_removeCheckpointButton = nullptr;
 	};
 
 	bool init(GJBaseGameLayer*);
 	void updateSwitcher();
+	void resetSwitcherOpacity();
 };
 
 // If playLayer is nullptr then it will be
 // assumed that this is for the UIPOptionsLayer
-void createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer);
-void createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer);
+CCNodeRGBA* createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer);
+CCNodeRGBA* createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer);
 
 void createButtonBindsLabel(
 	CCNode* parent, const keybinds::ActionID& action, bool right

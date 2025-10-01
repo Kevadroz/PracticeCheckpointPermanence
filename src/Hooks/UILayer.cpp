@@ -7,6 +7,24 @@
 #include <Geode/ui/Layout.hpp>
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 
+$execute {
+	Mod* mod = Mod::get();
+
+	for (std::string setting :
+		  {"switcher-label-active-opacity", "switcher-label-inactive-opacity",
+			"switcher-button-active-opacity", "switcher-button-inactive-opacity",
+			"switcher-icon-active-opacity", "switcher-icon-inactive-opacity"}) {
+		new EventListener<SettingChangedFilterV3>(
+			+[](std::shared_ptr<SettingV3> setting) {
+				ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+				if (uiLayer != nullptr)
+					uiLayer->resetSwitcherOpacity();
+			},
+			SettingChangedFilterV3(mod, setting)
+		);
+	}
+}
+
 bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 	if (!UILayer::init(baseGameLayer))
 		return false;
@@ -17,17 +35,23 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 	} else
 		return true;
 
-	// TODO Implement touch controls
 	m_fields->m_switcherMenu = SwitcherMenu::create(playLayer);
-
 	m_fields->m_switcherMenu->setVisible(false);
+
+	m_fields->m_switcherMenu->m_buttonMenu->setTouchEnabled(
+#if defined(GEODE_IS_MOBILE)
+		true
+#else
+		GameManager::get()->getGameVariable("0024")
+#endif
+	);
 
 	addChild(m_fields->m_switcherMenu);
 
-	createCheckpointCreateButton(
+	m_fields->m_createCheckpointButton = createCheckpointCreateButton(
 		m_checkpointMenu->getChildByID("add-checkpoint-button"), playLayer
 	);
-	createCheckpointRemoveButton(
+	m_fields->m_removeCheckpointButton = createCheckpointRemoveButton(
 		m_checkpointMenu->getChildByID("remove-checkpoint-button"), playLayer
 	);
 
@@ -37,6 +61,8 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 void ModUILayer::updateSwitcher() {
 	if (m_fields->m_switcherMenu == nullptr)
 		return;
+
+	Mod* mod = Mod::get();
 
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	m_fields->m_switcherMenu->setVisible(
@@ -61,21 +87,98 @@ void ModUILayer::updateSwitcher() {
 	);
 
 	const char* checkpointFrameName;
+	GLubyte checkpointSpriteOpacity;
 
 	if (playLayer->m_fields->m_activeCheckpoint > 0) {
 		checkpointFrameName = "activeCheckpoint.png"_spr;
-		m_fields->m_switcherMenu->m_checkpointSprite->setOpacity(255);
+		checkpointSpriteOpacity = 255;
 	} else {
 		checkpointFrameName = "inactiveCheckpoint.png"_spr;
-		m_fields->m_switcherMenu->m_checkpointSprite->setOpacity(192);
+		checkpointSpriteOpacity = 192;
 	}
 
 	m_fields->m_switcherMenu->m_checkpointSprite->setDisplayFrame(
 		CCSpriteFrameCache::get()->spriteFrameByName(checkpointFrameName)
 	);
+
+	double labelActiveOpacity =
+		255 * mod->getSettingValue<double>("switcher-label-active-opacity");
+	double labelInactiveOpacity =
+		255 * mod->getSettingValue<double>("switcher-label-inactive-opacity");
+	double buttonActiveOpacity =
+		255 * mod->getSettingValue<double>("switcher-button-active-opacity");
+	double buttonInactiveOpacity =
+		255 * mod->getSettingValue<double>("switcher-button-inactive-opacity");
+	double iconActiveOpacity =
+		checkpointSpriteOpacity *
+		mod->getSettingValue<double>("switcher-icon-active-opacity");
+	double iconInactiveOpacity =
+		checkpointSpriteOpacity *
+		mod->getSettingValue<double>("switcher-icon-inactive-opacity");
+
+	std::vector<std::tuple<CCNode*, GLubyte, GLubyte>> nodes;
+	if (labelActiveOpacity != labelInactiveOpacity)
+		nodes.push_back(
+			std::make_tuple(
+				m_fields->m_switcherMenu->m_labelMenu, labelActiveOpacity,
+				labelInactiveOpacity
+			)
+		);
+	if (buttonActiveOpacity != buttonInactiveOpacity)
+		nodes.push_back(
+			std::make_tuple(
+				m_fields->m_switcherMenu->m_buttonMenu, buttonActiveOpacity,
+				buttonInactiveOpacity
+			)
+		);
+	if (iconActiveOpacity != iconInactiveOpacity)
+		nodes.push_back(
+			std::make_tuple(
+				m_fields->m_switcherMenu->m_checkpointSprite, iconActiveOpacity,
+				iconInactiveOpacity
+			)
+		);
+
+	for (std::tuple<CCNode*, GLubyte, GLubyte> tuple : nodes) {
+		CCNode* node = std::get<0>(tuple);
+		GLubyte activeOpacity = std::get<1>(tuple);
+		GLubyte inactiveOpacity = std::get<2>(tuple);
+
+		node->stopActionByTag(55);
+
+		CCSequence* sequence = CCSequence::create(
+			CCEaseInOut::create(CCFadeTo::create(0.15f, activeOpacity), 2.f),
+			CCDelayTime::create(1.75f),
+			CCEaseInOut::create(CCFadeTo::create(0.8f, inactiveOpacity), 2.f),
+			nullptr
+		);
+		sequence->setTag(55);
+
+		node->runAction(sequence);
+	}
 }
 
-void createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
+void ModUILayer::resetSwitcherOpacity() {
+	Mod* mod = Mod::get();
+
+	m_fields->m_switcherMenu->m_labelMenu->stopActionByTag(55);
+	m_fields->m_switcherMenu->m_buttonMenu->stopActionByTag(55);
+	m_fields->m_switcherMenu->m_checkpointSprite->stopActionByTag(55);
+	m_fields->m_switcherMenu->m_labelMenu->setOpacity(
+		255 * mod->getSettingValue<double>("switcher-label-active-opacity")
+	);
+	m_fields->m_switcherMenu->m_buttonMenu->setOpacity(
+		255 * mod->getSettingValue<double>("switcher-button-active-opacity")
+	);
+	m_fields->m_switcherMenu->m_checkpointSprite->setOpacity(
+		255 * mod->getSettingValue<double>("switcher-icon-active-opacity")
+	);
+
+	updateSwitcher();
+}
+
+CCNodeRGBA*
+createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	CCNodeRGBA* button;
 
 	CCSprite* sprite =
@@ -100,11 +203,17 @@ void createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 
 	if (playLayer != nullptr)
 		createButtonBindsLabel(button, "create_checkpoint"_spr, false);
+	
+	button->setCascadeOpacityEnabled(true);
+	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
 
 	sibling->getParent()->addChild(button);
+
+	return button;
 }
 
-void createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
+CCNodeRGBA*
+createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	CCNodeRGBA* button;
 
 	CCSprite* sprite =
@@ -130,14 +239,19 @@ void createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	if (playLayer != nullptr)
 		createButtonBindsLabel(button, "remove_checkpoint"_spr, true);
 
+	button->setCascadeOpacityEnabled(true);
+	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
+
 	sibling->getParent()->addChild(button);
+
+	return button;
 }
 
 // Code adapted from the Rewind mod https://github.com/undefined06855/Rewind
 void createButtonBindsLabel(
 	CCNode* parent, const keybinds::ActionID& action, bool right
 ) {
-	CCNode* bindContainer = cocos2d::CCNode::create();
+	CCNodeRGBA* bindContainer = cocos2d::CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
 	for (auto& bind : keybinds::BindManager::get()->getBindsFor(action)) {
@@ -163,4 +277,5 @@ void createButtonBindsLabel(
 			bindContainer, geode::Anchor::BottomRight, {4.f, -1.f}
 		);
 	}
+	bindContainer->setCascadeOpacityEnabled(true);
 }

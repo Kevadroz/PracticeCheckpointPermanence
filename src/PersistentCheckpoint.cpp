@@ -14,11 +14,14 @@
 #include <sabe.persistenceapi/include/hooks/cocos2d/CCNode.hpp>
 #include <sabe.persistenceapi/include/util/Stream.hpp>
 
-using namespace geode::prelude;
 using namespace persistenceAPI;
+
+PersistentCheckpoint::~PersistentCheckpoint() { CC_SAFE_DELETE(m_checkpoint); }
 
 PersistentCheckpoint* PersistentCheckpoint::create() {
 	PersistentCheckpoint* checkpoint = new PersistentCheckpoint();
+	checkpoint->m_checkpoint = CheckpointObject::create();
+	CC_SAFE_RETAIN(checkpoint->m_checkpoint);
 
 	checkpoint->autorelease();
 
@@ -32,36 +35,8 @@ PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
 ) {
 	PersistentCheckpoint* newCheckpoint = new PersistentCheckpoint();
 
-	newCheckpoint->m_gameState = checkpoint->m_gameState;
-	newCheckpoint->m_shaderState = checkpoint->m_shaderState;
-	newCheckpoint->m_audioState = checkpoint->m_audioState;
-	newCheckpoint->m_physicalCheckpointObject =
-		checkpoint->m_physicalCheckpointObject;
-	newCheckpoint->m_player1Checkpoint = checkpoint->m_player1Checkpoint;
-	newCheckpoint->m_player2Checkpoint = checkpoint->m_player2Checkpoint;
-	newCheckpoint->m_unke78 = checkpoint->m_unke78;
-	newCheckpoint->m_unke7c = checkpoint->m_unke7c;
-	newCheckpoint->m_unke80 = checkpoint->m_unke80;
-	newCheckpoint->m_ground2Invisible = checkpoint->m_ground2Invisible;
-	newCheckpoint->m_streakBlend = checkpoint->m_streakBlend;
-	newCheckpoint->m_uniqueID = checkpoint->m_uniqueID;
-	newCheckpoint->m_respawnID = checkpoint->m_respawnID;
-	newCheckpoint->m_vectorSavedObjectStateRef =
-		checkpoint->m_vectorSavedObjectStateRef;
-	newCheckpoint->m_vectorActiveSaveObjectState =
-		checkpoint->m_vectorActiveSaveObjectState;
-	newCheckpoint->m_vectorSpecialSaveObjectState =
-		checkpoint->m_vectorSpecialSaveObjectState;
-	newCheckpoint->m_effectManagerState = checkpoint->m_effectManagerState;
-	newCheckpoint->m_gradientTriggerObjectArray =
-		checkpoint->m_gradientTriggerObjectArray;
-	newCheckpoint->m_unk11e8 = checkpoint->m_unk11e8;
-	newCheckpoint->m_sequenceTriggerStateUnorderedMap =
-		checkpoint->m_sequenceTriggerStateUnorderedMap;
-
-	CC_SAFE_RETAIN(newCheckpoint->m_player1Checkpoint);
-	CC_SAFE_RETAIN(newCheckpoint->m_player2Checkpoint);
-	CC_SAFE_RETAIN(newCheckpoint->m_gradientTriggerObjectArray);
+	newCheckpoint->m_checkpoint = checkpoint;
+	CC_SAFE_RETAIN(newCheckpoint->m_checkpoint);
 
 	if (checkpoint->m_physicalCheckpointObject) {
 		newCheckpoint->m_objectPos =
@@ -83,53 +58,68 @@ PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
 }
 
 void PersistentCheckpoint::serialize(Stream& out) {
-	reinterpret_cast<PACCNode*>(this)->save(out);
+	reinterpret_cast<PACCNode*>(m_checkpoint)->save(out);
 
-	bool hasP2 = m_player2Checkpoint != nullptr;
-	bool hasGradients = m_gradientTriggerObjectArray != nullptr;
+	bool hasP2 = m_checkpoint->m_player2Checkpoint != nullptr;
+	bool hasGradients = m_checkpoint->m_gradientTriggerObjectArray != nullptr;
 
 	out << hasP2;
 	out << hasGradients;
 
-	reinterpret_cast<PAGJGameState*>(&m_gameState)->save(out);
-	reinterpret_cast<PAGJShaderState*>(&m_shaderState)->save(out);
-	reinterpret_cast<PAFMODAudioState*>(&m_audioState)->save(out);
+	reinterpret_cast<PAGJGameState*>(&m_checkpoint->m_gameState)->save(out);
+	reinterpret_cast<PAGJShaderState*>(&m_checkpoint->m_shaderState)->save(out);
+	reinterpret_cast<PAFMODAudioState*>(&m_checkpoint->m_audioState)->save(out);
 
-	reinterpret_cast<PAPlayerCheckpoint*>(m_player1Checkpoint)->save(out);
+	reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player1Checkpoint)
+		->save(out);
 	if (hasP2)
-		reinterpret_cast<PAPlayerCheckpoint*>(m_player2Checkpoint)->save(out);
+		reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player2Checkpoint)
+			->save(out);
 
-	out << m_unke78;
-	out << m_unke7c;
-	out << m_unke80;
-	out << m_ground2Invisible;
-	out << m_streakBlend;
-	out << m_uniqueID;
-	out << m_respawnID;
-	out << m_vectorSavedObjectStateRef;
-	out << m_vectorActiveSaveObjectState;
-	out << m_vectorSpecialSaveObjectState;
+	out << m_checkpoint->m_unke78;
+	out << m_checkpoint->m_unke7c;
+	out << m_checkpoint->m_unke80;
+	out << m_checkpoint->m_ground2Invisible;
+	out << m_checkpoint->m_streakBlend;
+	out << m_checkpoint->m_uniqueID;
+	out << m_checkpoint->m_respawnID;
+	out << m_checkpoint->m_vectorSavedObjectStateRef;
+	out << m_checkpoint->m_vectorActiveSaveObjectState;
+	out << m_checkpoint->m_vectorSpecialSaveObjectState;
 
-	reinterpret_cast<PAEffectManagerState*>(&m_effectManagerState)->save(out);
+	reinterpret_cast<PAEffectManagerState*>(&m_checkpoint->m_effectManagerState)
+		->save(out);
 	if (hasGradients)
-		static_cast<PACCArray*>(m_gradientTriggerObjectArray)
+		static_cast<PACCArray*>(m_checkpoint->m_gradientTriggerObjectArray)
 			->save<GradientTriggerObject>(out);
 
-	out << m_unk11e8;
-	out << m_sequenceTriggerStateUnorderedMap;
-	out << m_commandIndex;
+	out << m_checkpoint->m_unk11e8;
+	out << m_checkpoint->m_sequenceTriggerStateUnorderedMap;
+	out << m_checkpoint->m_commandIndex;
 
 	// Custom data
 	out << m_objectPos;
 	out << m_attempts;
 	out << m_time;
 	out << m_percent;
+
+	// PersistenceAPI headers are broken on current Android Geode
+#if defined(GEODE_IS_ANDROID)
+	unsigned int l_size = m_persistentItemCountMap.size();
+	out.write(reinterpret_cast<char*>(&l_size), 4);
+	for (geode::stl::pair<int, int> l_pair : m_persistentItemCountMap) {
+		out.write(reinterpret_cast<char*>(&l_pair.first), sizeof(int));
+		out.write(reinterpret_cast<char*>(&l_pair.second), sizeof(int));
+	}
+#else
 	out << m_persistentItemCountMap;
+#endif
+
 	out << m_persistentTimerItemSet;
 }
 
 void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
-	reinterpret_cast<PACCNode*>(this)->load(in);
+	reinterpret_cast<PACCNode*>(m_checkpoint)->load(in);
 
 	bool hasP2;
 	bool hasGradients;
@@ -139,50 +129,53 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 
 	// geode::log::debug("p2 {}", hasP2);
 
-	reinterpret_cast<PAGJGameState*>(&m_gameState)->load(in);
+	reinterpret_cast<PAGJGameState*>(&m_checkpoint->m_gameState)->load(in);
 	// geode::log::debug("gs");
-	reinterpret_cast<PAGJShaderState*>(&m_shaderState)->load(in);
+	reinterpret_cast<PAGJShaderState*>(&m_checkpoint->m_shaderState)->load(in);
 	// geode::log::debug("ss");
-	reinterpret_cast<PAFMODAudioState*>(&m_audioState)->load(in);
+	reinterpret_cast<PAFMODAudioState*>(&m_checkpoint->m_audioState)->load(in);
 	// geode::log::debug("as");
 
-	m_player1Checkpoint = PlayerCheckpoint::create();
-	CC_SAFE_RETAIN(m_player1Checkpoint);
-	reinterpret_cast<PAPlayerCheckpoint*>(m_player1Checkpoint)->load(in);
+	m_checkpoint->m_player1Checkpoint = PlayerCheckpoint::create();
+	CC_SAFE_RETAIN(m_checkpoint->m_player1Checkpoint);
+	reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player1Checkpoint)
+		->load(in);
 	if (hasP2) {
-		m_player2Checkpoint = PlayerCheckpoint::create();
-		CC_SAFE_RETAIN(m_player2Checkpoint);
-		reinterpret_cast<PAPlayerCheckpoint*>(m_player2Checkpoint)->load(in);
+		m_checkpoint->m_player2Checkpoint = PlayerCheckpoint::create();
+		CC_SAFE_RETAIN(m_checkpoint->m_player2Checkpoint);
+		reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player2Checkpoint)
+			->load(in);
 	}
 
 	// geode::log::debug("checkpoints");
 
-	in >> m_unke78;
-	in >> m_unke7c;
-	in >> m_unke80;
-	in >> m_ground2Invisible;
-	in >> m_streakBlend;
-	in >> m_uniqueID;
-	in >> m_respawnID;
-	in >> m_vectorSavedObjectStateRef;
-	in >> m_vectorActiveSaveObjectState;
-	in >> m_vectorSpecialSaveObjectState;
+	in >> m_checkpoint->m_unke78;
+	in >> m_checkpoint->m_unke7c;
+	in >> m_checkpoint->m_unke80;
+	in >> m_checkpoint->m_ground2Invisible;
+	in >> m_checkpoint->m_streakBlend;
+	in >> m_checkpoint->m_uniqueID;
+	in >> m_checkpoint->m_respawnID;
+	in >> m_checkpoint->m_vectorSavedObjectStateRef;
+	in >> m_checkpoint->m_vectorActiveSaveObjectState;
+	in >> m_checkpoint->m_vectorSpecialSaveObjectState;
 
 	// geode::log::debug("vars");
 
-	reinterpret_cast<PAEffectManagerState*>(&m_effectManagerState)->load(in);
+	reinterpret_cast<PAEffectManagerState*>(&m_checkpoint->m_effectManagerState)
+		->load(in);
 	if (hasGradients) {
-		m_gradientTriggerObjectArray = CCArray::create();
-		CC_SAFE_RETAIN(m_gradientTriggerObjectArray);
-		static_cast<PACCArray*>(m_gradientTriggerObjectArray)
+		m_checkpoint->m_gradientTriggerObjectArray = CCArray::create();
+		CC_SAFE_RETAIN(m_checkpoint->m_gradientTriggerObjectArray);
+		static_cast<PACCArray*>(m_checkpoint->m_gradientTriggerObjectArray)
 			->load<GradientTriggerObject>(in);
 	}
 
 	// geode::log::debug("gradients {}", hasGradients);
 
-	in >> m_unk11e8;
-	in >> m_sequenceTriggerStateUnorderedMap;
-	in >> m_commandIndex;
+	in >> m_checkpoint->m_unk11e8;
+	in >> m_checkpoint->m_sequenceTriggerStateUnorderedMap;
+	in >> m_checkpoint->m_commandIndex;
 
 	// Custom data
 	in >> m_objectPos;
@@ -196,38 +189,35 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 }
 
 void PersistentCheckpoint::createPhysicalObject() {
-	CC_SAFE_RELEASE(m_physicalCheckpointObject);
-	m_physicalCheckpointObject =
+	CC_SAFE_RELEASE(m_checkpoint->m_physicalCheckpointObject);
+	m_checkpoint->m_physicalCheckpointObject =
 		GameObject::createWithFrame("inactiveCheckpoint.png"_spr);
-	CC_SAFE_RETAIN(m_physicalCheckpointObject);
+	CC_SAFE_RETAIN(m_checkpoint->m_physicalCheckpointObject);
 
-	m_physicalCheckpointObject->setOpacity(
+	m_checkpoint->m_physicalCheckpointObject->setOpacity(
 		Mod::get()->getSettingValue<double>("inactive-checkpoint-opacity") * 255
 	);
-	m_physicalCheckpointObject->m_objectID = 0x2c;
-	m_physicalCheckpointObject->m_objectType = GameObjectType::Decoration;
-	m_physicalCheckpointObject->m_glowSprite = nullptr;
+	m_checkpoint->m_physicalCheckpointObject->m_objectID = 0x2c;
+	m_checkpoint->m_physicalCheckpointObject->m_objectType =
+		GameObjectType::Decoration;
+	m_checkpoint->m_physicalCheckpointObject->m_glowSprite = nullptr;
 
-	m_physicalCheckpointObject->setStartPos(m_objectPos);
+	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
 }
 
 void PersistentCheckpoint::toggleActive(bool active) {
 	const char* frameName;
 	if (active) {
 		frameName = "activeCheckpoint.png"_spr;
-		m_physicalCheckpointObject->setOpacity(255);
+		m_checkpoint->m_physicalCheckpointObject->setOpacity(255);
 	} else {
 		frameName = "inactiveCheckpoint.png"_spr;
-		m_physicalCheckpointObject->setOpacity(
+		m_checkpoint->m_physicalCheckpointObject->setOpacity(
 			Mod::get()->getSettingValue<double>("inactive-checkpoint-opacity") *
 			255
 		);
 	}
-	m_physicalCheckpointObject->setDisplayFrame(
+	m_checkpoint->m_physicalCheckpointObject->setDisplayFrame(
 		CCSpriteFrameCache::get()->spriteFrameByName(frameName)
 	);
-}
-
-GameObject* PersistentCheckpoint::getPhysicalObject() {
-	return m_physicalCheckpointObject;
 }

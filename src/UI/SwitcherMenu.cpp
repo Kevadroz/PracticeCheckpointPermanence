@@ -1,21 +1,26 @@
 #include "SwitcherMenu.hpp"
 
-#if defined(GEODE_IS_DESKTOP)
-#define SWITCHER_SCALE .75f
-#else
-#define SWITCHER_SCALE 1.5f
-#endif
-
 SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	CCDirector* director = CCDirector::sharedDirector();
 	CCSize winSize = director->getWinSize();
 
+	CCSize size = CCSizeMake(80, 80);
+
 	SwitcherMenu* menu = new SwitcherMenu();
-	menu->setContentSize(CCSizeMake(80, 80));
-	menu->setScale(SWITCHER_SCALE);
+	menu->setContentSize(size);
+	menu->setScale(getSwitcherScale());
 	menu->setPosition(getSwitcherPosition(director));
 	menu->setZOrder(15);
 	menu->setID("switcher_menu"_spr);
+
+	menu->m_buttonMenu = CCMenu::create();
+	menu->m_labelMenu = CCMenu::create();
+	menu->m_buttonMenu->setContentSize(size);
+	menu->m_labelMenu->setContentSize(size);
+	menu->m_buttonMenu->setID("buttons");
+	menu->m_labelMenu->setID("labels");
+	menu->m_labelMenu->setTouchEnabled(false);
+	menu->m_buttonMenu->setTouchEnabled(false);
 
 	CCSprite* nextSpr =
 		CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
@@ -30,27 +35,24 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	AxisLayoutOptions* previousLayoutOptions = AxisLayoutOptions::create();
 	previousLayoutOptions->setNextGap(5.f);
 
-	CCNode* nextBtn;
-	CCNode* previousBtn;
-
 	if (playLayer != nullptr) {
-		nextBtn = CCMenuItemExt::createSpriteExtra(
+		menu->m_nextBtn = CCMenuItemExt::createSpriteExtra(
 			nextSpr, [playLayer](CCObject* sender) { playLayer->nextCheckpoint(); }
 		);
 
-		previousBtn = CCMenuItemExt::createSpriteExtra(
+		menu->m_previousBtn = CCMenuItemExt::createSpriteExtra(
 			previousSpr,
 			[playLayer](CCObject* sender) { playLayer->previousCheckpoint(); }
 		);
 	} else {
-		nextBtn = nextSpr;
-		previousBtn = previousSpr;
+		menu->m_nextBtn = nextSpr;
+		menu->m_previousBtn = previousSpr;
 	}
-	nextBtn->setID("next");
-	nextBtn->setLayoutOptions(nextLayoutOptions);
+	menu->m_nextBtn->setID("next");
+	menu->m_nextBtn->setLayoutOptions(nextLayoutOptions);
 
-	previousBtn->setID("previous");
-	previousBtn->setLayoutOptions(previousLayoutOptions);
+	menu->m_previousBtn->setID("previous");
+	menu->m_previousBtn->setLayoutOptions(previousLayoutOptions);
 
 	const char* checkpointLabelString;
 	const char* layerLabelString;
@@ -79,13 +81,19 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->m_layerLabel->setID("layer-label");
 	menu->m_layerLabel->setScale(.6f);
 
+	menu->addChildAtPosition(menu->m_buttonMenu, geode::Anchor::Center);
+	menu->addChildAtPosition(menu->m_labelMenu, geode::Anchor::Center);
 	menu->addChildAtPosition(menu->m_checkpointSprite, geode::Anchor::Center);
-	menu->addChildAtPosition(previousBtn, geode::Anchor::Center, ccp(-25, 0));
-	menu->addChildAtPosition(nextBtn, geode::Anchor::Center, ccp(25, 0));
-	menu->addChildAtPosition(
+	menu->m_buttonMenu->addChildAtPosition(
+		menu->m_previousBtn, geode::Anchor::Center, ccp(-25, 0)
+	);
+	menu->m_buttonMenu->addChildAtPosition(
+		menu->m_nextBtn, geode::Anchor::Center, ccp(25, 0)
+	);
+	menu->m_labelMenu->addChildAtPosition(
 		menu->m_checkpointLabel, geode::Anchor::Center, ccp(0, -28)
 	);
-	menu->addChildAtPosition(
+	menu->m_labelMenu->addChildAtPosition(
 		menu->m_layerLabel, geode::Anchor::Center, ccp(0, 31)
 	);
 
@@ -137,10 +145,16 @@ CCPoint getSwitcherPosition(CCDirector* director) {
 	Mod* mod = Mod::get();
 	return ccp(
 		mod->getSavedValue<double>(
-			"switcherMenuPositionX", director->getScreenLeft() + 45.f
+			"switcherMenuPositionX", director->getScreenLeft() + SWITCHER_OFFSET_X
 		),
 		mod->getSavedValue<double>(
-			"switcherMenuPositionY", director->getScreenTop() - 50.f
+			"switcherMenuPositionY", director->getScreenTop() - SWITCHER_OFFSET_Y
 		)
+	);
+}
+
+float getSwitcherScale() {
+	return Mod::get()->getSavedValue<double>(
+		"switcherMenuScale", SWITCHER_SCALE
 	);
 }

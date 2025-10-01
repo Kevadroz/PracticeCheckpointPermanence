@@ -19,6 +19,11 @@ bool ModPlayLayer::init(
 
 	registerKeybindListeners();
 
+	if (m_isPracticeMode) {
+		updateSaveLayerCount();
+		deserializeCheckpoints();
+	}
+
 	return true;
 }
 
@@ -49,13 +54,13 @@ void ModPlayLayer::resetLevel() {
 				m_fields->m_activeCheckpoint - 1
 			)
 		);
-		m_checkpointArray->addObject(checkpoint);
+		m_checkpointArray->addObject(checkpoint->m_checkpoint);
 	}
 
 	PlayLayer::resetLevel();
 
 	if (checkpoint != nullptr)
-		m_checkpointArray->removeObject(checkpoint);
+		m_checkpointArray->removeObject(checkpoint->m_checkpoint);
 
 	// union {
 	// 	float f;
@@ -65,9 +70,13 @@ void ModPlayLayer::resetLevel() {
 
 void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 	PersistentCheckpoint* persistentCheckpoint = nullptr;
-	if (m_fields->m_persistentCheckpointArray->containsObject(checkpoint))
-		persistentCheckpoint =
-			reinterpret_cast<PersistentCheckpoint*>(checkpoint);
+	for (PersistentCheckpoint* perCheckpoint : CCArrayExt<PersistentCheckpoint*>(
+			  m_fields->m_persistentCheckpointArray
+		  ))
+		if (perCheckpoint->m_checkpoint == checkpoint) {
+			persistentCheckpoint = perCheckpoint;
+			break;
+		}
 
 	if (persistentCheckpoint != nullptr) {
 		m_timePlayed = persistentCheckpoint->m_time;
@@ -90,6 +99,9 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 
 void ModPlayLayer::togglePracticeMode(bool enabled) {
 	PlayLayer::togglePracticeMode(enabled);
+
+	if (m_fields->m_persistentCheckpointArray == nullptr)
+		return;
 
 	m_fields->m_activeSaveLayer = 0;
 
