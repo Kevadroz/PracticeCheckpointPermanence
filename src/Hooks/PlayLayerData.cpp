@@ -114,7 +114,7 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 		if (levelVersion != m_level->m_levelVersion)
 			return std::nullopt;
 	} else {
-		size_t levelStringHash;
+		uint64_t levelStringHash;
 		stream >> levelStringHash;
 
 		if (!m_fields->m_levelStringHash.has_value())
