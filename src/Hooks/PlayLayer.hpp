@@ -5,12 +5,16 @@
 #include <Geode/binding/CheckpointObject.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <functional>
+#ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
+#endif
 #include <optional>
 #include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 
 using namespace geode::prelude;
+#ifndef GEODE_IS_IOS
 using namespace keybinds;
+#endif
 using namespace persistenceAPI;
 
 // Copied from PlatformerSaves

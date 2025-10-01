@@ -5,7 +5,9 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/binding/UILayer.hpp>
 #include <Geode/ui/Layout.hpp>
+#ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
+#endif
 
 $execute {
 	Mod* mod = Mod::get();
@@ -249,8 +251,9 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 
 // Code adapted from the Rewind mod https://github.com/undefined06855/Rewind
 void createButtonBindsLabel(
-	CCNode* parent, const keybinds::ActionID& action, bool right
+	CCNode* parent, const std::string& action, bool right
 ) {
+	#ifndef GEODE_IS_IOS
 	CCNodeRGBA* bindContainer = cocos2d::CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
@@ -278,4 +281,5 @@ void createButtonBindsLabel(
 		);
 	}
 	bindContainer->setCascadeOpacityEnabled(true);
+	#endif
 }

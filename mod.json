@@ -15,7 +15,11 @@
 		"source": "https://github.com/Kevadroz/PracticeCheckpointPermanence"
 	},
 	"dependencies": {
-		"geode.custom-keybinds": ">=v1.10.0",
+		"geode.custom-keybinds": {
+			"version": ">=v1.10.0",
+			"importance": "required",
+			"platforms": ["win", "android", "mac"]
+		},
 		"geode.node-ids": ">=v1.20.0",
 		"sabe.persistenceapi": ">=v1.0.0"
 	},
