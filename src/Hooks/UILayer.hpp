@@ -3,7 +3,9 @@
 #include "PlayLayer.hpp"
 
 #include <Geode/modify/UILayer.hpp>
+#ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
+#endif
 
 using namespace geode::prelude;
 
@@ -25,5 +27,5 @@ CCNodeRGBA* createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLaye
 CCNodeRGBA* createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer);
 
 void createButtonBindsLabel(
-	CCNode* parent, const keybinds::ActionID& action, bool right
+	CCNode* parent, const std::string& action, bool right
 );

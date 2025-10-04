@@ -2,6 +2,8 @@
 	"geode": "4.8.0",
 	"gd": {
 		"win": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074",
 		"android": "2.2074"
 	},
 	"id": "kevadroz.practicecheckpointpermanence",
@@ -13,9 +15,13 @@
 		"source": "https://github.com/Kevadroz/PracticeCheckpointPermanence"
 	},
 	"dependencies": {
-		"geode.custom-keybinds": ">=v1.10.0",
+		"geode.custom-keybinds": {
+			"version": ">=v1.10.0",
+			"importance": "required",
+			"platforms": ["win", "android", "mac"]
+		},
 		"geode.node-ids": ">=v1.20.0",
-		"sabe.persistenceapi": ">=v1.0.0"
+		"sabe.persistenceapi": ">=v1.1.0"
 	},
 	"resources": {
 		"spritesheets": {

@@ -103,18 +103,7 @@ void PersistentCheckpoint::serialize(Stream& out) {
 	out << m_time;
 	out << m_percent;
 
-	// PersistenceAPI headers are broken on current Android Geode
-#if defined(GEODE_IS_ANDROID)
-	unsigned int l_size = m_persistentItemCountMap.size();
-	out.write(reinterpret_cast<char*>(&l_size), 4);
-	for (geode::stl::pair<int, int> l_pair : m_persistentItemCountMap) {
-		out.write(reinterpret_cast<char*>(&l_pair.first), sizeof(int));
-		out.write(reinterpret_cast<char*>(&l_pair.second), sizeof(int));
-	}
-#else
 	out << m_persistentItemCountMap;
-#endif
-
 	out << m_persistentTimerItemSet;
 }
 
