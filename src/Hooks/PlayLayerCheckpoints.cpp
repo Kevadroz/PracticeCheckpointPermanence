@@ -76,7 +76,9 @@ void ModPlayLayer::storePersistentCheckpoint(PersistentCheckpoint* checkpoint) {
 	if (array->count() > 0)
 		for (PersistentCheckpoint* arrayCheckpoint :
 			  CCArrayExt<PersistentCheckpoint*>(array)) {
-			if (arrayCheckpoint->m_time > checkpoint->m_time)
+			if (m_isPlatformer
+					 ? arrayCheckpoint->m_time > checkpoint->m_time
+					 : arrayCheckpoint->m_percent > checkpoint->m_percent)
 				break;
 			index++;
 		}
