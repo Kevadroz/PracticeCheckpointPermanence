@@ -21,7 +21,7 @@
 			"platforms": ["win", "android", "mac"]
 		},
 		"geode.node-ids": ">=v1.20.0",
-		"sabe.persistenceapi": ">=v1.0.0"
+		"sabe.persistenceapi": ">=v1.1.0"
 	},
 	"resources": {
 		"spritesheets": {

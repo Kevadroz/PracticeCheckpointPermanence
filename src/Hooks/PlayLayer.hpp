@@ -51,7 +51,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 		unsigned int m_activeSaveLayer = 0;
 		unsigned int m_saveLayerCount = 0;
 
-		std::optional<uint64_t> m_levelStringHash;
+		std::optional<size_t> m_levelStringHash;
 	};
 
 	// Hooks
