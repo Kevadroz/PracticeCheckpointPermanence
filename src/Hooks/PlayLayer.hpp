@@ -2,13 +2,13 @@
 #include "../PersistentCheckpoint.hpp"
 #include "sabe.persistenceapi/include/util/Stream.hpp"
 
-#include <Geode/binding/CheckpointObject.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <functional>
+#include <variant>
+#include <optional>
 #ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 #endif
-#include <optional>
 #include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 
 using namespace geode::prelude;
@@ -40,9 +40,19 @@ using namespace persistenceAPI;
 
 const std::hash<std::string> c_stringHasher;
 
+enum LoadError : char {
+	None,
+	Crash,
+	OutdatedData,
+	NewData,
+	OtherPlatform,
+	LevelVersionMismatch,
+};
+
 class $modify(ModPlayLayer, PlayLayer) {
 	struct Fields {
 		bool m_startedLoadingObjects = false;
+		LoadError m_loadError = LoadError::None;
 
 		cocos2d::CCArray* m_persistentCheckpointArray = nullptr;
 		cocos2d::CCSpriteBatchNode* m_persistentCheckpointBatchNode = nullptr;
@@ -75,8 +85,10 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void serializeCheckpoints();
 	void deserializeCheckpoints();
 	void unloadPersistentCheckpoints();
-	std::optional<unsigned int> verifySaveStream(persistenceAPI::Stream& stream);
-	std::optional<unsigned int> verifySavePath(std::filesystem::path path);
+	std::variant<unsigned int, LoadError>
+	verifySaveStream(persistenceAPI::Stream& stream);
+	std::variant<unsigned int, LoadError>
+	verifySavePath(std::filesystem::path path);
 	std::filesystem::path getSavePath();
 
 	// Checkpoints

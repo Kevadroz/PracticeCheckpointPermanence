@@ -63,18 +63,47 @@ void ModUILayer::updateSwitcher() {
 	Mod* mod = Mod::get();
 
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+	LoadError loadError = playLayer->m_fields->m_loadError;
+
 	m_fields->m_switcherMenu->setVisible(
 		playLayer->m_isPracticeMode &&
 		(playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
-		 playLayer->m_fields->m_activeSaveLayer > 0)
+		 playLayer->m_fields->m_activeSaveLayer > 0 ||
+		 loadError != LoadError::None)
 	);
 
-	m_fields->m_switcherMenu->m_checkpointLabel->setString(
-		fmt::format(
+	if (loadError == LoadError::None)
+		m_fields->m_switcherMenu->setColor(ccWHITE);
+	else
+		m_fields->m_switcherMenu->setColor(ccc3(224, 111, 111));
+
+	std::string checkpointString;
+	switch (loadError) {
+	case None:
+		checkpointString = fmt::format(
 			"{}/{}", playLayer->m_fields->m_activeCheckpoint,
 			playLayer->m_fields->m_persistentCheckpointArray->count()
-		)
-			.c_str()
+		);
+		break;
+	case Crash:
+		checkpointString = "BAD DATA";
+		break;
+	case OutdatedData:
+		checkpointString = "OUTDATED";
+		break;
+	case NewData:
+		checkpointString = "NEW VERS";
+		break;
+	case OtherPlatform:
+		checkpointString = "PLATFORM";
+		break;
+	case LevelVersionMismatch:
+		checkpointString = "LVL VERS";
+		break;
+	}
+
+	m_fields->m_switcherMenu->m_checkpointLabel->setString(
+		checkpointString.c_str()
 	);
 	m_fields->m_switcherMenu->m_layerLabel->setString(
 		fmt::format(

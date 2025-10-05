@@ -54,6 +54,11 @@ void ModPlayLayer::markPersistentCheckpoint() {
 	if (m_playerDied || m_levelEndAnimationStarted)
 		return;
 
+	if (m_fields->m_loadError != LoadError::None) {
+		updateModUI();
+		return;
+	}
+
 	PersistentCheckpoint* checkpoint =
 		PersistentCheckpoint::createFromCheckpoint(
 			createCheckpoint(), m_attempts, m_timePlayed, getCurrentPercent(),
@@ -95,6 +100,11 @@ void ModPlayLayer::storePersistentCheckpoint(PersistentCheckpoint* checkpoint) {
 void ModPlayLayer::removePersistentCheckpoint(
 	PersistentCheckpoint* checkpoint
 ) {
+	if (m_fields->m_loadError != LoadError::None) {
+		updateModUI();
+		return;
+	}
+
 	bool switchCheckpoint = m_fields->m_activeCheckpoint > 0 &&
 									m_fields->m_persistentCheckpointArray->objectAtIndex(
 										m_fields->m_activeCheckpoint - 1
@@ -112,6 +122,11 @@ void ModPlayLayer::removePersistentCheckpoint(
 }
 
 void ModPlayLayer::removeCurrentPersistentCheckpoint() {
+	if (m_fields->m_loadError != LoadError::None) {
+		updateModUI();
+		return;
+	}
+
 	if (m_fields->m_activeCheckpoint > 0) {
 		PersistentCheckpoint* checkpoint =
 			reinterpret_cast<PersistentCheckpoint*>(

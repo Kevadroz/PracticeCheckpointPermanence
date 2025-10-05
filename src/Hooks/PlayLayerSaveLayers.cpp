@@ -1,5 +1,6 @@
 #include "PlayLayer.hpp"
 #include <filesystem>
+#include <variant>
 
 void ModPlayLayer::nextSaveLayer() {
 	if (m_fields->m_saveLayerCount == 0)
@@ -96,11 +97,15 @@ void ModPlayLayer::updateSaveLayerCount() {
 
 	while (true) {
 		m_fields->m_activeSaveLayer = m_fields->m_saveLayerCount;
-		std::filesystem::path path = getSavePath();
-		if (verifySavePath(path).has_value())
-			m_fields->m_saveLayerCount++;
-		else
+
+		std::variant<unsigned int, LoadError> verificationResult =
+			verifySavePath(getSavePath());
+
+		if (std::holds_alternative<LoadError>(verificationResult) &&
+			 std::get<LoadError>(verificationResult) == LoadError::None)
 			break;
+		else
+			m_fields->m_saveLayerCount++;
 	}
 
 	m_fields->m_activeSaveLayer =

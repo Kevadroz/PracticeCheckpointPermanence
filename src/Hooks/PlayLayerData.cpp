@@ -1,13 +1,16 @@
 #include "PlayLayer.hpp"
 #include "sabe.persistenceapi/include/util/Stream.hpp"
-#include <Geode/Enums.hpp>
 #include <filesystem>
 #include <optional>
+#include <variant>
 
 const char SAVE_HEADER[] = "PCP SAVE FILE";
 const unsigned int CURRENT_VERSION = 1;
 
 void ModPlayLayer::serializeCheckpoints() {
+	if (m_fields->m_loadError != LoadError::None)
+		return;
+
 	unsigned int checkpointCount =
 		m_fields->m_persistentCheckpointArray->count();
 
@@ -48,6 +51,7 @@ void ModPlayLayer::serializeCheckpoints() {
 
 void ModPlayLayer::deserializeCheckpoints() {
 	unloadPersistentCheckpoints();
+	m_fields->m_loadError = LoadError::None;
 
 	std::string savePath = getSavePath().string();
 	if (!std::filesystem::exists(savePath))
@@ -56,11 +60,17 @@ void ModPlayLayer::deserializeCheckpoints() {
 	persistenceAPI::Stream stream;
 	stream.setFile(savePath, 2);
 
-	std::optional<unsigned int> verificationResult = verifySaveStream(stream);
-	if (!verificationResult.has_value())
+	std::variant<unsigned int, LoadError> verificationResult =
+		verifySaveStream(stream);
+	if (std::holds_alternative<LoadError>(verificationResult)) {
+		stream.end();
+		m_fields->m_loadError = std::get<LoadError>(verificationResult);
+		log::debug("LoadError: {}", (unsigned int)m_fields->m_loadError);
+		updateModUI();
 		return;
+	}
 
-	unsigned int saveVersion = verificationResult.value();
+	unsigned int saveVersion = std::get<unsigned int>(verificationResult);
 
 	removeAllCheckpoints();
 
@@ -70,7 +80,18 @@ void ModPlayLayer::deserializeCheckpoints() {
 	for (unsigned int i = checkpointCount; i > 0; i--) {
 		PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
 
+		// try {
 		checkpoint->deserialize(stream, saveVersion);
+		// } catch (...) { // TODO maybe implement exception logging
+		// 	unloadPersistentCheckpoints();
+		// 	log::error("Exception thrown while loading checkpoint");
+
+		// 	stream.end();
+
+		// 	m_fields->m_loadError = LoadError::Crash;
+		// 	updateModUI();
+		// 	return;
+		// }
 		checkpoint->createPhysicalObject();
 
 		storePersistentCheckpoint(checkpoint);
@@ -92,27 +113,30 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 	m_fields->m_persistentCheckpointArray->removeAllObjects();
 }
 
-std::optional<unsigned int>
+std::variant<unsigned int, LoadError>
 ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 	stream.ignore(sizeof(SAVE_HEADER));
 
 	unsigned int saveVersion;
 	stream >> saveVersion;
 
+	if (saveVersion < 1)
+		return LoadError::OutdatedData;
+
 	if (saveVersion > CURRENT_VERSION)
-		return std::nullopt;
+		return LoadError::NewData;
 
 	char savedPlatform;
 	stream >> savedPlatform;
 
 	if (savedPlatform != PLATFORM)
-		return std::nullopt;
+		return LoadError::OtherPlatform;
 
 	if (m_level->m_levelType != GJLevelType::Editor) {
 		unsigned int levelVersion;
 		stream >> levelVersion;
 		if (levelVersion != m_level->m_levelVersion)
-			return std::nullopt;
+			return LoadError::LevelVersionMismatch;
 	} else {
 		size_t levelStringHash;
 		stream >> levelStringHash;
@@ -124,22 +148,22 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 			// 	"Bad Level Hash: {} != {}", levelStringHash,
 			// 	m_fields->m_levelStringHash.value()
 			// );
-			return std::nullopt;
+			return LoadError::LevelVersionMismatch;
 		}
 	}
 
 	return saveVersion;
 }
 
-std::optional<unsigned int>
+std::variant<unsigned int, LoadError>
 ModPlayLayer::verifySavePath(std::filesystem::path path) {
 	if (!std::filesystem::exists(path))
-		return std::nullopt;
+		return LoadError::None;
 
 	persistenceAPI::Stream stream;
 	stream.setFile(path.string(), 2);
 
-	std::optional<unsigned int> result = verifySaveStream(stream);
+	std::variant<unsigned int, LoadError> result = verifySaveStream(stream);
 	stream.end();
 
 	return result;

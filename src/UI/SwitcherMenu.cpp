@@ -8,6 +8,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 
 	SwitcherMenu* menu = new SwitcherMenu();
 	menu->setContentSize(size);
+	menu->setCascadeColorEnabled(true);
 	menu->setScale(getSwitcherScale());
 	menu->setPosition(getSwitcherPosition(director));
 	menu->setZOrder(15);

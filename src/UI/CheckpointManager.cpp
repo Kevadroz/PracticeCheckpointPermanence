@@ -39,7 +39,8 @@ bool CheckpointManager::setup() {
 		CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png");
 	m_deleteButton = CCMenuItemExt::createSpriteExtra(
 		deleteSprite, [this](CCMenuItemSpriteExtra* deleteButton) {
-			if (m_playLayer->m_fields->m_persistentCheckpointArray->count() > 0)
+			if (m_playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
+				 m_playLayer->m_fields->m_loadError != LoadError::None)
 				geode::createQuickPopup(
 					"Delete All",
 					"Delete all saved checkpoints for this layer?\n"
@@ -277,15 +278,45 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 
 	if (m_playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
 		const char* text;
-		if (saveLayer == 0)
-			text = "No checkpoints saved in this level.";
-		else
-			text = "No checkpoints saved in the current layer.";
+		switch (m_playLayer->m_fields->m_loadError) {
+		case None:
+			if (saveLayer == 0)
+				text = "No checkpoints saved in this level.";
+			else
+				text = "No checkpoints saved in the current layer.";
+			break;
+		case Crash:
+			text = "Error while loading saved checkpoints.";
+			break;
+		case OutdatedData:
+			text = "The version of the mod the checkpoints were saved in is no "
+					 "longer supported.";
+			break;
+		case NewData:
+			text = "The checkpoints were saved with a newer version of the mod.";
+			break;
+		case OtherPlatform:
+			text = "The checkpoints were saved in another platform or device.";
+			break;
+		case LevelVersionMismatch:
+			text = "The level version has changed, the checkpoints cannot "
+					 "be loaded.";
+			break;
+		}
+
+		bool hasLoadError = m_playLayer->m_fields->m_loadError != LoadError::None;
+
 		m_emptyListLabel->setString(text);
 		m_emptyListLabel->setVisible(true);
+		m_emptyListLabel->setColor(hasLoadError ? ccc3(224, 111, 111) : ccWHITE);
 
-		m_deleteButton->setColor(ccc3(90, 90, 90));
-		m_deleteButton->setOpacity(200);
+		if (hasLoadError) {
+			m_deleteButton->setColor(ccc3(255, 255, 255));
+			m_deleteButton->setOpacity(255);
+		} else {
+			m_deleteButton->setColor(ccc3(90, 90, 90));
+			m_deleteButton->setOpacity(200);
+		}
 	} else {
 		m_emptyListLabel->setVisible(false);
 
