@@ -1,3 +1,10 @@
+# 1.2.0
+- Added Mac and iOS support \[[PR #2](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/2) by [hiimjasmine00](https://github.com/hiimjasmine00) and [RayDeeUx
+](https://github.com/RayDeeUx) \]
+- Added Persistent Checkpoints to the Progress bar
+- When a save cannot be loaded the switcher will turn red with a short message and the pcp manager will now have a description of the problem
+- Fixed new checkpoints not getting inserted in the correct position on classic mode on some conditions
+
 # 1.1.0
 - Added Android support
 - Added scale options for the switcher in the Practice Options menu
