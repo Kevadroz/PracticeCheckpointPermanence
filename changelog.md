@@ -1,3 +1,6 @@
+# 1.2.1
+- Fix crash on online levels
+
 # 1.2.0
 - Added Mac and iOS support \[[PR #2](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/2) by [hiimjasmine00](https://github.com/hiimjasmine00) and [RayDeeUx
 ](https://github.com/RayDeeUx) \]
