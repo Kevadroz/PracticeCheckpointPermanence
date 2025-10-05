@@ -45,7 +45,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 
 	m_fields->m_activeCheckpoint = nextCheckpoint;
 
-	updateUISwitcher();
+	updateModUI();
 
 	resetLevel();
 }
@@ -66,7 +66,7 @@ void ModPlayLayer::markPersistentCheckpoint() {
 	if (m_fields->m_persistentCheckpointArray->count() == 1)
 		updateSaveLayerCount();
 
-	updateUISwitcher();
+	updateModUI();
 }
 
 void ModPlayLayer::storePersistentCheckpoint(PersistentCheckpoint* checkpoint) {
@@ -106,7 +106,7 @@ void ModPlayLayer::removePersistentCheckpoint(
 	if (switchCheckpoint)
 		switchCurrentCheckpoint(m_fields->m_activeCheckpoint - 1, true);
 	else
-		updateUISwitcher();
+		updateModUI();
 
 	serializeCheckpoints();
 }
@@ -133,5 +133,5 @@ void ModPlayLayer::swapPersistentCheckpoints(
 		m_fields->m_activeCheckpoint = left + 1;
 
 	serializeCheckpoints();
-	updateUISwitcher();
+	updateModUI();
 }

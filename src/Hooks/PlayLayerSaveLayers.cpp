@@ -32,7 +32,7 @@ void ModPlayLayer::switchCurrentSaveLayer(unsigned int saveLayer) {
 	deserializeCheckpoints();
 
 	if (m_fields->m_activeSaveLayer == m_fields->m_saveLayerCount)
-		updateUISwitcher();
+		updateModUI();
 }
 
 void ModPlayLayer::removeCurrentSaveLayer() {

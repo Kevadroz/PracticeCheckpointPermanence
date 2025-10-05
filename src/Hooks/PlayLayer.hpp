@@ -52,6 +52,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 		unsigned int m_saveLayerCount = 0;
 
 		std::optional<size_t> m_levelStringHash;
+
+		CCNodeRGBA* m_pbCheckpointContainer;
 	};
 
 	// Hooks
@@ -67,7 +69,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 
 	// Custom
 	void registerKeybindListeners();
-	void updateUISwitcher();
+	void updateModUI();
 
 	// Data
 	void serializeCheckpoints();

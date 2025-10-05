@@ -2,11 +2,6 @@
 #include "../UI/CheckpointManager.hpp"
 #include "PlayLayer.hpp"
 
-#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
-#include <Geode/binding/FLAlertLayer.hpp>
-#include <Geode/binding/PauseLayer.hpp>
-#include <Geode/binding/PlayLayer.hpp>
-
 #include <filesystem>
 
 void ModPauseLayer::customSetup() {

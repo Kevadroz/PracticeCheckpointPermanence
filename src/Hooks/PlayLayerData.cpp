@@ -78,7 +78,7 @@ void ModPlayLayer::deserializeCheckpoints() {
 
 	stream.end();
 
-	updateUISwitcher();
+	updateModUI();
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {

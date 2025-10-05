@@ -1,10 +1,6 @@
 #include "UILayer.hpp"
 #include "PlayLayer.hpp"
 
-#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
-#include <Geode/binding/PlayLayer.hpp>
-#include <Geode/binding/UILayer.hpp>
-#include <Geode/ui/Layout.hpp>
 #ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 #endif
@@ -205,7 +201,7 @@ createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 
 	if (playLayer != nullptr)
 		createButtonBindsLabel(button, "create_checkpoint"_spr, false);
-	
+
 	button->setCascadeOpacityEnabled(true);
 	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
 
@@ -253,7 +249,7 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 void createButtonBindsLabel(
 	CCNode* parent, const std::string& action, bool right
 ) {
-	#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_IOS
 	CCNodeRGBA* bindContainer = cocos2d::CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
@@ -281,5 +277,5 @@ void createButtonBindsLabel(
 		);
 	}
 	bindContainer->setCascadeOpacityEnabled(true);
-	#endif
+#endif
 }

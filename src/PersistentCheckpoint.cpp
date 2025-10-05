@@ -102,7 +102,6 @@ void PersistentCheckpoint::serialize(Stream& out) {
 	out << m_attempts;
 	out << m_time;
 	out << m_percent;
-
 	out << m_persistentItemCountMap;
 	out << m_persistentTimerItemSet;
 }

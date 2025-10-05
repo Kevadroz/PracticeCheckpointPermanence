@@ -1,6 +1,19 @@
 #include "PlayLayer.hpp"
 #include "UILayer.hpp"
 
+$execute {
+	new EventListener<SettingChangedFilterV3>(
+		+[](std::shared_ptr<SettingV3> setting) {
+			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+			if (playLayer != nullptr)
+				playLayer->m_fields->m_pbCheckpointContainer->setOpacity(
+					255 * typeinfo_pointer_cast<FloatSettingV3>(setting)->getValue()
+				);
+		},
+		SettingChangedFilterV3(Mod::get(), "progressbar-checkpoint-opacity")
+	);
+}
+
 bool ModPlayLayer::init(
 	GJGameLevel* level, bool useReplay, bool dontCreateObjects
 ) {
@@ -18,6 +31,18 @@ bool ModPlayLayer::init(
 	m_objectLayer->addChild(m_fields->m_persistentCheckpointBatchNode);
 
 	registerKeybindListeners();
+
+	m_fields->m_pbCheckpointContainer = CCNodeRGBA::create();
+	m_fields->m_pbCheckpointContainer->setPosition(
+		ccp(0.f, m_progressBar->getContentHeight() / 2.f)
+	);
+	m_fields->m_pbCheckpointContainer->setCascadeOpacityEnabled(true);
+	m_fields->m_pbCheckpointContainer->setOpacity(
+		255 *
+		Mod::get()->getSettingValue<double>("progressbar-checkpoint-opacity")
+	);
+	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
+	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
 
 	if (m_isPracticeMode) {
 		updateSaveLayerCount();
@@ -110,12 +135,12 @@ void ModPlayLayer::togglePracticeMode(bool enabled) {
 		deserializeCheckpoints();
 	} else {
 		unloadPersistentCheckpoints();
-		updateUISwitcher();
+		updateModUI();
 	}
 }
 
 void ModPlayLayer::registerKeybindListeners() {
-	#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_IOS
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
 			if (m_isPracticeMode && event->isDown()) {
@@ -177,9 +202,42 @@ void ModPlayLayer::registerKeybindListeners() {
 		},
 		"next_layer"_spr
 	);
-	#endif
+#endif
 }
 
-void ModPlayLayer::updateUISwitcher() {
+void ModPlayLayer::updateModUI() {
 	static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
+
+	if (m_isPlatformer)
+		return;
+
+	CCNodeRGBA* container = m_fields->m_pbCheckpointContainer;
+	container->setVisible(m_isPracticeMode);
+	container->removeAllChildren();
+
+	unsigned int currentCheckpoint = 0;
+	float barWidth = m_progressBar->getContentWidth() - 4;
+	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
+			  m_fields->m_persistentCheckpointArray
+		  )) {
+		GameObject* physicalObject =
+			checkpoint->m_checkpoint->m_physicalCheckpointObject;
+		CCSpriteFrame* frame = physicalObject->displayFrame();
+
+		CCSprite* sprite = CCSprite::createWithSpriteFrame(frame);
+		sprite->setScale(
+			m_fields->m_activeCheckpoint == currentCheckpoint + 1 ? .5f : .4f
+		);
+		sprite->setOpacity(physicalObject->getOpacity());
+
+		sprite->setPosition(
+			ccp(barWidth * (checkpoint->m_percent / 100.f) + 2, 0)
+		);
+		container->addChild(sprite);
+
+		currentCheckpoint++;
+	}
+
+	// Update Cascade Opacity (Why is it protected?)
+	container->setOpacity(container->getOpacity());
 }
