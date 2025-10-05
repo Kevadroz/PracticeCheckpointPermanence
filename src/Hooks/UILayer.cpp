@@ -57,7 +57,7 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 }
 
 void ModUILayer::updateSwitcher() {
-	if (m_fields->m_switcherMenu == nullptr)
+	if (m_fields->m_switcherMenu == nullptr || PlayLayer::get() == nullptr)
 		return;
 
 	Mod* mod = Mod::get();

@@ -63,11 +63,12 @@ class $modify(ModPlayLayer, PlayLayer) {
 
 		std::optional<size_t> m_levelStringHash;
 
-		CCNodeRGBA* m_pbCheckpointContainer;
+		CCNodeRGBA* m_pbCheckpointContainer = nullptr;
 	};
 
 	// Hooks
 	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects);
+	void setupHasCompleted();
 	void destructor();
 
 	void processCreateObjectsFromSetup();
@@ -76,6 +77,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void loadFromCheckpoint(CheckpointObject* p0);
 
 	void togglePracticeMode(bool enabled);
+
 
 	// Custom
 	void registerKeybindListeners();

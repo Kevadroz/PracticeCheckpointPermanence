@@ -64,9 +64,10 @@ void ModPlayLayer::deserializeCheckpoints() {
 		verifySaveStream(stream);
 	if (std::holds_alternative<LoadError>(verificationResult)) {
 		stream.end();
+
 		m_fields->m_loadError = std::get<LoadError>(verificationResult);
-		log::debug("LoadError: {}", (unsigned int)m_fields->m_loadError);
 		updateModUI();
+		
 		return;
 	}
 
