@@ -115,6 +115,7 @@ void ModPlayLayer::togglePracticeMode(bool enabled) {
 }
 
 void ModPlayLayer::registerKeybindListeners() {
+	#ifndef GEODE_IS_IOS
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
 			if (m_isPracticeMode && event->isDown()) {
@@ -176,6 +177,7 @@ void ModPlayLayer::registerKeybindListeners() {
 		},
 		"next_layer"_spr
 	);
+	#endif
 }
 
 void ModPlayLayer::updateUISwitcher() {

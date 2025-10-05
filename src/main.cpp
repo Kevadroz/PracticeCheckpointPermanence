@@ -1,10 +1,14 @@
 #include <Geode/Geode.hpp>
+#ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
+#endif
 
 #include <filesystem>
 
 using namespace geode::prelude;
+#ifndef GEODE_IS_IOS
 using namespace keybinds;
+#endif
 
 $execute {
 	std::string dataDir = Mod::get()->getSaveDir().generic_string();
@@ -13,6 +17,7 @@ $execute {
 		fmt::format("{}/saves/editor/", dataDir)
 	);
 
+	#ifndef GEODE_IS_IOS
 	BindManager::get()->registerBindable(
 		{// ID, should be prefixed with mod ID
 		 "create_checkpoint"_spr,
@@ -62,4 +67,5 @@ $execute {
 		 {Keybind::create(KEY_E, Modifier::Alt | Modifier::Shift)},
 		 "PCP"}
 	);
+	#endif
 }
