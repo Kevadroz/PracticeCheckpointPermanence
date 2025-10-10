@@ -14,6 +14,11 @@
 	"links": {
 		"source": "https://github.com/Kevadroz/PracticeCheckpointPermanence"
 	},
+	"tags": [
+		"gameplay",
+		"enhancement",
+		"utility"
+	],
 	"dependencies": {
 		"geode.custom-keybinds": {
 			"version": ">=v1.10.0",
