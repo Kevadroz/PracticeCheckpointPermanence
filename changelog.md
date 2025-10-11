@@ -1,4 +1,4 @@
-# Unreleased
+# 1.2.2
 - Add Mod tags
 
 # 1.2.1
