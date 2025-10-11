@@ -23,7 +23,7 @@ void ModPlayLayer::serializeCheckpoints() {
 	unsigned int version = CURRENT_VERSION;
 
 	persistenceAPI::Stream stream;
-	stream.setFile(getSavePath().string(), 2, true);
+	stream.setFile(string::pathToString(getSavePath()), 2, true);
 
 	stream.write((char*)SAVE_HEADER, sizeof(SAVE_HEADER));
 	stream << version;
@@ -53,7 +53,7 @@ void ModPlayLayer::deserializeCheckpoints() {
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
-	std::string savePath = getSavePath().string();
+	std::string savePath = string::pathToString(getSavePath());
 	if (!std::filesystem::exists(savePath))
 		return;
 
@@ -162,7 +162,7 @@ ModPlayLayer::verifySavePath(std::filesystem::path path) {
 		return LoadError::None;
 
 	persistenceAPI::Stream stream;
-	stream.setFile(path.string(), 2);
+	stream.setFile(string::pathToString(path), 2);
 
 	std::variant<unsigned int, LoadError> result = verifySaveStream(stream);
 	stream.end();
@@ -171,7 +171,7 @@ ModPlayLayer::verifySavePath(std::filesystem::path path) {
 }
 
 std::filesystem::path ModPlayLayer::getSavePath() {
-	std::string savePath = Mod::get()->getSaveDir().generic_string();
+	std::string savePath = string::pathToString(Mod::get()->getSaveDir());
 	switch (m_level->m_levelType) {
 	case GJLevelType::Editor: {
 		std::string cleanLevelName = m_level->m_levelName;

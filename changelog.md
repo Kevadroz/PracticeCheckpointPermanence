@@ -1,5 +1,6 @@
 # 1.2.2
 - Add Mod tags
+- Replace `path::string()` with `string::pathToString()`
 
 # 1.2.1
 - Fix crash on online levels
