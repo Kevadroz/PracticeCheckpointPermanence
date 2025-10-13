@@ -31,9 +31,7 @@ void ModPlayLayer::switchCurrentSaveLayer(unsigned int saveLayer) {
 		std::clamp(saveLayer, (unsigned int)0, m_fields->m_saveLayerCount);
 
 	deserializeCheckpoints();
-
-	if (m_fields->m_activeSaveLayer == m_fields->m_saveLayerCount)
-		updateModUI();
+	updateModUI();
 }
 
 void ModPlayLayer::removeCurrentSaveLayer() {
@@ -62,6 +60,7 @@ void ModPlayLayer::removeCurrentSaveLayer() {
 
 	updateSaveLayerCount();
 	deserializeCheckpoints();
+	updateModUI();
 }
 
 void ModPlayLayer::swapSaveLayers(unsigned int left, unsigned int right) {

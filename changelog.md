@@ -1,3 +1,7 @@
+# Unreleased
+- Fix crash with Platformer Saves \[[Issue #3](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/3)\]
+- Fixed compat with mods that start levels in practice mode
+
 # 1.2.2
 - Add Mod tags
 - Replace `path::string()` with `string::pathToString()`
@@ -15,6 +19,7 @@
 # 1.1.0
 - Added Android support
 - Added scale options for the switcher in the Practice Options menu
+- Added opacity options for the switcher \[[Issue #1](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/1)\]
 - Fix practice buttons not following the opacity setting properly
 - Fixed a potential crash with mods that start levels in practice mode
 

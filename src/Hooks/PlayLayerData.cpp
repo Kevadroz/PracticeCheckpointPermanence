@@ -66,7 +66,6 @@ void ModPlayLayer::deserializeCheckpoints() {
 		stream.end();
 
 		m_fields->m_loadError = std::get<LoadError>(verificationResult);
-		updateModUI();
 		
 		return;
 	}
@@ -90,7 +89,6 @@ void ModPlayLayer::deserializeCheckpoints() {
 		// 	stream.end();
 
 		// 	m_fields->m_loadError = LoadError::Crash;
-		// 	updateModUI();
 		// 	return;
 		// }
 		checkpoint->createPhysicalObject();
@@ -99,8 +97,6 @@ void ModPlayLayer::deserializeCheckpoints() {
 	}
 
 	stream.end();
-
-	updateModUI();
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {

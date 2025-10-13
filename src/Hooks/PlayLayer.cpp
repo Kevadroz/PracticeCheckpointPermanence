@@ -32,16 +32,16 @@ bool ModPlayLayer::init(
 
 	registerKeybindListeners();
 
-	if (m_isPracticeMode) {
-		updateSaveLayerCount();
-		deserializeCheckpoints();
-	}
-
 	return true;
 }
 
 void ModPlayLayer::setupHasCompleted() {
 	PlayLayer::setupHasCompleted();
+
+	if (m_isPracticeMode) {
+		updateSaveLayerCount();
+		deserializeCheckpoints();
+	}
 
 	if (m_progressBar == nullptr)
 		return;
@@ -58,8 +58,7 @@ void ModPlayLayer::setupHasCompleted() {
 	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
 	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
 
-	if (m_level->m_levelType == GJLevelType::Saved)
-		updateModUI();
+	updateModUI();
 }
 
 void ModPlayLayer::destructor() {
@@ -138,10 +137,10 @@ void ModPlayLayer::togglePracticeMode(bool enabled) {
 	if (enabled) {
 		updateSaveLayerCount();
 		deserializeCheckpoints();
-	} else {
+	} else
 		unloadPersistentCheckpoints();
-		updateModUI();
-	}
+
+	updateModUI();
 }
 
 void ModPlayLayer::registerKeybindListeners() {
@@ -212,7 +211,7 @@ void ModPlayLayer::registerKeybindListeners() {
 
 void ModPlayLayer::updateModUI() {
 	static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
-	
+
 	if (m_fields->m_pbCheckpointContainer == nullptr)
 		return;
 
