@@ -1,4 +1,4 @@
-# Unreleased
+# 1.2.3
 - Added support for Mod Previews
 - Fix crash with Platformer Saves \[[Issue #3](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/3)\]
 - Fixed compat with mods that start levels in practice mode
