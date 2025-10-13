@@ -4,8 +4,8 @@
 
 #include <Geode/modify/PlayLayer.hpp>
 #include <functional>
-#include <variant>
 #include <optional>
+#include <variant>
 #ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 #endif
@@ -78,7 +78,6 @@ class $modify(ModPlayLayer, PlayLayer) {
 
 	void togglePracticeMode(bool enabled);
 
-
 	// Custom
 	void registerKeybindListeners();
 	void updateModUI();
@@ -111,4 +110,9 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void removeCurrentSaveLayer();
 	void swapSaveLayers(unsigned int left, unsigned int right);
 	void updateSaveLayerCount();
+
+	static void onModify(auto& self) {
+		if (!self.setHookPriorityPost("PlayLayer::setupHasCompleted", Priority::VeryLate))
+			log::warn("Failed to set PlayLayer::setupHasCompleted hook priority!");
+	}
 };

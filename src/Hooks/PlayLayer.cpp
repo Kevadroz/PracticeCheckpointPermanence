@@ -43,6 +43,9 @@ bool ModPlayLayer::init(
 void ModPlayLayer::setupHasCompleted() {
 	PlayLayer::setupHasCompleted();
 
+	if (m_progressBar == nullptr)
+		return;
+
 	m_fields->m_pbCheckpointContainer = CCNodeRGBA::create();
 	m_fields->m_pbCheckpointContainer->setPosition(
 		ccp(0.f, m_progressBar->getContentHeight() / 2.f)
@@ -93,11 +96,6 @@ void ModPlayLayer::resetLevel() {
 
 	if (checkpoint != nullptr)
 		m_checkpointArray->removeObject(checkpoint->m_checkpoint);
-
-	// union {
-	// 	float f;
-	// 	uint32_t u;
-	// } percent = {.f = getCurrentPercent()};
 }
 
 void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
@@ -213,10 +211,10 @@ void ModPlayLayer::registerKeybindListeners() {
 }
 
 void ModPlayLayer::updateModUI() {
+	static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
+	
 	if (m_fields->m_pbCheckpointContainer == nullptr)
 		return;
-
-	static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
 
 	if (m_isPlatformer)
 		return;
