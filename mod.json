@@ -36,6 +36,19 @@
 		}
 	},
 	"settings": {
+		"percentage-display-decimals": {
+			"name": "Displayed decimals for percentages",
+			"type": "int",
+			"default": 2,
+			"min": 0,
+			"max": 8,
+			"control": {
+				"slider": true,
+				"slider-step": 1,
+				"arrows": true,
+				"arrow-step": 1
+			}
+		},
 		"inactive-checkpoint-opacity": {
 			"name": "Inactive Checkpoint Opacity",
 			"type": "float",

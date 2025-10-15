@@ -66,7 +66,7 @@ void ModPlayLayer::deserializeCheckpoints() {
 		stream.end();
 
 		m_fields->m_loadError = std::get<LoadError>(verificationResult);
-		
+
 		return;
 	}
 

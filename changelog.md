@@ -1,3 +1,6 @@
+# Unreleased
+- Added a setting for decimal precision for percentages
+
 # 1.2.3
 - Added support for Mod Previews
 - Fix crash with Platformer Saves \[[Issue #3](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/3)\]

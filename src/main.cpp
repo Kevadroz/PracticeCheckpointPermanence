@@ -17,7 +17,7 @@ $execute {
 		fmt::format("{}/saves/editor/", dataDir)
 	);
 
-	#ifndef GEODE_IS_IOS
+#ifndef GEODE_IS_IOS
 	BindManager::get()->registerBindable(
 		{// ID, should be prefixed with mod ID
 		 "create_checkpoint"_spr,
@@ -67,5 +67,5 @@ $execute {
 		 {Keybind::create(KEY_E, Modifier::Alt | Modifier::Shift)},
 		 "PCP"}
 	);
-	#endif
+#endif
 }
