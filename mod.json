@@ -49,6 +49,12 @@
 				"arrow-step": 1
 			}
 		},
+		"supress-auto-checkpoints": {
+			"name": "Supress Auto Checkpoints",
+			"type": "bool",
+			"default": true,
+			"description": "Disables auto checkpoints when a persistent checkpoint is active"
+		},
 		"inactive-checkpoint-opacity": {
 			"name": "Inactive Checkpoint Opacity",
 			"type": "float",

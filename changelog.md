@@ -1,5 +1,6 @@
 # Unreleased
 - Added a setting for decimal precision for percentages
+- Added an option to disable auto checkpoints when a persistent checkpoint is active (enabled by default)
 
 # 1.2.3
 - Added support for Mod Previews

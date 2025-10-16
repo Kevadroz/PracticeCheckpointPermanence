@@ -6,16 +6,16 @@
 #include <functional>
 #include <optional>
 #include <variant>
+#include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 #ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 #endif
-#include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 
 using namespace geode::prelude;
+using namespace persistenceAPI;
 #ifndef GEODE_IS_IOS
 using namespace keybinds;
 #endif
-using namespace persistenceAPI;
 
 // Copied from PlatformerSaves
 #if defined(GEODE_IS_WINDOWS)

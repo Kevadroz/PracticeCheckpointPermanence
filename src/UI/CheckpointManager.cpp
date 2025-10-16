@@ -431,7 +431,7 @@ CCNode* createCheckpointCell(
 				progressString = fmt::format("{}h", time / 3600) + progressString;
 		}
 	} else {
-		int decimals = Mod::get()->getSettingValue<int>("percentage-display-decimals");
+		int decimals = Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
 		progressString = fmt::format("{:.{}f}%", (float)checkpoint->m_percent, decimals);
 	}
 
