@@ -1,4 +1,5 @@
 #include "CheckpointManager.hpp"
+#include "../Hooks/PlayLayer.hpp"
 #include "Geode/ui/Layout.hpp"
 
 #include <Geode/binding/CCMenuItemSpriteExtra.hpp>
@@ -18,9 +19,9 @@ CheckpointManager* CheckpointManager::create() {
 }
 
 bool CheckpointManager::setup() {
-	m_playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	bool hasCheckpoints =
-		m_playLayer->m_fields->m_persistentCheckpointArray->count() > 0;
+		playLayer->m_fields->m_persistentCheckpointArray->count() > 0;
 
 	m_noElasticity = true;
 
@@ -38,16 +39,16 @@ bool CheckpointManager::setup() {
 	CCSprite* deleteSprite =
 		CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png");
 	m_deleteButton = CCMenuItemExt::createSpriteExtra(
-		deleteSprite, [this](CCMenuItemSpriteExtra* deleteButton) {
-			if (m_playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
-				 m_playLayer->m_fields->m_loadError != LoadError::None)
+		deleteSprite, [this, playLayer](CCMenuItemSpriteExtra* deleteButton) {
+			if (playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
+				 playLayer->m_fields->m_loadError != LoadError::None)
 				geode::createQuickPopup(
 					"Delete All",
 					"Delete all saved checkpoints for this layer?\n"
 					"This action cannot be undone.",
-					"Cancel", "Delete", [this](auto, bool confirmed) {
+					"Cancel", "Delete", [this, playLayer](auto, bool confirmed) {
 						if (confirmed) {
-							m_playLayer->removeCurrentSaveLayer();
+							playLayer->removeCurrentSaveLayer();
 							updateUIElements(true);
 						}
 					}
@@ -77,14 +78,14 @@ bool CheckpointManager::setup() {
 	nextLayerSpr->setFlipX(true);
 
 	m_previousLayerBtn = CCMenuItemExt::createSpriteExtra(
-		previousLayerSpr, [this](CCMenuItemSpriteExtra* sender) {
-			m_playLayer->previousSaveLayer();
+		previousLayerSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
+			playLayer->previousSaveLayer();
 			updateUIElements(true);
 		}
 	);
 	m_nextLayerBtn = CCMenuItemExt::createSpriteExtra(
-		nextLayerSpr, [this](CCMenuItemSpriteExtra* sender) {
-			m_playLayer->nextSaveLayer();
+		nextLayerSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
+			playLayer->nextSaveLayer();
 			updateUIElements(true);
 		}
 	);
@@ -100,25 +101,25 @@ bool CheckpointManager::setup() {
 	moveLayerBackSpr->setFlipX(true);
 
 	m_moveLayerBackBtn = CCMenuItemExt::createSpriteExtra(
-		moveLayerBackSpr, [this](CCMenuItemSpriteExtra* sender) {
-			m_playLayer->updateSaveLayerCount();
-			unsigned int saveLayer = m_playLayer->m_fields->m_activeSaveLayer;
+		moveLayerBackSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
+			playLayer->updateSaveLayerCount();
+			unsigned int saveLayer = playLayer->m_fields->m_activeSaveLayer;
 			if (saveLayer > 0 &&
-				 saveLayer < m_playLayer->m_fields->m_saveLayerCount) {
-				m_playLayer->swapSaveLayers(saveLayer, saveLayer - 1);
-				m_playLayer->m_fields->m_activeSaveLayer--;
+				 saveLayer < playLayer->m_fields->m_saveLayerCount) {
+				playLayer->swapSaveLayers(saveLayer, saveLayer - 1);
+				playLayer->m_fields->m_activeSaveLayer--;
 
 				updateUIElements(true);
 			}
 		}
 	);
 	m_moveLayerForwardBtn = CCMenuItemExt::createSpriteExtra(
-		moveLayerForwardSpr, [this](CCMenuItemSpriteExtra* sender) {
-			m_playLayer->updateSaveLayerCount();
-			unsigned int saveLayer = m_playLayer->m_fields->m_activeSaveLayer;
-			if (saveLayer + 1 < m_playLayer->m_fields->m_saveLayerCount) {
-				m_playLayer->swapSaveLayers(saveLayer, saveLayer + 1);
-				m_playLayer->m_fields->m_activeSaveLayer++;
+		moveLayerForwardSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
+			playLayer->updateSaveLayerCount();
+			unsigned int saveLayer = playLayer->m_fields->m_activeSaveLayer;
+			if (saveLayer + 1 < playLayer->m_fields->m_saveLayerCount) {
+				playLayer->swapSaveLayers(saveLayer, saveLayer + 1);
+				playLayer->m_fields->m_activeSaveLayer++;
 
 				updateUIElements(true);
 			}
@@ -183,6 +184,10 @@ bool CheckpointManager::setup() {
 }
 
 void CheckpointManager::createList(bool resetPosition) {
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+	if (playLayer == nullptr)
+		return;
+
 	bool recreated = m_listView != nullptr;
 	bool carryPosition =
 		!resetPosition && recreated &&
@@ -200,7 +205,7 @@ void CheckpointManager::createList(bool resetPosition) {
 	}
 
 	CCArray* checkpointArray =
-		m_playLayer->m_fields->m_persistentCheckpointArray;
+		playLayer->m_fields->m_persistentCheckpointArray;
 	for (PersistentCheckpoint* checkpoint :
 		  CCArrayExt<PersistentCheckpoint*>(checkpointArray)) {
 		unsigned int index = checkpointArray->indexOfObject(checkpoint);
@@ -209,34 +214,34 @@ void CheckpointManager::createList(bool resetPosition) {
 		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback = nullptr;
 
 		if (index != 0)
-			moveUpCallback = [this, index](CCMenuItemSpriteExtra* sender) {
-				m_playLayer->swapPersistentCheckpoints(index, index - 1);
+			moveUpCallback = [this, index, playLayer](CCMenuItemSpriteExtra* sender) {
+				playLayer->swapPersistentCheckpoints(index, index - 1);
 				createList();
 			};
 		if (index != checkpointArray->count() - 1)
-			moveDownCallback = [this, index](CCMenuItemSpriteExtra* sender) {
-				m_playLayer->swapPersistentCheckpoints(index, index + 1);
+			moveDownCallback = [this, index, playLayer](CCMenuItemSpriteExtra* sender) {
+				playLayer->swapPersistentCheckpoints(index, index + 1);
 				createList();
 			};
 
 		m_cellsArray->addObject(createCheckpointCell(
 			checkpoint, moveUpCallback, moveDownCallback,
-			[this, checkpoint](CCMenuItemSpriteExtra* sender) {
+			[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 				unsigned int index =
-					m_playLayer->m_fields->m_persistentCheckpointArray
+					playLayer->m_fields->m_persistentCheckpointArray
 						->indexOfObject(checkpoint) +
 					1;
 
-				if (m_playLayer->m_fields->m_activeCheckpoint == index)
+				if (playLayer->m_fields->m_activeCheckpoint == index)
 					index = 0;
 
-				m_playLayer->switchCurrentCheckpoint(index);
+				playLayer->switchCurrentCheckpoint(index);
 				createList();
 			},
-			[this, checkpoint](CCMenuItemSpriteExtra* sender) {
+			[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 				bool updateLabel =
-					m_playLayer->m_fields->m_persistentCheckpointArray->count() == 1;
-				m_playLayer->removePersistentCheckpoint(checkpoint);
+					playLayer->m_fields->m_persistentCheckpointArray->count() == 1;
+				playLayer->removePersistentCheckpoint(checkpoint);
 
 				if (updateLabel)
 					updateUIElements();
@@ -265,20 +270,24 @@ void CheckpointManager::createList(bool resetPosition) {
 }
 
 void CheckpointManager::updateUIElements(bool resetListPosition) {
-	unsigned int saveLayer = m_playLayer->m_fields->m_activeSaveLayer;
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+	if (playLayer == nullptr)
+		return;
+
+	unsigned int saveLayer = playLayer->m_fields->m_activeSaveLayer;
 
 	m_saveLayerLabel->setString(
 		fmt::format(
-			"Layer: {}/{}", saveLayer + 1, m_playLayer->m_fields->m_saveLayerCount
+			"Layer: {}/{}", saveLayer + 1, playLayer->m_fields->m_saveLayerCount
 		)
 			.c_str()
 	);
 
 	createList(resetListPosition);
 
-	if (m_playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
+	if (playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
 		const char* text;
-		switch (m_playLayer->m_fields->m_loadError) {
+		switch (playLayer->m_fields->m_loadError) {
 		case None:
 			if (saveLayer == 0)
 				text = "No checkpoints saved in this level.";
@@ -304,7 +313,7 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 			break;
 		}
 
-		bool hasLoadError = m_playLayer->m_fields->m_loadError != LoadError::None;
+		bool hasLoadError = playLayer->m_fields->m_loadError != LoadError::None;
 
 		m_emptyListLabel->setString(text);
 		m_emptyListLabel->setVisible(true);
@@ -335,7 +344,7 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		 ))
 		options->setOffset(ccp(layerSwitchOffset, options->getOffset().y));
 
-	if (m_playLayer->m_fields->m_saveLayerCount > 0) {
+	if (playLayer->m_fields->m_saveLayerCount > 0) {
 		m_previousLayerBtn->m_animationEnabled = true;
 		m_previousLayerBtn->setColor(ccc3(255, 255, 255));
 		m_previousLayerBtn->setOpacity(255);
@@ -350,7 +359,7 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_nextLayerBtn->setColor(ccc3(90, 90, 90));
 		m_nextLayerBtn->setOpacity(200);
 	}
-	if (saveLayer > 0 && saveLayer < m_playLayer->m_fields->m_saveLayerCount) {
+	if (saveLayer > 0 && saveLayer < playLayer->m_fields->m_saveLayerCount) {
 		m_moveLayerBackBtn->m_animationEnabled = true;
 		m_moveLayerBackBtn->setColor(ccc3(255, 255, 255));
 		m_moveLayerBackBtn->setOpacity(255);
@@ -359,7 +368,7 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_moveLayerBackBtn->setColor(ccc3(90, 90, 90));
 		m_moveLayerBackBtn->setOpacity(200);
 	}
-	if (saveLayer + 1 < m_playLayer->m_fields->m_saveLayerCount) {
+	if (saveLayer + 1 < playLayer->m_fields->m_saveLayerCount) {
 		m_moveLayerForwardBtn->m_animationEnabled = true;
 		m_moveLayerForwardBtn->setColor(ccc3(255, 255, 255));
 		m_moveLayerForwardBtn->setOpacity(255);
@@ -431,8 +440,10 @@ CCNode* createCheckpointCell(
 				progressString = fmt::format("{}h", time / 3600) + progressString;
 		}
 	} else {
-		int decimals = Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
-		progressString = fmt::format("{:.{}f}%", (float)checkpoint->m_percent, decimals);
+		int decimals =
+			Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
+		progressString =
+			fmt::format("{:.{}f}%", (float)checkpoint->m_percent, decimals);
 	}
 
 	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(

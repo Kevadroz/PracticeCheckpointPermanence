@@ -1,5 +1,5 @@
 #pragma once
-#include "../Hooks/PlayLayer.hpp"
+#include "../PersistentCheckpoint.hpp"
 
 using namespace geode::prelude;
 
@@ -9,7 +9,6 @@ public:
 	static CheckpointManager* create();
 
 private:
-	ModPlayLayer* m_playLayer = nullptr;
 	CCMenuItemSpriteExtra* m_deleteButton = nullptr;
 	CCLabelBMFont* m_saveLayerLabel = nullptr;
 	CCMenuItemSpriteExtra* m_previousLayerBtn = nullptr;
