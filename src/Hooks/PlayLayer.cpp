@@ -20,17 +20,15 @@ bool ModPlayLayer::init(
 	if (!PlayLayer::init(level, useReplay, dontCreateObjects))
 		return false;
 
-	m_fields->m_persistentCheckpointArray = CCArray::create();
-	CC_SAFE_RETAIN(m_fields->m_persistentCheckpointArray);
+	if (m_fields->m_persistentCheckpointArray != nullptr && m_isPracticeMode &&
+		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
+		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
-	m_fields->m_persistentCheckpointBatchNode =
-		// @geode-ignore(unknown-resource)
-		CCSpriteBatchNode::create("MainSheet.png"_spr);
-	CC_SAFE_RETAIN(m_fields->m_persistentCheckpointBatchNode);
-	m_fields->m_persistentCheckpointBatchNode->setZOrder(219);
-	m_objectLayer->addChild(m_fields->m_persistentCheckpointBatchNode);
+		updateSaveLayerCount();
+		deserializeCheckpoints();
 
-	registerKeybindListeners();
+		updateModUI();
+	}
 
 	return true;
 }
@@ -38,10 +36,20 @@ bool ModPlayLayer::init(
 void ModPlayLayer::setupHasCompleted() {
 	PlayLayer::setupHasCompleted();
 
-	if (m_isPracticeMode) {
-		updateSaveLayerCount();
-		deserializeCheckpoints();
-	}
+	if (m_fields->m_persistentCheckpointArray == nullptr) {
+		m_fields->m_persistentCheckpointArray = CCArray::create();
+		CC_SAFE_RETAIN(m_fields->m_persistentCheckpointArray);
+
+		m_fields->m_persistentCheckpointBatchNode =
+			// @geode-ignore(unknown-resource)
+			CCSpriteBatchNode::create("MainSheet.png"_spr);
+		CC_SAFE_RETAIN(m_fields->m_persistentCheckpointBatchNode);
+		m_fields->m_persistentCheckpointBatchNode->setZOrder(219);
+		m_objectLayer->addChild(m_fields->m_persistentCheckpointBatchNode);
+
+		registerKeybindListeners();
+	} else
+		return;
 
 	if (m_progressBar == nullptr)
 		return;
@@ -57,6 +65,13 @@ void ModPlayLayer::setupHasCompleted() {
 	);
 	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
 	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
+
+	if (m_isPracticeMode && !m_fields->m_hasAttemptedToLoadCheckpoints) {
+		m_fields->m_hasAttemptedToLoadCheckpoints = true;
+
+		updateSaveLayerCount();
+		deserializeCheckpoints();
+	}
 
 	updateModUI();
 }

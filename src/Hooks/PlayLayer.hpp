@@ -53,6 +53,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	struct Fields {
 		bool m_startedLoadingObjects = false;
 		LoadError m_loadError = LoadError::None;
+		bool m_hasAttemptedToLoadCheckpoints = false;
 
 		cocos2d::CCArray* m_persistentCheckpointArray = nullptr;
 		cocos2d::CCSpriteBatchNode* m_persistentCheckpointBatchNode = nullptr;

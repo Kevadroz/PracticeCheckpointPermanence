@@ -1,6 +1,7 @@
 # Unreleased
 - Added a setting for decimal precision for percentages
 - Added an option to disable auto checkpoints when a persistent checkpoint is active (enabled by default)
+- Fixed crash on playing an editor level on some setups \[[Issue #8](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/8)\]
 
 # 1.2.3
 - Added support for Mod Previews
