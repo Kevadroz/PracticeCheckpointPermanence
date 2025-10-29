@@ -103,8 +103,6 @@ bool ModUIPOptionsLayer::init() {
 
 	m_fields->m_switcherScaleInput->setCallback([this](std::string value) {
 		float scale;
-		// recommend
-		//scale = numFromString<int>(value).unwrapOr(SWITCHER_SCALE);
 		try {
 			scale = std::stof(value);
 		} catch (std::invalid_argument) {
@@ -126,11 +124,10 @@ bool ModUIPOptionsLayer::init() {
 			m_practiceNode->getParent()->addChild(m_fields->m_switcherMenu);
 
 		auto menu = CCMenu::create();
-		menu->setPosition(ccp(screenCenter.x * 3, screenCenter.y / 2 - 50.f));
-		menu->setScale(0.f);
+		menu->setPosition(ccp(0.f, -15.f));
 		menu->setContentSize(ccp(0.f, 0.f));
-		menu->setID("switcher-scale");
-		m_mainLayer->addChild(menu);
+		menu->setID("switcher_scale_menu"_spr);
+		m_mainLayer->getChildByID("pcp-menu")->addChild(menu);
 
 		menu->runAction(CCEaseExponentialOut::create(CCMoveTo::create(0.3,
 			ccp(screenCenter.x * 3, screenCenter.y / 2 - 20.f))));
@@ -146,7 +143,6 @@ bool ModUIPOptionsLayer::init() {
 
 		m_fields->m_switcherScaleSlider->setPosition(ccp(80.f, 0.f));
 		m_fields->m_switcherScaleSlider->setScale(0.6f);
-		//m_fields->m_switcherScaleSlider->m_groove->setScale(1.f);
 		menu->addChild(m_fields->m_switcherScaleSlider);
 	} else {
 		switcherScaleLabel->setPosition(screenCenter + ccp(-56, -30));
@@ -208,11 +204,8 @@ void ModUIPOptionsLayer::onReset(CCObject* sender) {
 
 void ModUIPOptionsLayer::updateSwitcherScaleSlider(float scale) {
 	m_fields->m_switcherScaleSlider->setValue(
-		std::lerp(
-			.265265265f, .734734735f,
-			inverseLerp(
-				SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX, scale
-			)
+		inverseLerp(
+			SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX, scale
 		)
 	);
 }
@@ -229,10 +222,9 @@ void ModUIPOptionsLayer::saveSwitcherPosition(CCPoint const& pos) {
 
 void ModUIPOptionsLayer::onSwitcherScaleSliderUpdated(CCObject* object) {
 	float scale = std::lerp(
-		SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX,
-		inverseLerp(
-			.265265265f, .734734735f, m_fields->m_switcherScaleSlider->getValue()
-		)
+		SWITCHER_SCALE_SLIDER_MIN,
+		SWITCHER_SCALE_SLIDER_MAX,
+		m_fields->m_switcherScaleSlider->getValue()
 	);
 
 	m_fields->m_switcherMenu->setScale(scale);
