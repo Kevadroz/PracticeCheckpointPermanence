@@ -61,5 +61,7 @@ void ModPauseLayer::customSetup() {
 		}
 	);
 
-	getChildByID("right-button-menu")->addChild(button);
+	CCMenu* menu = static_cast<CCMenu*>(getChildByID("right-button-menu"));
+	menu->addChild(button);
+	menu->updateLayout();
 }
