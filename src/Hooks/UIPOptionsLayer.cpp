@@ -129,9 +129,10 @@ bool ModUIPOptionsLayer::init() {
 		menu->setID("switcher_scale_menu"_spr);
 		m_mainLayer->getChildByID("pcp-menu")->addChild(menu);
 
+		/*
 		menu->runAction(CCEaseExponentialOut::create(CCMoveTo::create(0.3,
 			ccp(screenCenter.x * 3, screenCenter.y / 2 - 20.f))));
-		menu->runAction(CCEaseExponentialOut::create(CCScaleTo::create(0.3, 1)));
+		menu->runAction(CCEaseExponentialOut::create(CCScaleTo::create(0.3, 1)));*/
 
 		switcherScaleLabel->setPosition(ccp(-120.f, 0.f));
 		switcherScaleLabel->setColor(pui->getSettingValue<ccColor3B>("ui-color"));
