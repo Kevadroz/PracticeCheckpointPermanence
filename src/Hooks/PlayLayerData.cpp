@@ -91,7 +91,7 @@ void ModPlayLayer::deserializeCheckpoints() {
 		// 	m_fields->m_loadError = LoadError::Crash;
 		// 	return;
 		// }
-		checkpoint->createPhysicalObject();
+		checkpoint->setupPhysicalObject();
 
 		storePersistentCheckpoint(checkpoint);
 	}

@@ -171,7 +171,6 @@ bool ModUIPOptionsLayer::init() {
 	}
 
 	CCPoint position = getSwitcherPosition();
-	log::debug("{}", position);
 	m_fields->m_switcherMenu->setPosition(position);
 
 	return true;

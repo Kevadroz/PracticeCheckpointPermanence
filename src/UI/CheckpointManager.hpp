@@ -16,9 +16,10 @@ private:
 	CCMenuItemSpriteExtra* m_moveLayerBackBtn = nullptr;
 	CCMenuItemSpriteExtra* m_moveLayerForwardBtn = nullptr;
 	CCLayerColor* m_listContainer = nullptr;
-	CCArray* m_cellsArray = CCArray::create();
 	ListView* m_listView = nullptr;
 	CCLabelBMFont* m_emptyListLabel = nullptr;
+	
+	Ref<CCArray> m_cellsArray = CCArray::create();
 
 	void createList(bool resetPosition = false);
 	void updateUIElements(bool resetListPosition = false);

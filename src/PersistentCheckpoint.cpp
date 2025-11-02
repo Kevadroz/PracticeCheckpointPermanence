@@ -16,12 +16,9 @@
 
 using namespace persistenceAPI;
 
-PersistentCheckpoint::~PersistentCheckpoint() { CC_SAFE_DELETE(m_checkpoint); }
-
 PersistentCheckpoint* PersistentCheckpoint::create() {
 	PersistentCheckpoint* checkpoint = new PersistentCheckpoint();
 	checkpoint->m_checkpoint = CheckpointObject::create();
-	CC_SAFE_RETAIN(checkpoint->m_checkpoint);
 
 	checkpoint->autorelease();
 
@@ -36,14 +33,12 @@ PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
 	PersistentCheckpoint* newCheckpoint = new PersistentCheckpoint();
 
 	newCheckpoint->m_checkpoint = checkpoint;
-	CC_SAFE_RETAIN(newCheckpoint->m_checkpoint);
 
 	if (checkpoint->m_physicalCheckpointObject) {
 		newCheckpoint->m_objectPos =
 			checkpoint->m_physicalCheckpointObject->m_startPosition;
 
-		CC_SAFE_RELEASE(checkpoint->m_physicalCheckpointObject);
-		newCheckpoint->createPhysicalObject();
+		newCheckpoint->setupPhysicalObject();
 	}
 
 	newCheckpoint->m_attempts = attempts;
@@ -58,7 +53,7 @@ PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
 }
 
 void PersistentCheckpoint::serialize(Stream& out) {
-	reinterpret_cast<PACCNode*>(m_checkpoint)->save(out);
+	reinterpret_cast<PACCNode*>(m_checkpoint.data())->save(out);
 
 	bool hasP2 = m_checkpoint->m_player2Checkpoint != nullptr;
 	bool hasGradients = m_checkpoint->m_gradientTriggerObjectArray != nullptr;
@@ -107,7 +102,7 @@ void PersistentCheckpoint::serialize(Stream& out) {
 }
 
 void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
-	reinterpret_cast<PACCNode*>(m_checkpoint)->load(in);
+	reinterpret_cast<PACCNode*>(m_checkpoint.data())->load(in);
 
 	bool hasP2;
 	bool hasGradients;
@@ -125,11 +120,13 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 	// geode::log::debug("as");
 
 	m_checkpoint->m_player1Checkpoint = PlayerCheckpoint::create();
+	// Realeased by m_checkpoint's destructor
 	CC_SAFE_RETAIN(m_checkpoint->m_player1Checkpoint);
 	reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player1Checkpoint)
 		->load(in);
 	if (hasP2) {
 		m_checkpoint->m_player2Checkpoint = PlayerCheckpoint::create();
+		// Realeased by m_checkpoint's destructor
 		CC_SAFE_RETAIN(m_checkpoint->m_player2Checkpoint);
 		reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player2Checkpoint)
 			->load(in);
@@ -154,6 +151,7 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 		->load(in);
 	if (hasGradients) {
 		m_checkpoint->m_gradientTriggerObjectArray = CCArray::create();
+		// Realeased by m_checkpoint's destructor
 		CC_SAFE_RETAIN(m_checkpoint->m_gradientTriggerObjectArray);
 		static_cast<PACCArray*>(m_checkpoint->m_gradientTriggerObjectArray)
 			->load<GradientTriggerObject>(in);
@@ -176,11 +174,16 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 	// geode::log::debug("eof {}", m_commandIndex);
 }
 
-void PersistentCheckpoint::createPhysicalObject() {
-	CC_SAFE_RELEASE(m_checkpoint->m_physicalCheckpointObject);
-	m_checkpoint->m_physicalCheckpointObject =
-		GameObject::createWithFrame("inactiveCheckpoint.png"_spr);
-	CC_SAFE_RETAIN(m_checkpoint->m_physicalCheckpointObject);
+void PersistentCheckpoint::setupPhysicalObject() {
+	if (m_checkpoint->m_physicalCheckpointObject == nullptr)
+		m_checkpoint->m_physicalCheckpointObject =
+			GameObject::createWithFrame("inactiveCheckpoint.png"_spr);
+	else
+		m_checkpoint->m_physicalCheckpointObject->setDisplayFrame(
+			CCSpriteFrameCache::get()->spriteFrameByName(
+				"inactiveCheckpoint.png"_spr
+			)
+		);
 
 	m_checkpoint->m_physicalCheckpointObject->setOpacity(
 		Mod::get()->getSettingValue<double>("inactive-checkpoint-opacity") * 255

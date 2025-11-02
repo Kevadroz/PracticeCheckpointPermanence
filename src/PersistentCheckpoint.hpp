@@ -8,15 +8,13 @@ using namespace geode::prelude;
 
 class PersistentCheckpoint : public CCObject {
 public:
-	CheckpointObject* m_checkpoint = nullptr;
+	Ref<CheckpointObject> m_checkpoint = nullptr;
 	CCPoint m_objectPos;
 	int m_attempts;
 	double m_time;
 	double m_percent;
 	gd::unordered_map<int, int> m_persistentItemCountMap;
 	gd::unordered_set<int> m_persistentTimerItemSet;
-
-	~PersistentCheckpoint();
 
 	static PersistentCheckpoint* create();
 	static PersistentCheckpoint* createFromCheckpoint(
@@ -27,6 +25,6 @@ public:
 
 	void serialize(persistenceAPI::Stream& out);
 	void deserialize(persistenceAPI::Stream& in, unsigned int saveVersion);
-	void createPhysicalObject();
+	void setupPhysicalObject();
 	void toggleActive(bool);
 };

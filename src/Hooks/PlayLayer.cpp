@@ -38,12 +38,10 @@ void ModPlayLayer::setupHasCompleted() {
 
 	if (m_fields->m_persistentCheckpointArray == nullptr) {
 		m_fields->m_persistentCheckpointArray = CCArray::create();
-		CC_SAFE_RETAIN(m_fields->m_persistentCheckpointArray);
 
 		m_fields->m_persistentCheckpointBatchNode =
 			// @geode-ignore(unknown-resource)
 			CCSpriteBatchNode::create("MainSheet.png"_spr);
-		CC_SAFE_RETAIN(m_fields->m_persistentCheckpointBatchNode);
 		m_fields->m_persistentCheckpointBatchNode->setZOrder(219);
 		m_objectLayer->addChild(m_fields->m_persistentCheckpointBatchNode);
 
@@ -77,9 +75,8 @@ void ModPlayLayer::setupHasCompleted() {
 }
 
 void ModPlayLayer::destructor() {
+	unloadPersistentCheckpoints();
 	PlayLayer::~PlayLayer();
-	CC_SAFE_RELEASE(m_fields->m_persistentCheckpointArray);
-	CC_SAFE_RELEASE(m_fields->m_persistentCheckpointBatchNode);
 }
 
 // Copied from PlatformerSaves

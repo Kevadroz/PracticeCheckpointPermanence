@@ -55,8 +55,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 		LoadError m_loadError = LoadError::None;
 		bool m_hasAttemptedToLoadCheckpoints = false;
 
-		cocos2d::CCArray* m_persistentCheckpointArray = nullptr;
-		cocos2d::CCSpriteBatchNode* m_persistentCheckpointBatchNode = nullptr;
+		Ref<cocos2d::CCArray> m_persistentCheckpointArray = nullptr;
+		Ref<cocos2d::CCSpriteBatchNode> m_persistentCheckpointBatchNode = nullptr;
 
 		unsigned int m_activeCheckpoint = 0;
 		unsigned int m_activeSaveLayer = 0;
