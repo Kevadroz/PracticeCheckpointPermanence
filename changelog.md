@@ -4,6 +4,8 @@
 - Added an option to disable auto checkpoints when a persistent checkpoint is active (enabled by default)
 - Fixed crash on playing an editor level on some setups \[[Issue #8](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/8)\]
 - Fix Checkpoint Manager button not updating the menu in the pause menu
+- Fix Mod previews
+- Improved memory usage a bit
 
 # 1.2.3
 - Added support for Mod Previews
