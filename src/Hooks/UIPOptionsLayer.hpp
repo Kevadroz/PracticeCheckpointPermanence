@@ -22,7 +22,7 @@ class $modify(ModUIPOptionsLayer, UIPOptionsLayer) {
 	void updateSwitcherScale(float scale);
 	void updateSwitcherScaleSlider(float scale);
 	void saveSwitcherPosition();
-	void saveSwitcherPosition(CCPoint const& pos);
+	void saveSwitcherPosition(const CCPoint& pos);
 
 	void onSwitcherScaleSliderUpdated(CCObject* slider);
 };

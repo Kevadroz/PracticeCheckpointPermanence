@@ -1,8 +1,7 @@
 #include "SwitcherMenu.hpp"
 
 SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
-	CCDirector* director = CCDirector::sharedDirector();
-	CCSize winSize = director->getWinSize();
+	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 
 	CCSize size = CCSizeMake(80, 80);
 
@@ -10,7 +9,6 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->setContentSize(size);
 	menu->setCascadeColorEnabled(true);
 	menu->setScale(getSwitcherScale());
-	menu->setPosition(getSwitcherPosition(director));
 	menu->setZOrder(15);
 	menu->setID("switcher_menu"_spr);
 
@@ -142,7 +140,8 @@ void SwitcherMenu::ccTouchCancelled(CCTouch* touch, CCEvent* event) {
 		m_touchCancelledCallback(touch, event);
 }
 
-CCPoint getSwitcherPosition(CCDirector* director) {
+CCPoint getSwitcherPosition() {
+	CCDirector* director = CCDirector::sharedDirector();
 	Mod* mod = Mod::get();
 	return ccp(
 		mod->getSavedValue<double>(

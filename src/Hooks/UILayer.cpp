@@ -34,6 +34,7 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 		return true;
 
 	m_fields->m_switcherMenu = SwitcherMenu::create(playLayer);
+	m_fields->m_switcherMenu->setPosition(getSwitcherPosition());
 	m_fields->m_switcherMenu->setVisible(false);
 
 	m_fields->m_switcherMenu->m_buttonMenu->setTouchEnabled(

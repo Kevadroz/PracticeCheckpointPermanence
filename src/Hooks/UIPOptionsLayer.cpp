@@ -33,32 +33,38 @@ bool ModUIPOptionsLayer::init() {
 			return false;
 		},
 		[this](CCTouch* touch, CCEvent* event) {
-
 			CCPoint touchPos = touch->getLocation();
 			float scale = m_fields->m_switcherMenu->getParent()->getScale();
 			CCPoint delta = touchPos - m_fields->m_lastPos;
-			CCPoint destPos = m_fields->m_switcherMenu->getPosition() + delta / scale;
+			CCPoint destPos =
+				m_fields->m_switcherMenu->getPosition() + delta / scale;
 			m_fields->m_switcherMenu->setPosition(destPos);
 			// post event to bpui
 			DispatchEvent("naxrin.better_pui", destPos).post();
 			m_fields->m_lastPos = touchPos;
-
 		},
 		[this, pui, screenCenter](CCTouch* touch, CCEvent* event) {
 			m_fields->m_movingSwitcher = false;
+			CCPoint dest;
 			// grid snap from bpui
 			if (pui && pui->getSavedValue<bool>("snap")) {
-				auto t = m_mainLayer->getChildByID("map")->convertTouchToNodeSpace(touch);
+				auto t =
+					m_mainLayer->getChildByID("map")->convertTouchToNodeSpace(touch);
 
 				int hd = pui->getSettingValue<int64_t>("hori-distance");
 				int vd = pui->getSettingValue<int64_t>("vert-distance");
 
-				auto dest = ccp(screenCenter.x + hd * round((t.x - screenCenter.x) / hd),
-					screenCenter.y + vd * round((t.y - screenCenter.y) / vd));
-				m_fields->m_switcherMenu->runAction(CCEaseExponentialOut::create(CCMoveTo::create(0.4, dest)));
-				this->saveSwitcherPosition(dest);
+				dest = ccp(
+					screenCenter.x + hd * round((t.x - screenCenter.x) / hd),
+					screenCenter.y + vd * round((t.y - screenCenter.y) / vd)
+				);
+				m_fields->m_switcherMenu->runAction(
+					CCEaseExponentialOut::create(CCMoveTo::create(0.4, dest))
+				);
+			} else {
+				dest = m_fields->m_switcherMenu->getPosition();
 			}
-			
+			this->saveSwitcherPosition(dest);
 		},
 		[this](CCTouch* touch, CCEvent* event) {
 			m_fields->m_movingSwitcher = false;
@@ -74,19 +80,19 @@ bool ModUIPOptionsLayer::init() {
 	if (pui) {
 		m_fields->m_switcherScaleSlider = Slider::create(
 			this, menu_selector(ModUIPOptionsLayer::onSwitcherScaleSliderUpdated)
-		);	
+		);
 	} else {
 		m_fields->m_switcherScaleSlider = Slider::create(
 			this, menu_selector(ModUIPOptionsLayer::onSwitcherScaleSliderUpdated),
 			0.3f
-		);	
+		);
 		CCNode* switcherScaleSliderSprite =
 			m_fields->m_switcherScaleSlider->getChildByIndex(0);
 		switcherScaleSliderSprite->setScaleY(.64f);
 		switcherScaleSliderSprite->getChildByIndex(0)->setVisible(false);
 		m_fields->m_switcherScaleSlider->getChildByIndex(1)
 			->getChildByIndex(0)
-			->setScale(.64f);			
+			->setScale(.64f);
 	}
 
 	m_fields->m_switcherScaleSlider->setAnchorPoint(ccp(0, 0));
@@ -104,7 +110,7 @@ bool ModUIPOptionsLayer::init() {
 	m_fields->m_switcherScaleInput->setCallback([this](std::string value) {
 		float scale;
 		try {
-			scale = std::stof(value);
+			scale = numFromString<float>(value).unwrapOr(SWITCHER_SCALE);
 		} catch (std::invalid_argument) {
 			scale = SWITCHER_SCALE;
 		};
@@ -132,7 +138,8 @@ bool ModUIPOptionsLayer::init() {
 		/*
 		menu->runAction(CCEaseExponentialOut::create(CCMoveTo::create(0.3,
 			ccp(screenCenter.x * 3, screenCenter.y / 2 - 20.f))));
-		menu->runAction(CCEaseExponentialOut::create(CCScaleTo::create(0.3, 1)));*/
+		menu->runAction(CCEaseExponentialOut::create(CCScaleTo::create(0.3,
+		1)));*/
 
 		switcherScaleLabel->setPosition(ccp(-120.f, 0.f));
 		switcherScaleLabel->setColor(pui->getSettingValue<ccColor3B>("ui-color"));
@@ -163,13 +170,14 @@ bool ModUIPOptionsLayer::init() {
 		m_mainLayer->addChild(m_fields->m_switcherScaleSlider);
 	}
 
+	CCPoint position = getSwitcherPosition();
+	log::debug("{}", position);
+	m_fields->m_switcherMenu->setPosition(position);
+
 	return true;
 }
 
 void ModUIPOptionsLayer::onClose(CCObject* sender) {
-	// actually not needed
-	//saveSwitcherSettings();
-
 	if (PlayLayer* playLayer = PlayLayer::get()) {
 		ModUILayer* uiLayer = static_cast<ModUILayer*>(playLayer->m_uiLayer);
 		SwitcherMenu* playSwitcher = uiLayer->m_fields->m_switcherMenu;
@@ -204,29 +212,33 @@ void ModUIPOptionsLayer::onReset(CCObject* sender) {
 }
 
 void ModUIPOptionsLayer::updateSwitcherScaleSlider(float scale) {
-	m_fields->m_switcherScaleSlider->setValue(
-		inverseLerp(
-			SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX, scale
-		)
-	);
+	float position =
+		inverseLerp(SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX, scale);
+
+	if (!Loader::get()->isModLoaded("naxrin.better_pui"))
+		position = std::lerp(.265265265f, .734734735f, position);
+
+	m_fields->m_switcherScaleSlider->setValue(position);
 }
 
 void ModUIPOptionsLayer::saveSwitcherPosition() {
 	this->saveSwitcherPosition(m_fields->m_switcherMenu->getPosition());
 }
 
-void ModUIPOptionsLayer::saveSwitcherPosition(CCPoint const& pos) {
+void ModUIPOptionsLayer::saveSwitcherPosition(const CCPoint& pos) {
 	Mod* mod = Mod::get();
 	mod->setSavedValue("switcherMenuPositionX", pos.x);
 	mod->setSavedValue("switcherMenuPositionY", pos.y);
 }
 
 void ModUIPOptionsLayer::onSwitcherScaleSliderUpdated(CCObject* object) {
-	float scale = std::lerp(
-		SWITCHER_SCALE_SLIDER_MIN,
-		SWITCHER_SCALE_SLIDER_MAX,
-		m_fields->m_switcherScaleSlider->getValue()
-	);
+	float scale = m_fields->m_switcherScaleSlider->getValue();
+
+	if (!Loader::get()->isModLoaded("naxrin.better_pui"))
+		scale = inverseLerp(.265265265f, .734734735f, scale);
+
+	scale =
+		std::lerp(SWITCHER_SCALE_SLIDER_MIN, SWITCHER_SCALE_SLIDER_MAX, scale);
 
 	m_fields->m_switcherMenu->setScale(scale);
 	m_fields->m_switcherScaleInput->setString(fmt::format("{:.2f}", scale));

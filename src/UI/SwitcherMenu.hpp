@@ -47,5 +47,5 @@ private:
 	void ccTouchCancelled(CCTouch* touch, CCEvent* event) override;
 };
 
-CCPoint getSwitcherPosition(CCDirector* director);
+CCPoint getSwitcherPosition();
 float getSwitcherScale();
