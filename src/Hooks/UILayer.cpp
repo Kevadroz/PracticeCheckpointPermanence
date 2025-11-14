@@ -54,6 +54,8 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 		m_checkpointMenu->getChildByID("remove-checkpoint-button"), playLayer
 	);
 
+	resetSwitcherOpacity();
+
 	return true;
 }
 

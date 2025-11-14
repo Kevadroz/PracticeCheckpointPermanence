@@ -1,5 +1,8 @@
+## Unreleased
+- Fixed the switcher not using the opacity settings if the active and inactive values were the same \[[Issue #12](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/12)\]
+
 ## 1.3.0 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.0)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.0))
-- Better Platform & Practice Config UI compatibility \[[PR #9](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/9), [requested here](https://github.com/Naxrin/Better-PUI/issues/2)\]
+- Better Platform & Practice Config UI compatibility \[[PR #9](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/9), by [Naxrin](https://github.com/Naxrin), [requested here](https://github.com/Naxrin/Better-PUI/issues/2)\]
 - Added a setting for decimal precision for percentages
 - Added an option to disable auto checkpoints when a persistent checkpoint is active (enabled by default)
 - Fixed crash on playing an editor level on some setups \[[Issue #8](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/8)\]
@@ -21,7 +24,7 @@
 
 ## 1.2.0 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.2.0)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.2.0))
 - Added Mac and iOS support \[[PR #2](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/2) by [hiimjasmine00](https://github.com/hiimjasmine00) and [RayDeeUx
-](https://github.com/RayDeeUx) \]
+](https://github.com/RayDeeUx)\]
 - Added Persistent Checkpoints to the Progress bar
 - When a save cannot be loaded the switcher will turn red with a short message and the pcp manager will now have a description of the problem
 - Fixed new checkpoints not getting inserted in the correct position on classic mode on some conditions
