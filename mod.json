@@ -8,7 +8,7 @@
 	},
 	"id": "kevadroz.practicecheckpointpermanence",
 	"name": "Practice Checkpoint Permanence",
-	"version": "v1.3.0",
+	"version": "v1.3.1",
 	"developer": "Kevadroz",
 	"description": "Make checkpoints that persist across sessions",
 	"links": {
