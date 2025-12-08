@@ -10,6 +10,7 @@ public:
 
 private:
 	CCMenuItemSpriteExtra* m_deleteButton = nullptr;
+	CCMenuItemSpriteExtra* m_forceLoadButton = nullptr;
 	CCLabelBMFont* m_saveLayerLabel = nullptr;
 	CCMenuItemSpriteExtra* m_previousLayerBtn = nullptr;
 	CCMenuItemSpriteExtra* m_nextLayerBtn = nullptr;

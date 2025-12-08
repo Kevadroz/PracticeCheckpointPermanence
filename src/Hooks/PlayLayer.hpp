@@ -85,7 +85,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 
 	// Data
 	void serializeCheckpoints();
-	void deserializeCheckpoints();
+	void deserializeCheckpoints(bool ignoreVerification = false);
 	void unloadPersistentCheckpoints();
 	std::variant<unsigned int, LoadError>
 	verifySaveStream(persistenceAPI::Stream& stream);

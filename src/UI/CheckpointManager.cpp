@@ -168,6 +168,36 @@ bool CheckpointManager::setup() {
 	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
 	m_emptyListLabel->setVisible(!hasCheckpoints);
 
+	ButtonSprite* forceLoadButtonSprite = ButtonSprite::create("Force Load");
+	m_forceLoadButton = CCMenuItemExt::createSpriteExtra(
+		forceLoadButtonSprite,
+		[this, playLayer](CCMenuItemSpriteExtra* forceButton) {
+			geode::createQuickPopup(
+				"Force Load",
+				"This will force load and resave this layer.\n"
+				"When switching to a checkpoint the game will likely crash or the "
+				"level will break.\n"
+				"If things go very wrong you can try opening the checkpoint "
+				"manager outside of practice mode to remove all checkpoints.\n"
+				"Are you sure about this?",
+				"No", "YOLO", [this, playLayer](auto, bool confirmed) {
+					if (confirmed) {
+						playLayer->deserializeCheckpoints(true);
+						playLayer->serializeCheckpoints();
+
+						updateUIElements();
+						playLayer->updateModUI();
+					}
+				}
+			);
+		}
+	);
+	m_forceLoadButton->setVisible(
+		playLayer->m_fields->m_loadError != LoadError::None
+	);
+	m_forceLoadButton->m_baseScale = 0.7;
+	m_forceLoadButton->setScale(0.7);
+
 	updateUIElements();
 
 	ListBorders* borders = ListBorders::create();
@@ -179,6 +209,7 @@ bool CheckpointManager::setup() {
 
 	m_listContainer->addChildAtPosition(borders, geode::Anchor::Center);
 	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
+	m_buttonMenu->addChildAtPosition(m_forceLoadButton, geode::Anchor::Bottom);
 
 	return true;
 }
@@ -204,8 +235,7 @@ void CheckpointManager::createList(bool resetPosition) {
 				m_listView->getChildByIndex(0)->getChildByIndex(0)->getPositionY();
 	}
 
-	CCArray* checkpointArray =
-		playLayer->m_fields->m_persistentCheckpointArray;
+	CCArray* checkpointArray = playLayer->m_fields->m_persistentCheckpointArray;
 	for (PersistentCheckpoint* checkpoint :
 		  CCArrayExt<PersistentCheckpoint*>(checkpointArray)) {
 		unsigned int index = checkpointArray->indexOfObject(checkpoint);
@@ -214,12 +244,14 @@ void CheckpointManager::createList(bool resetPosition) {
 		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback = nullptr;
 
 		if (index != 0)
-			moveUpCallback = [this, index, playLayer](CCMenuItemSpriteExtra* sender) {
+			moveUpCallback = [this, index,
+									playLayer](CCMenuItemSpriteExtra* sender) {
 				playLayer->swapPersistentCheckpoints(index, index - 1);
 				createList();
 			};
 		if (index != checkpointArray->count() - 1)
-			moveDownCallback = [this, index, playLayer](CCMenuItemSpriteExtra* sender) {
+			moveDownCallback = [this, index,
+									  playLayer](CCMenuItemSpriteExtra* sender) {
 				playLayer->swapPersistentCheckpoints(index, index + 1);
 				createList();
 			};
@@ -228,8 +260,9 @@ void CheckpointManager::createList(bool resetPosition) {
 			checkpoint, moveUpCallback, moveDownCallback,
 			[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 				unsigned int index =
-					playLayer->m_fields->m_persistentCheckpointArray
-						->indexOfObject(checkpoint) +
+					playLayer->m_fields->m_persistentCheckpointArray->indexOfObject(
+						checkpoint
+					) +
 					1;
 
 				if (playLayer->m_fields->m_activeCheckpoint == index)
@@ -332,6 +365,8 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_deleteButton->setColor(ccc3(255, 255, 255));
 		m_deleteButton->setOpacity(255);
 	}
+
+	m_forceLoadButton->setVisible(playLayer->m_fields->m_loadError != LoadError::None);
 
 	float layerSwitchOffset =
 		m_saveLayerLabel->getScaledContentWidth() / 2.f + 15.f;

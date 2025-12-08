@@ -35,6 +35,6 @@ On the pause menu there's a new button that opens the <cg>persistent checkpoint 
 
  - The save files <cr>aren't compatible across platforms</c> (Windows, Android, etc.), when the mod finds an incompatible save file it will be ignored and overwritten on next save.
 
- - Saved checkpoints in <cr>editor levels are very volatile</c>, **any change to the level will invalidate it's saves**.
+ - Saved checkpoints in <cr>editor levels are very volatile</c>, **any change to the level will invalidate it's saves**. In general it is not recommended to use this mod for editor levels.
 
  - Serialization provided by [PersistenceAPI](https://github.com/0x5abe/PersistenceAPI)

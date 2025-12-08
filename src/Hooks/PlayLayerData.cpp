@@ -49,7 +49,7 @@ void ModPlayLayer::serializeCheckpoints() {
 	stream.end();
 }
 
-void ModPlayLayer::deserializeCheckpoints() {
+void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
@@ -60,17 +60,23 @@ void ModPlayLayer::deserializeCheckpoints() {
 	persistenceAPI::Stream stream;
 	stream.setFile(savePath, 2);
 
+	unsigned int saveVersion;
 	std::variant<unsigned int, LoadError> verificationResult =
 		verifySaveStream(stream);
-	if (std::holds_alternative<LoadError>(verificationResult)) {
-		stream.end();
 
-		m_fields->m_loadError = std::get<LoadError>(verificationResult);
+	if (!ignoreVerification) {
+		if (std::holds_alternative<LoadError>(verificationResult)) {
+			stream.end();
 
-		return;
+			m_fields->m_loadError = std::get<LoadError>(verificationResult);
+
+			return;
+		}
+
+		saveVersion = std::get<unsigned int>(verificationResult);
+	} else {
+		saveVersion = CURRENT_VERSION;
 	}
-
-	unsigned int saveVersion = std::get<unsigned int>(verificationResult);
 
 	removeAllCheckpoints();
 
@@ -112,10 +118,21 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 
 std::variant<unsigned int, LoadError>
 ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
-	stream.ignore(sizeof(SAVE_HEADER));
+	bool isEditorLevel = m_level->m_levelType == GJLevelType::Editor;
 
 	unsigned int saveVersion;
+	char savedPlatform;
+	unsigned int levelVersion;
+	size_t levelStringHash;
+
+	stream.ignore(sizeof(SAVE_HEADER));
 	stream >> saveVersion;
+	stream >> savedPlatform;
+	if (!isEditorLevel) {
+		stream >> levelVersion;
+	} else {
+		stream >> levelStringHash;
+	}
 
 	if (saveVersion < 1)
 		return LoadError::OutdatedData;
@@ -123,21 +140,13 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 	if (saveVersion > CURRENT_VERSION)
 		return LoadError::NewData;
 
-	char savedPlatform;
-	stream >> savedPlatform;
-
 	if (savedPlatform != PLATFORM)
 		return LoadError::OtherPlatform;
 
-	if (m_level->m_levelType != GJLevelType::Editor) {
-		unsigned int levelVersion;
-		stream >> levelVersion;
+	if (!isEditorLevel) {
 		if (levelVersion != m_level->m_levelVersion)
 			return LoadError::LevelVersionMismatch;
 	} else {
-		size_t levelStringHash;
-		stream >> levelStringHash;
-
 		if (!m_fields->m_levelStringHash.has_value())
 			m_fields->m_levelStringHash = c_stringHasher(m_level->m_levelString);
 		if (levelStringHash != m_fields->m_levelStringHash.value()) {
