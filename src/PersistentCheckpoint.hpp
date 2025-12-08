@@ -10,7 +10,6 @@ class PersistentCheckpoint : public CCObject {
 public:
 	Ref<CheckpointObject> m_checkpoint = nullptr;
 	CCPoint m_objectPos;
-	int m_attempts;
 	double m_time;
 	double m_percent;
 	gd::unordered_map<int, int> m_persistentItemCountMap;
@@ -18,7 +17,7 @@ public:
 
 	static PersistentCheckpoint* create();
 	static PersistentCheckpoint* createFromCheckpoint(
-		CheckpointObject* checkpoint, int attempts, int time, double percent,
+		CheckpointObject* checkpoint, int time, double percent,
 		gd::unordered_map<int, int> persistentItemCountMap,
 		gd::unordered_set<int> persistentTimerItemSet
 	);

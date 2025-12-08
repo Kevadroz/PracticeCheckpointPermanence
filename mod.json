@@ -55,6 +55,12 @@
 			"default": true,
 			"description": "Disables auto checkpoints when a persistent checkpoint is active"
 		},
+		"reset-attempts": {
+			"name": "Reset Attempts",
+			"type": "bool",
+			"default": true,
+			"description": "Sets the attempts to one when switching checkpoints"
+		},
 		"inactive-checkpoint-opacity": {
 			"name": "Inactive Checkpoint Opacity",
 			"type": "float",

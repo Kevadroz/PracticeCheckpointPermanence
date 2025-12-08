@@ -45,6 +45,9 @@ void ModPlayLayer::switchCurrentCheckpoint(
 
 	m_fields->m_activeCheckpoint = nextCheckpoint;
 
+	if (Mod::get()->getSettingValue<bool>("reset-attempts"))
+		m_attempts = 0;
+
 	updateModUI();
 
 	resetLevel();
@@ -61,7 +64,7 @@ void ModPlayLayer::markPersistentCheckpoint() {
 
 	PersistentCheckpoint* checkpoint =
 		PersistentCheckpoint::createFromCheckpoint(
-			createCheckpoint(), m_attempts, m_timePlayed, getCurrentPercent(),
+			createCheckpoint(), m_timePlayed, getCurrentPercent(),
 			m_effectManager->m_persistentItemCountMap,
 			m_effectManager->m_persistentTimerItemSet
 		);

@@ -5,7 +5,7 @@
 #include <variant>
 
 const char SAVE_HEADER[] = "PCP SAVE FILE";
-const unsigned int CURRENT_VERSION = 1;
+const unsigned int CURRENT_VERSION = 2;
 
 void ModPlayLayer::serializeCheckpoints() {
 	if (m_fields->m_loadError != LoadError::None)

@@ -26,7 +26,7 @@ PersistentCheckpoint* PersistentCheckpoint::create() {
 }
 
 PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
-	CheckpointObject* checkpoint, int attempts, int time, double percent,
+	CheckpointObject* checkpoint, int time, double percent,
 	gd::unordered_map<int, int> persistentItemCountMap,
 	gd::unordered_set<int> persistentTimerItemSet
 ) {
@@ -41,7 +41,6 @@ PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
 		newCheckpoint->setupPhysicalObject();
 	}
 
-	newCheckpoint->m_attempts = attempts;
 	newCheckpoint->m_time = time;
 	newCheckpoint->m_percent = percent;
 	newCheckpoint->m_persistentItemCountMap = persistentItemCountMap;
@@ -94,7 +93,6 @@ void PersistentCheckpoint::serialize(Stream& out) {
 
 	// Custom data
 	out << m_objectPos;
-	out << m_attempts;
 	out << m_time;
 	out << m_percent;
 	out << m_persistentItemCountMap;
@@ -165,7 +163,9 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 
 	// Custom data
 	in >> m_objectPos;
-	in >> m_attempts;
+	if (saveVersion <= 1) {
+		in.ignore(sizeof(int));
+	}
 	in >> m_time;
 	in >> m_percent;
 	in >> m_persistentItemCountMap;

@@ -1,3 +1,6 @@
+## Unreleased
+- The attempts are no longer saved in the checkpoints, now the attempt counter is reset to one (configurable) \[[Issue #14](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/14)\]
+
 ## 1.3.1 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.1)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.1))
 - Fixed the switcher not using the opacity settings if the active and inactive values were the same \[[Issue #12](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/12)\]
 

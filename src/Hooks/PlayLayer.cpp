@@ -129,8 +129,6 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 	PlayLayer::loadFromCheckpoint(checkpoint);
 
 	if (persistentCheckpoint != nullptr) {
-		m_attempts = persistentCheckpoint->m_attempts;
-
 		m_effectManager->m_persistentItemCountMap =
 			persistentCheckpoint->m_persistentItemCountMap;
 		m_effectManager->m_persistentTimerItemSet =
