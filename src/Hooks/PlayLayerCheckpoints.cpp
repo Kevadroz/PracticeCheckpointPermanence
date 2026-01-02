@@ -47,6 +47,8 @@ void ModPlayLayer::switchCurrentCheckpoint(
 
 	if (Mod::get()->getSettingValue<bool>("reset-attempts"))
 		m_attempts = 0;
+	else
+		m_attempts--;
 
 	updateModUI();
 
