@@ -61,6 +61,19 @@
 			"default": true,
 			"description": "Sets the attempts to one when switching checkpoints"
 		},
+		"active-checkpoint-opacity": {
+			"name": "Active Checkpoint Opacity",
+			"type": "float",
+			"default": 1.0,
+			"min": 0.0,
+			"max": 1.0,
+			"control": {
+				"slider": true,
+				"slider-step": 0.01,
+				"arrows": true,
+				"arrow-step": 0.1
+			}
+		},
 		"inactive-checkpoint-opacity": {
 			"name": "Inactive Checkpoint Opacity",
 			"type": "float",

@@ -1,6 +1,7 @@
 ## Unreleased
 - Added an option to change the position of the practice buttons to above and below the vanilla ones \[[Issue #16](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/16)\]
 - The "Reset Attempts" now also resets the attempts when restarting from the last checkpoint in the Level End Screen \[[Issue #18](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/18)\]
+- Added an option to change the opacity of the active checkpoint \[[Issue #19](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/19)\]
 
 ## 1.3.2 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.2)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.2))
 - You can now force load checkpoints in the Checkpoint Manager if there's an error \[[Issue #13](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/13)\]

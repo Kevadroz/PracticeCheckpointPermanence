@@ -201,6 +201,9 @@ void PersistentCheckpoint::toggleActive(bool active) {
 	if (active) {
 		frameName = "activeCheckpoint.png"_spr;
 		m_checkpoint->m_physicalCheckpointObject->setOpacity(255);
+		m_checkpoint->m_physicalCheckpointObject->setOpacity(
+			Mod::get()->getSettingValue<double>("active-checkpoint-opacity") * 255
+		);
 	} else {
 		frameName = "inactiveCheckpoint.png"_spr;
 		m_checkpoint->m_physicalCheckpointObject->setOpacity(
