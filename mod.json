@@ -87,6 +87,12 @@
 				"arrow-step": 0.1
 			}
 		},
+		"practice-buttons-position": {
+			"name": "Position of Practice Buttons",
+			"type": "string",
+			"one-of": ["Horizontal", "Above", "Below"],
+			"default": "Horizontal"
+		},
 		"title-switcher": {
 			"type": "title",
 			"name": "Switcher"

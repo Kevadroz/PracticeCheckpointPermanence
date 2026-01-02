@@ -21,6 +21,43 @@ $execute {
 			SettingChangedFilterV3(mod, setting)
 		);
 	}
+
+	geode::listenForSettingChanges(
+		"practice-buttons-position", [](std::string value) {
+			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+			setCheckpointButtonPosition(
+				uiLayer->m_fields->m_createCheckpointButton,
+				uiLayer->m_checkpointMenu->getChildByID("add-checkpoint-button"),
+				false
+			);
+			setCheckpointButtonPosition(
+				uiLayer->m_fields->m_removeCheckpointButton,
+				uiLayer->m_checkpointMenu->getChildByID("remove-checkpoint-button"),
+				true
+			);
+
+#ifndef GEODE_IS_IOS
+			std::tuple<geode::Anchor, CCPoint, CCPoint> leftPosition =
+				getCheckpointButtonLabelPosition(false);
+			std::tuple<geode::Anchor, CCPoint, CCPoint> rightPosition =
+				getCheckpointButtonLabelPosition(true);
+
+			CCNode* leftBind =
+				uiLayer->m_fields->m_createCheckpointButton->getChildByID("binds");
+			CCNode* rightBind =
+				uiLayer->m_fields->m_removeCheckpointButton->getChildByID("binds");
+
+			leftBind->setAnchorPoint(std::get<2>(leftPosition));
+			leftBind->updateAnchoredPosition(
+				std::get<0>(leftPosition), std::get<1>(leftPosition)
+			);
+			rightBind->setAnchorPoint(std::get<2>(rightPosition));
+			rightBind->updateAnchoredPosition(
+				std::get<0>(rightPosition), std::get<1>(rightPosition)
+			);
+#endif
+		}
+	);
 }
 
 bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
@@ -225,10 +262,7 @@ createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	} else
 		button = sprite;
 
-	button->setPosition(
-		sibling->getPosition() + ccp(-sibling->getContentWidth() / 2 - 10, 0)
-	);
-	button->setAnchorPoint(ccp(1, .5));
+	setCheckpointButtonPosition(button, sibling, false);
 	button->setID("markPersistentCheckpoint"_spr);
 
 	if (playLayer != nullptr)
@@ -260,10 +294,7 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	} else
 		button = sprite;
 
-	button->setPosition(
-		sibling->getPosition() + ccp(sibling->getContentWidth() / 2 + 10, 0)
-	);
-	button->setAnchorPoint(ccp(0, .5));
+	setCheckpointButtonPosition(button, sibling, true);
 	button->setID("removePersistentCheckpoint"_spr);
 
 	if (playLayer != nullptr)
@@ -296,18 +327,59 @@ void createButtonBindsLabel(
 	}
 	bindContainer->setID("binds");
 	bindContainer->setContentSize({95, 40.f});
+	CCPoint anchorPoint, positionOffset;
 	bindContainer->setLayout(geode::RowLayout::create());
-	if (right) {
-		bindContainer->setAnchorPoint({0.f, .5f});
-		parent->addChildAtPosition(
-			bindContainer, geode::Anchor::BottomLeft, {-4.f, -1.f}
-		);
-	} else {
-		bindContainer->setAnchorPoint({1.f, .5f});
-		parent->addChildAtPosition(
-			bindContainer, geode::Anchor::BottomRight, {4.f, -1.f}
-		);
-	}
+
+	std::tuple<geode::Anchor, CCPoint, CCPoint> position =
+		getCheckpointButtonLabelPosition(right);
+	bindContainer->setAnchorPoint(std::get<2>(position));
+	parent->addChildAtPosition(
+		bindContainer, std::get<0>(position), std::get<1>(position)
+	);
+
 	bindContainer->setCascadeOpacityEnabled(true);
 #endif
+}
+
+void setCheckpointButtonPosition(
+	CCNodeRGBA* button, CCNode* sibling, bool invertX
+) {
+	CCPoint offset;
+
+	std::string settingValue =
+		Mod::get()->getSettingValue<std::string>("practice-buttons-position");
+
+	if (settingValue == "Above")
+		offset = ccp(0, sibling->getContentHeight() + 10);
+	else if (settingValue == "Below")
+		offset = ccp(0, -sibling->getContentHeight() - 10);
+	else
+		offset = ccp(
+			(-(sibling->getContentWidth() + button->getContentWidth()) / 2 - 10) *
+				(invertX ? -1 : 1),
+			0
+		);
+
+	button->setPosition(sibling->getPosition() + offset);
+}
+
+std::tuple<geode::Anchor, CCPoint, CCPoint>
+getCheckpointButtonLabelPosition(bool right) {
+	std::string settingValue =
+		Mod::get()->getSettingValue<std::string>("practice-buttons-position");
+
+	if (settingValue == "Horizontal") {
+		if (right)
+			return std::make_tuple(
+				geode::Anchor::BottomLeft, ccp(-4.f, -1.f), ccp(0.f, 0.5f)
+			);
+		else
+			return std::make_tuple(
+				geode::Anchor::BottomRight, ccp(4.f, -1.f), ccp(1.f, 0.5f)
+			);
+	}
+
+	return std::make_tuple(
+		geode::Anchor::Bottom, ccp(0.f, -1.f), ccp(0.5f, 0.5f)
+	);
 }

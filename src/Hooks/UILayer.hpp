@@ -20,12 +20,20 @@ class $modify(ModUILayer, UILayer) {
 	void updateSwitcher();
 	void resetSwitcherOpacity();
 };
+void setCheckpointButtonPosition(
+	CCNodeRGBA* button, CCNode* sibling, bool invertX
+);
 
 // If playLayer is nullptr then it will be
 // assumed that this is for the UIPOptionsLayer
-CCNodeRGBA* createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer);
-CCNodeRGBA* createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer);
+CCNodeRGBA*
+createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer);
+CCNodeRGBA*
+createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer);
 
 void createButtonBindsLabel(
 	CCNode* parent, const std::string& action, bool right
 );
+
+std::tuple<geode::Anchor, CCPoint, CCPoint>
+getCheckpointButtonLabelPosition(bool right);

@@ -1,3 +1,6 @@
+## Unreleased
+- Added an option to change the position of the practice buttons to above and below the vanilla ones \[[Issue #16](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/16)\]
+
 ## 1.3.2 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.2)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.2))
 - You can now force load checkpoints in the Checkpoint Manager if there's an error \[[Issue #13](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/13)\]
 - The attempts are no longer saved in the checkpoints, now the attempt counter is reset to one (configurable) \[[Issue #14](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/14)\]
