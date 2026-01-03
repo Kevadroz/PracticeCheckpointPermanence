@@ -119,12 +119,20 @@ void ModUILayer::updateSwitcher() {
 
 	std::string checkpointString;
 	switch (loadError) {
-	case None:
+	case None: {
+		std::string ghostCheckpointString =
+			playLayer->m_fields->m_ghostActiveCheckpoint == 0
+				? ""
+				: fmt::format(
+					  " ({})", playLayer->m_fields->m_ghostActiveCheckpoint
+				  );
 		checkpointString = fmt::format(
-			"{}/{}", playLayer->m_fields->m_activeCheckpoint,
+			"{}{}/{}", playLayer->m_fields->m_activeCheckpoint,
+			ghostCheckpointString,
 			playLayer->m_fields->m_persistentCheckpointArray->count()
 		);
 		break;
+	}
 	case Crash:
 		checkpointString = "BAD DATA";
 		break;

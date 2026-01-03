@@ -1,4 +1,5 @@
 ## Unreleased
+- Make the last placed persistent checkpoint be "ghost" active until switching to another checkpoint or placing a regular checkpoint \[[Issue #20](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/20)\]
 - Added an option to change the position of the practice buttons to above and below the vanilla ones \[[Issue #16](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/16)\]
 - The "Reset Attempts" now also resets the attempts when restarting from the last checkpoint in the Level End Screen \[[Issue #18](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/18)\]
 - Added an option to change the opacity of the active checkpoint \[[Issue #19](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/19)\]

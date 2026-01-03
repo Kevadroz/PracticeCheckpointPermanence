@@ -5,8 +5,8 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <functional>
 #include <optional>
-#include <variant>
 #include <sabe.persistenceapi/include/PersistenceAPI.hpp>
+#include <variant>
 #ifndef GEODE_IS_IOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 #endif
@@ -61,6 +61,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 		unsigned int m_activeCheckpoint = 0;
 		unsigned int m_activeSaveLayer = 0;
 		unsigned int m_saveLayerCount = 0;
+		unsigned int m_ghostActiveCheckpoint = 0;
 
 		std::optional<size_t> m_levelStringHash;
 
@@ -78,6 +79,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void loadFromCheckpoint(CheckpointObject* p0);
 
 	void togglePracticeMode(bool enabled);
+
+	void storeCheckpoint(CheckpointObject* p0);
 
 	// Custom
 	void registerKeybindListeners();
@@ -99,9 +102,10 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void
 	switchCurrentCheckpoint(unsigned int, bool ignoreLastCheckpoint = false);
 	void markPersistentCheckpoint();
-	void storePersistentCheckpoint(PersistentCheckpoint* checkpoint);
+	unsigned int storePersistentCheckpoint(PersistentCheckpoint* checkpoint);
 	void removePersistentCheckpoint(PersistentCheckpoint* checkpoint);
 	void removeCurrentPersistentCheckpoint();
+	void removeGhostPersistentCheckpoint();
 	void swapPersistentCheckpoints(unsigned int left, unsigned int right);
 
 	// Save Layers
@@ -113,7 +117,9 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void updateSaveLayerCount();
 
 	static void onModify(auto& self) {
-		if (!self.setHookPriorityPost("PlayLayer::setupHasCompleted", Priority::VeryLate))
+		if (!self.setHookPriorityPost(
+				 "PlayLayer::setupHasCompleted", Priority::VeryLate
+			 ))
 			log::warn("Failed to set PlayLayer::setupHasCompleted hook priority!");
 	}
 };

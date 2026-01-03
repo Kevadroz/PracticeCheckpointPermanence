@@ -93,14 +93,19 @@ void ModPlayLayer::processCreateObjectsFromSetup() {
 
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (m_isPracticeMode && m_fields->m_activeCheckpoint != 0 &&
-		 m_checkpointArray->count() == 0) {
-		checkpoint = reinterpret_cast<PersistentCheckpoint*>(
-			m_fields->m_persistentCheckpointArray->objectAtIndex(
-				m_fields->m_activeCheckpoint - 1
-			)
-		);
-		m_checkpointArray->addObject(checkpoint->m_checkpoint);
+	if (m_isPracticeMode) {
+		unsigned int loadIndex = 0;
+		if (m_fields->m_ghostActiveCheckpoint > 0)
+			loadIndex = m_fields->m_ghostActiveCheckpoint;
+		else if (m_checkpointArray->count() == 0)
+			loadIndex = m_fields->m_activeCheckpoint;
+
+		if (loadIndex != 0) {
+			checkpoint = reinterpret_cast<PersistentCheckpoint*>(
+				m_fields->m_persistentCheckpointArray->objectAtIndex(loadIndex - 1)
+			);
+			m_checkpointArray->addObject(checkpoint->m_checkpoint);
+		}
 	}
 
 	PlayLayer::resetLevel();
@@ -153,13 +158,22 @@ void ModPlayLayer::togglePracticeMode(bool enabled) {
 	updateModUI();
 }
 
+void ModPlayLayer::storeCheckpoint(CheckpointObject* p0) {
+	PlayLayer::storeCheckpoint(p0);
+
+	if (m_fields->m_ghostActiveCheckpoint > 0) {
+		m_fields->m_ghostActiveCheckpoint = 0;
+		static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
+	}
+}
+
 void ModPlayLayer::registerKeybindListeners() {
 #ifndef GEODE_IS_IOS
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
-			if (m_isPracticeMode && event->isDown()) {
+			if (m_isPracticeMode && event->isDown())
 				markPersistentCheckpoint();
-			}
+
 			return ListenerResult::Propagate;
 		},
 		"create_checkpoint"_spr
@@ -168,9 +182,10 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
 			if (m_isPracticeMode && event->isDown()) {
-				if (m_fields->m_activeCheckpoint != 0) {
+				if (m_fields->m_ghostActiveCheckpoint != 0)
+					removeGhostPersistentCheckpoint();
+				else if (m_fields->m_activeCheckpoint != 0)
 					removeCurrentPersistentCheckpoint();
-				}
 			}
 			return ListenerResult::Propagate;
 		},
@@ -179,9 +194,9 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
-			if (event->isDown()) {
+			if (event->isDown())
 				previousCheckpoint();
-			}
+
 			return ListenerResult::Propagate;
 		},
 		"previous_checkpoint"_spr
@@ -189,9 +204,9 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
-			if (event->isDown()) {
+			if (event->isDown())
 				nextCheckpoint();
-			}
+
 			return ListenerResult::Propagate;
 		},
 		"next_checkpoint"_spr
@@ -199,9 +214,9 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
-			if (event->isDown()) {
+			if (event->isDown())
 				previousSaveLayer();
-			}
+
 			return ListenerResult::Propagate;
 		},
 		"previous_layer"_spr
@@ -209,9 +224,9 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->template addEventListener<InvokeBindFilter>(
 		[this](InvokeBindEvent* event) {
-			if (event->isDown()) {
+			if (event->isDown())
 				nextSaveLayer();
-			}
+
 			return ListenerResult::Propagate;
 		},
 		"next_layer"_spr
