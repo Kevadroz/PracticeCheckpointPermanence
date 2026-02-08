@@ -8,8 +8,8 @@
 #include <Geode/ui/GeodeUI.hpp>
 
 CheckpointManager* CheckpointManager::create() {
-	auto ret = new CheckpointManager();
-	if (ret->initAnchored(260.f, 280.f, "GJ_square02.png")) {
+	auto ret = new CheckpointManager;
+	if (ret->init()) {
 		ret->autorelease();
 		return ret;
 	}
@@ -18,7 +18,10 @@ CheckpointManager* CheckpointManager::create() {
 	return nullptr;
 }
 
-bool CheckpointManager::setup() {
+bool CheckpointManager::init() {
+	if (!Popup::init(260.f, 280.f, "GJ_square02.png"))
+		return false;
+
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	bool hasCheckpoints =
 		playLayer->m_fields->m_persistentCheckpointArray->count() > 0;

@@ -5,7 +5,7 @@
 #include <variant>
 
 const char SAVE_HEADER[] = "PCP SAVE FILE";
-const unsigned int CURRENT_VERSION = 2;
+#define CURRENT_VERSION 3
 
 void ModPlayLayer::serializeCheckpoints() {
 	if (m_fields->m_loadError != LoadError::None)
@@ -21,12 +21,14 @@ void ModPlayLayer::serializeCheckpoints() {
 
 	char platform = PLATFORM;
 	unsigned int version = CURRENT_VERSION;
+	std::string gameVersion = geode::Loader::get()->getGameVersion();
 
 	persistenceAPI::Stream stream;
 	stream.setFile(string::pathToString(getSavePath()), 2, true);
 
 	stream.write((char*)SAVE_HEADER, sizeof(SAVE_HEADER));
 	stream << version;
+	stream << gameVersion;
 	stream << platform;
 
 	if (m_level->m_levelType != GJLevelType::Editor)
@@ -121,12 +123,14 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 	bool isEditorLevel = m_level->m_levelType == GJLevelType::Editor;
 
 	unsigned int saveVersion;
+	std::string gameVersion;
 	char savedPlatform;
 	unsigned int levelVersion;
 	size_t levelStringHash;
 
 	stream.ignore(sizeof(SAVE_HEADER));
 	stream >> saveVersion;
+	stream >> gameVersion;
 	stream >> savedPlatform;
 	if (!isEditorLevel) {
 		stream >> levelVersion;
@@ -134,7 +138,10 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 		stream >> levelStringHash;
 	}
 
-	if (saveVersion < 1)
+	if (saveVersion < 3)
+		return LoadError::OutdatedData;
+
+	if (gameVersion != geode::Loader::get()->getGameVersion())
 		return LoadError::OutdatedData;
 
 	if (saveVersion > CURRENT_VERSION)

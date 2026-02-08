@@ -1,3 +1,6 @@
+## Unreleased
+- Migrate to Geode v5, sans dependencies
+
 ## 1.3.3 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.3)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.3))
 - Make the last placed persistent checkpoint be "ghost" active until switching to another checkpoint or placing a regular checkpoint \[[Issue #20](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/20)\]
 - Added an option to change the position of the practice buttons to above and below the vanilla ones \[[Issue #16](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/16)\]

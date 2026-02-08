@@ -2,16 +2,15 @@
 #include "UILayer.hpp"
 
 $execute {
-	new EventListener<SettingChangedFilterV3>(
-		+[](std::shared_ptr<SettingV3> setting) {
+	SettingChangedEvent(Mod::get(), "progressbar-checkpoint-opacity")
+		.listen(+[](std::shared_ptr<SettingV3> setting) {
 			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 			if (playLayer != nullptr)
 				playLayer->m_fields->m_pbCheckpointContainer->setOpacity(
 					255 * typeinfo_pointer_cast<FloatSettingV3>(setting)->getValue()
 				);
-		},
-		SettingChangedFilterV3(Mod::get(), "progressbar-checkpoint-opacity")
-	);
+		})
+		.leak();
 }
 
 bool ModPlayLayer::init(

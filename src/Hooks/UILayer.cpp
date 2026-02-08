@@ -12,18 +12,18 @@ $execute {
 		  {"switcher-label-active-opacity", "switcher-label-inactive-opacity",
 			"switcher-button-active-opacity", "switcher-button-inactive-opacity",
 			"switcher-icon-active-opacity", "switcher-icon-inactive-opacity"}) {
-		new EventListener<SettingChangedFilterV3>(
-			+[](std::shared_ptr<SettingV3> setting) {
+		SettingChangedEvent(mod, setting)
+			.listen(+[](std::shared_ptr<SettingV3> setting) {
 				ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
 				if (uiLayer != nullptr)
 					uiLayer->resetSwitcherOpacity();
-			},
-			SettingChangedFilterV3(mod, setting)
-		);
+			})
+			.leak();
 	}
 
-	geode::listenForSettingChanges(
-		"practice-buttons-position", [](std::string value) {
+	geode::listenForSettingChanges<std::string>(
+		"practice-buttons-position",
+		[](std::string value) {
 			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
 			setCheckpointButtonPosition(
 				uiLayer->m_fields->m_createCheckpointButton,

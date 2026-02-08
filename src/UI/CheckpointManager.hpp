@@ -3,9 +3,9 @@
 
 using namespace geode::prelude;
 
-class CheckpointManager : public Popup<> {
+class CheckpointManager : public Popup {
 public:
-	bool setup() override;
+	bool init();
 	static CheckpointManager* create();
 
 private:
