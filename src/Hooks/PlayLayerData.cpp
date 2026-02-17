@@ -21,7 +21,7 @@ void ModPlayLayer::serializeCheckpoints() {
 
 	char platform = PLATFORM;
 	unsigned int version = CURRENT_VERSION;
-	std::string gameVersion = geode::Loader::get()->getGameVersion();
+	gd::string gameVersion = geode::Loader::get()->getGameVersion();
 
 	persistenceAPI::Stream stream;
 	stream.setFile(string::pathToString(getSavePath()), 2, true);
@@ -123,7 +123,7 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 	bool isEditorLevel = m_level->m_levelType == GJLevelType::Editor;
 
 	unsigned int saveVersion;
-	std::string gameVersion;
+	gd::string gameVersion;
 	char savedPlatform;
 	unsigned int levelVersion;
 	size_t levelStringHash;
