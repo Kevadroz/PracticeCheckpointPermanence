@@ -7,19 +7,13 @@
 #include <optional>
 #include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 #include <variant>
-#ifndef GEODE_IS_IOS
-#include <geode.custom-keybinds/include/Keybinds.hpp>
-#endif
 
 using namespace geode::prelude;
 using namespace persistenceAPI;
-#ifndef GEODE_IS_IOS
-using namespace keybinds;
-#endif
 
 // Copied from PlatformerSaves
 #if defined(GEODE_IS_WINDOWS)
-#define UNIQUE_ID_OFFSET 0x69c158
+#define UNIQUE_ID_OFFSET 0x6ba158
 #define PLATFORM 0
 #elif defined(GEODE_IS_ANDROID64)
 #define UNIQUE_ID_OFFSET 0x11fe018

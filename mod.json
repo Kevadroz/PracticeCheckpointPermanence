@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.0-alpha.1",
+	"geode": "5.0.0-beta.2",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
@@ -20,12 +20,7 @@
 		"utility"
 	],
 	"dependencies": {
-		"geode.custom-keybinds": {
-			"version": ">=v1.10.0",
-			"importance": "required",
-			"platforms": ["win", "android", "mac"]
-		},
-		"geode.node-ids": ">=v1.22.0-beta.1",
+		"geode.node-ids": ">=v1.22.0-beta.2",
 		"sabe.persistenceapi": ">=v1.1.0"
 	},
 	"resources": {
@@ -36,6 +31,46 @@
 		}
 	},
 	"settings": {
+		"keybinds": {
+			"type": "title",
+			"name": "Keybinds"
+		},
+		"keybind-create-checkpoint": {
+			"type": "keybind",
+			"name": "Create Checkpoint",
+			"default": "Alt+Z",
+			"description": "Creates a new persistent checkpoint"
+		},
+		"keybind-remove-checkpoint": {
+			"type": "keybind",
+			"name": "Remove Checkpoint",
+			"default": "Alt+X",
+			"description": "Removes the active persistent checkpoint"
+		},
+		"keybind-previous-checkpoint": {
+			"type": "keybind",
+			"name": "Previous Checkpoint",
+			"default": "Alt+Q",
+			"description": "Activates the previous persistent checkpoint"
+		},
+		"keybind-next-checkpoint": {
+			"type": "keybind",
+			"name": "Next Checkpoint",
+			"default": "Alt+E",
+			"description": "Activates the next persistent checkpoint"
+		},
+		"keybind-previous-layer": {
+			"type": "keybind",
+			"name": "Previous Layer",
+			"default": "Alt+Shift+Q",
+			"description": "Switches to the previous save layer"
+		},
+		"keybind-next-layer": {
+			"type": "keybind",
+			"name": "Next Layer",
+			"default": "Alt+Shift+E",
+			"description": "Switches to the next save layer"
+		},
 		"percentage-display-decimals": {
 			"name": "Displayed decimals for percentages",
 			"type": "int",

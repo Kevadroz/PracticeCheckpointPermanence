@@ -40,7 +40,7 @@ bool ModUIPOptionsLayer::init() {
 				m_fields->m_switcherMenu->getPosition() + delta / scale;
 			m_fields->m_switcherMenu->setPosition(destPos);
 			// post event to bpui
-			DispatchEvent("naxrin.better_pui", destPos).post();
+			DispatchEvent<CCPoint>("naxrin.better_pui").send(destPos);
 			m_fields->m_lastPos = touchPos;
 		},
 		[this, pui, screenCenter](CCTouch* touch, CCEvent* event) {

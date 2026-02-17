@@ -1,10 +1,6 @@
 #include "UILayer.hpp"
 #include "PlayLayer.hpp"
 
-#ifndef GEODE_IS_IOS
-#include <geode.custom-keybinds/include/Keybinds.hpp>
-#endif
-
 $execute {
 	Mod* mod = Mod::get();
 
@@ -22,8 +18,7 @@ $execute {
 	}
 
 	geode::listenForSettingChanges<std::string>(
-		"practice-buttons-position",
-		[](std::string value) {
+		"practice-buttons-position", [](std::string value) {
 			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
 			setCheckpointButtonPosition(
 				uiLayer->m_fields->m_createCheckpointButton,
@@ -36,7 +31,6 @@ $execute {
 				true
 			);
 
-#ifndef GEODE_IS_IOS
 			std::tuple<geode::Anchor, CCPoint, CCPoint> leftPosition =
 				getCheckpointButtonLabelPosition(false);
 			std::tuple<geode::Anchor, CCPoint, CCPoint> rightPosition =
@@ -55,7 +49,6 @@ $execute {
 			rightBind->updateAnchoredPosition(
 				std::get<0>(rightPosition), std::get<1>(rightPosition)
 			);
-#endif
 		}
 	);
 }
@@ -273,8 +266,10 @@ createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	setCheckpointButtonPosition(button, sibling, false);
 	button->setID("markPersistentCheckpoint"_spr);
 
+#ifdef GEODE_IS_DESKTOP
 	if (playLayer != nullptr)
-		createButtonBindsLabel(button, "create_checkpoint"_spr, false);
+		createButtonBindsLabel(button, "keybind-create_checkpoint", false);
+#endif
 
 	button->setCascadeOpacityEnabled(true);
 	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
@@ -305,8 +300,10 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 	setCheckpointButtonPosition(button, sibling, true);
 	button->setID("removePersistentCheckpoint"_spr);
 
+#ifdef GEODE_IS_DESKTOP
 	if (playLayer != nullptr)
-		createButtonBindsLabel(button, "remove_checkpoint"_spr, true);
+		createButtonBindsLabel(button, "keybind-remove-checkpoint", true);
+#endif
 
 	button->setCascadeOpacityEnabled(true);
 	button->setOpacity(GameManager::get()->m_practiceOpacity * 255);
@@ -320,18 +317,17 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 void createButtonBindsLabel(
 	CCNode* parent, const std::string& action, bool right
 ) {
-#ifndef GEODE_IS_IOS
 	CCNodeRGBA* bindContainer = cocos2d::CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
-	for (auto& bind : keybinds::BindManager::get()->getBindsFor(action)) {
+	for (auto bind : Mod::get()->getSettingValue<std::vector<Keybind>>(action)) {
 		if (!first) {
 			bindContainer->addChild(
 				cocos2d::CCLabelBMFont::create("/", "bigFont.fnt")
 			);
 		}
 		first = false;
-		bindContainer->addChild(bind->createLabel());
+		bindContainer->addChild(bind.createNode());
 	}
 	bindContainer->setID("binds");
 	bindContainer->setContentSize({95, 40.f});
@@ -346,7 +342,6 @@ void createButtonBindsLabel(
 	);
 
 	bindContainer->setCascadeOpacityEnabled(true);
-#endif
 }
 
 void setCheckpointButtonPosition(

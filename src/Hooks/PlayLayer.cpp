@@ -167,70 +167,57 @@ void ModPlayLayer::storeCheckpoint(CheckpointObject* p0) {
 }
 
 void ModPlayLayer::registerKeybindListeners() {
-#ifndef GEODE_IS_IOS
-	this->template addEventListener<InvokeBindFilter>(
-		[this](InvokeBindEvent* event) {
-			if (m_isPracticeMode && event->isDown())
+	this->addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "keybind-create-checkpoint"),
+		[this](Keybind const& keybind, bool down, bool repeat) {
+			if (m_isPracticeMode && down && !repeat)
 				markPersistentCheckpoint();
-
-			return ListenerResult::Propagate;
-		},
-		"create_checkpoint"_spr
+		}
 	);
 
-	this->template addEventListener<InvokeBindFilter>(
-		[this](InvokeBindEvent* event) {
-			if (m_isPracticeMode && event->isDown()) {
+	this->addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "keybind-remove-checkpoint"),
+		[this](Keybind const& keybind, bool down, bool repeat) {
+			if (m_isPracticeMode && down && !repeat) {
 				if (m_fields->m_ghostActiveCheckpoint != 0)
 					removeGhostPersistentCheckpoint();
 				else if (m_fields->m_activeCheckpoint != 0)
 					removeCurrentPersistentCheckpoint();
 			}
-			return ListenerResult::Propagate;
-		},
-		"remove_checkpoint"_spr
+		}
 	);
 
-	this->template addEventListener<InvokeBindFilter>(
-		[this](InvokeBindEvent* event) {
-			if (event->isDown())
+	this->addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-checkpoint"),
+		[this](Keybind const& keybind, bool down, bool repeat) {
+			if (m_isPracticeMode && down)
 				previousCheckpoint();
-
-			return ListenerResult::Propagate;
-		},
-		"previous_checkpoint"_spr
+		}
 	);
 
-	this->template addEventListener<InvokeBindFilter>(
-		[this](InvokeBindEvent* event) {
-			if (event->isDown())
+	this->addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-checkpoint"),
+		[this](Keybind const& keybind, bool down, bool repeat) {
+			if (m_isPracticeMode && down)
 				nextCheckpoint();
-
-			return ListenerResult::Propagate;
-		},
-		"next_checkpoint"_spr
+		}
 	);
 
-	this->template addEventListener<InvokeBindFilter>(
-		[this](InvokeBindEvent* event) {
-			if (event->isDown())
+	this->addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-layer"),
+		[this](Keybind const& keybind, bool down, bool repeat) {
+			if (m_isPracticeMode && down)
 				previousSaveLayer();
-
-			return ListenerResult::Propagate;
-		},
-		"previous_layer"_spr
+		}
 	);
 
-	this->template addEventListener<InvokeBindFilter>(
-		[this](InvokeBindEvent* event) {
-			if (event->isDown())
+	this->addEventListener(
+		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-layer"),
+		[this](Keybind const& keybind, bool down, bool repeat) {
+			if (m_isPracticeMode && down)
 				nextSaveLayer();
-
-			return ListenerResult::Propagate;
-		},
-		"next_layer"_spr
+		}
 	);
-#endif
 }
 
 void ModPlayLayer::updateModUI() {
