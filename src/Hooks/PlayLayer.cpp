@@ -80,13 +80,13 @@ void ModPlayLayer::destructor() {
 
 // Copied from PlatformerSaves
 void ModPlayLayer::processCreateObjectsFromSetup() {
-	if (!m_fields->m_startedLoadingObjects) {
-		m_fields->m_startedLoadingObjects = true;
-		*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET) = 12;
-		reinterpret_cast<persistenceAPI::PAPlayLayer*>(this)
-			->m_fields->m_uniqueIDBase =
-			*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET);
-	}
+	// if (!m_fields->m_startedLoadingObjects) {
+	// 	m_fields->m_startedLoadingObjects = true;
+	// 	*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET) = 12;
+	// 	reinterpret_cast<persistenceAPI::PAPlayLayer*>(this)
+	// 		->m_fields->m_uniqueIDBase =
+	// 		*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET);
+	// }
 	PlayLayer::processCreateObjectsFromSetup();
 }
 
