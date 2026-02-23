@@ -51,6 +51,8 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	else
 		m_attempts--;
 
+	m_level->setAttempts(m_level->m_attempts - 1);
+
 	updateModUI();
 
 	resetLevel();
