@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.0-beta.2",
+	"geode": "5.0.1",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
@@ -39,37 +39,49 @@
 			"type": "keybind",
 			"name": "Create Checkpoint",
 			"default": "Alt+Z",
-			"description": "Creates a new persistent checkpoint"
+			"description": "Creates a new persistent checkpoint",
+			"category": "gameplay",
+    		"migrate-from": "kevadroz.practicecheckpointpermanence/create_checkpoint"
 		},
 		"keybind-remove-checkpoint": {
 			"type": "keybind",
 			"name": "Remove Checkpoint",
 			"default": "Alt+X",
-			"description": "Removes the active persistent checkpoint"
+			"description": "Removes the active persistent checkpoint",
+			"category": "gameplay",
+    		"migrate-from": "kevadroz.practicecheckpointpermanence/remove_checkpoint"
 		},
 		"keybind-previous-checkpoint": {
 			"type": "keybind",
 			"name": "Previous Checkpoint",
 			"default": "Alt+Q",
-			"description": "Activates the previous persistent checkpoint"
+			"description": "Activates the previous persistent checkpoint",
+			"category": "gameplay",
+    		"migrate-from": "kevadroz.practicecheckpointpermanence/previous_checkpoint"
 		},
 		"keybind-next-checkpoint": {
 			"type": "keybind",
 			"name": "Next Checkpoint",
 			"default": "Alt+E",
-			"description": "Activates the next persistent checkpoint"
+			"description": "Activates the next persistent checkpoint",
+			"category": "gameplay",
+    		"migrate-from": "kevadroz.practicecheckpointpermanence/next_checkpoint"
 		},
 		"keybind-previous-layer": {
 			"type": "keybind",
 			"name": "Previous Layer",
 			"default": "Alt+Shift+Q",
-			"description": "Switches to the previous save layer"
+			"description": "Switches to the previous save layer",
+			"category": "gameplay",
+    		"migrate-from": "kevadroz.practicecheckpointpermanence/previous_layer"
 		},
 		"keybind-next-layer": {
 			"type": "keybind",
 			"name": "Next Layer",
 			"default": "Alt+Shift+E",
-			"description": "Switches to the next save layer"
+			"description": "Switches to the next save layer",
+			"category": "gameplay",
+    		"migrate-from": "kevadroz.practicecheckpointpermanence/next_layer"
 		},
 		"percentage-display-decimals": {
 			"name": "Displayed decimals for percentages",
@@ -138,7 +150,7 @@
 		"practice-buttons-position": {
 			"name": "Position of Practice Buttons",
 			"type": "string",
-			"one-of": ["Horizontal", "Above", "Below"],
+			"one-of": [ "Horizontal", "Above", "Below" ],
 			"default": "Horizontal"
 		},
 		"title-switcher": {

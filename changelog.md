@@ -1,5 +1,5 @@
 ## Unreleased
-- Migrate to Geode v5, sans dependencies
+- Migrate to Geometry Dash 2.2081 and Geode v5
 
 ## 1.3.3 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.3)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.3))
 - Make the last placed persistent checkpoint be "ghost" active until switching to another checkpoint or placing a regular checkpoint \[[Issue #20](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/20)\]

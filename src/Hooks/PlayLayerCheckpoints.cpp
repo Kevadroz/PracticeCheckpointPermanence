@@ -71,7 +71,8 @@ void ModPlayLayer::markPersistentCheckpoint() {
 			m_effectManager->m_persistentItemCountMap,
 			m_effectManager->m_persistentTimerItemSet
 		);
-	m_fields->m_ghostActiveCheckpoint = storePersistentCheckpoint(checkpoint) + 1;
+	m_fields->m_ghostActiveCheckpoint =
+		storePersistentCheckpoint(checkpoint) + 1;
 	serializeCheckpoints();
 
 	if (m_fields->m_persistentCheckpointArray->count() == 1)

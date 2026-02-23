@@ -169,7 +169,7 @@ void ModPlayLayer::storeCheckpoint(CheckpointObject* p0) {
 void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-create-checkpoint"),
-		[this](Keybind const& keybind, bool down, bool repeat) {
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (m_isPracticeMode && down && !repeat)
 				markPersistentCheckpoint();
 		}
@@ -177,7 +177,7 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-remove-checkpoint"),
-		[this](Keybind const& keybind, bool down, bool repeat) {
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (m_isPracticeMode && down && !repeat) {
 				if (m_fields->m_ghostActiveCheckpoint != 0)
 					removeGhostPersistentCheckpoint();
@@ -189,7 +189,7 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-checkpoint"),
-		[this](Keybind const& keybind, bool down, bool repeat) {
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (m_isPracticeMode && down)
 				previousCheckpoint();
 		}
@@ -197,7 +197,7 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-checkpoint"),
-		[this](Keybind const& keybind, bool down, bool repeat) {
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (m_isPracticeMode && down)
 				nextCheckpoint();
 		}
@@ -205,7 +205,7 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-layer"),
-		[this](Keybind const& keybind, bool down, bool repeat) {
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (m_isPracticeMode && down)
 				previousSaveLayer();
 		}
@@ -213,7 +213,7 @@ void ModPlayLayer::registerKeybindListeners() {
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-layer"),
-		[this](Keybind const& keybind, bool down, bool repeat) {
+		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (m_isPracticeMode && down)
 				nextSaveLayer();
 		}
