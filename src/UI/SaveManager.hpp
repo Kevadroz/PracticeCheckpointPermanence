@@ -1,9 +1,9 @@
 
 using namespace geode::prelude;
 
-class SaveManager : public Popup<> {
+class SaveManager : public Popup {
 public:
-	bool setup() override;
 	static SaveManager* create();
+	bool init();
 
 };
