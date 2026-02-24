@@ -64,7 +64,7 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 
 	unsigned int saveVersion;
 	std::variant<unsigned int, LoadError> verificationResult =
-		verifySaveStream(stream);
+		verifySaveStream(stream, m_level, this);
 
 	if (!ignoreVerification) {
 		if (std::holds_alternative<LoadError>(verificationResult)) {
@@ -118,9 +118,10 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 	m_fields->m_persistentCheckpointArray->removeAllObjects();
 }
 
-std::variant<unsigned int, LoadError>
-ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
-	bool isEditorLevel = m_level->m_levelType == GJLevelType::Editor;
+std::variant<unsigned int, LoadError> ModPlayLayer::verifySaveStream(
+	persistenceAPI::Stream& stream, GJGameLevel* level, ModPlayLayer* playLayer
+) {
+	bool isEditorLevel = level->m_levelType == GJLevelType::Editor;
 
 	unsigned int saveVersion;
 	gd::string gameVersion;
@@ -151,12 +152,13 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 		return LoadError::OtherPlatform;
 
 	if (!isEditorLevel) {
-		if (levelVersion != m_level->m_levelVersion)
+		if (levelVersion != level->m_levelVersion)
 			return LoadError::LevelVersionMismatch;
-	} else {
-		if (!m_fields->m_levelStringHash.has_value())
-			m_fields->m_levelStringHash = c_stringHasher(m_level->m_levelString);
-		if (levelStringHash != m_fields->m_levelStringHash.value()) {
+	} else if (playLayer) {
+		if (!playLayer->m_fields->m_levelStringHash.has_value())
+			playLayer->m_fields->m_levelStringHash =
+				c_stringHasher(level->m_levelString);
+		if (levelStringHash != playLayer->m_fields->m_levelStringHash.value()) {
 			// log::debug(
 			// 	"Bad Level Hash: {} != {}", levelStringHash,
 			// 	m_fields->m_levelStringHash.value()
@@ -168,15 +170,17 @@ ModPlayLayer::verifySaveStream(persistenceAPI::Stream& stream) {
 	return saveVersion;
 }
 
-std::variant<unsigned int, LoadError>
-ModPlayLayer::verifySavePath(std::filesystem::path path) {
+std::variant<unsigned int, LoadError> ModPlayLayer::verifySavePath(
+	std::filesystem::path path, GJGameLevel* level, ModPlayLayer* playLayer
+) {
 	if (!std::filesystem::exists(path))
 		return LoadError::None;
 
 	persistenceAPI::Stream stream;
 	stream.setFile(string::pathToString(path), 2);
 
-	std::variant<unsigned int, LoadError> result = verifySaveStream(stream);
+	std::variant<unsigned int, LoadError> result =
+		verifySaveStream(stream, level, playLayer);
 	stream.end();
 
 	return result;

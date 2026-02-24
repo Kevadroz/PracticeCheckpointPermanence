@@ -84,10 +84,14 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void serializeCheckpoints();
 	void deserializeCheckpoints(bool ignoreVerification = false);
 	void unloadPersistentCheckpoints();
-	std::variant<unsigned int, LoadError>
-	verifySaveStream(persistenceAPI::Stream& stream);
-	std::variant<unsigned int, LoadError>
-	verifySavePath(std::filesystem::path path);
+	static std::variant<unsigned int, LoadError> verifySaveStream(
+		persistenceAPI::Stream& stream, GJGameLevel* level,
+		ModPlayLayer* playLayer = nullptr
+	);
+	static std::variant<unsigned int, LoadError> verifySavePath(
+		std::filesystem::path path, GJGameLevel* level,
+		ModPlayLayer* playLayer = nullptr
+	);
 	std::filesystem::path getSavePath();
 
 	// Checkpoints
