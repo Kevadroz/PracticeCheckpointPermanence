@@ -37,4 +37,6 @@ add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 if(PERSISTENCEAPI_EXTERNAL)
     setup_geode_mod(${PROJECT_NAME} EXTERNALS sabe.persistenceapi)
+else()
+    setup_geode_mod(${PROJECT_NAME})
 endif()
