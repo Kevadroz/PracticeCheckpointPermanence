@@ -5,14 +5,7 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/binding/PlayerCheckpoint.hpp>
 
-#include <sabe.persistenceapi/include/hooks/EffectManagerState.hpp>
-#include <sabe.persistenceapi/include/hooks/FMODAudioState.hpp>
-#include <sabe.persistenceapi/include/hooks/GJGameState.hpp>
-#include <sabe.persistenceapi/include/hooks/GJShaderState.hpp>
-#include <sabe.persistenceapi/include/hooks/PlayerCheckpoint.hpp>
-#include <sabe.persistenceapi/include/hooks/cocos2d/CCArray.hpp>
-#include <sabe.persistenceapi/include/hooks/cocos2d/CCNode.hpp>
-#include <sabe.persistenceapi/include/util/Stream.hpp>
+#include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 
 using namespace persistenceAPI;
 
@@ -215,3 +208,142 @@ void PersistentCheckpoint::toggleActive(bool active) {
 		CCSpriteFrameCache::get()->spriteFrameByName(frameName)
 	);
 }
+
+#if defined(PA_DEBUG) && defined(PA_DESCRIBE)
+void PersistentCheckpoint::describe() {
+	log::info("[PersistentCheckpoint - describe] start");
+	reinterpret_cast<PACCObject*>(m_checkpoint->getObject())->describe();
+	reinterpret_cast<PACCNode*>(m_checkpoint->getObject())->describe();
+	reinterpret_cast<PAGJGameState*>(&m_checkpoint->m_gameState)->describe();
+	reinterpret_cast<PAGJShaderState*>(&m_checkpoint->m_shaderState)->describe();
+	reinterpret_cast<PAFMODAudioState*>(&m_checkpoint->m_audioState)->describe();
+	log::info(
+		"[PersistentCheckpoint - describe] "
+		"m_physicalCheckpointObject->m_startPosition: {}",
+		m_checkpoint->m_physicalCheckpointObject->m_startPosition
+	);
+	reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player1Checkpoint)
+		->describe();
+	if (m_checkpoint->m_player2Checkpoint) {
+		reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player2Checkpoint)
+			->describe();
+	}
+	log::info(
+		"[PersistentCheckpoint - describe] m_unke78: {}", m_checkpoint->m_unke78
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_unke7c: {}", m_checkpoint->m_unke7c
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_unke80: {}", m_checkpoint->m_unke80
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_ground2Invisible: {}",
+		m_checkpoint->m_ground2Invisible
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_streakBlend: {}",
+		m_checkpoint->m_streakBlend
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_uniqueID: {}",
+		m_checkpoint->m_uniqueID
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_respawnID: {}",
+		m_checkpoint->m_respawnID
+	);
+	int l_size = m_checkpoint->m_vectorSavedObjectStateRef.size();
+	log::info(
+		"[PersistentCheckpoint - describe] m_vectorSavedObjectStateRef.size(): "
+		"{}",
+		l_size
+	);
+	for (int i = 0; i < l_size; i++) {
+		log::info(
+			"[PersistentCheckpoint - describe] m_vectorSavedObjectStateRef[{}]:", i
+		);
+		reinterpret_cast<PASavedObjectStateRef*>(
+			&m_checkpoint->m_vectorSavedObjectStateRef[i]
+		)
+			->describe();
+	}
+	l_size = m_checkpoint->m_vectorActiveSaveObjectState.size();
+	log::info(
+		"[PersistentCheckpoint - describe] m_vectorActiveSaveObjectState.size(): "
+		"{}",
+		l_size
+	);
+	for (int i = 0; i < l_size; i++) {
+		log::info(
+			"[PersistentCheckpoint - describe] m_vectorActiveSaveObjectState[{}]:",
+			i
+		);
+		reinterpret_cast<PASavedActiveObjectState*>(
+			&m_checkpoint->m_vectorActiveSaveObjectState[i]
+		)
+			->describe();
+	}
+	l_size = m_checkpoint->m_vectorSpecialSaveObjectState.size();
+	log::info(
+		"[PersistentCheckpoint - describe] "
+		"m_vectorSpecialSaveObjectState.size(): "
+		"{}",
+		l_size
+	);
+	for (int i = 0; i < l_size; i++) {
+		log::info(
+			"[PersistentCheckpoint - describe] "
+			"m_vectorSpecialSaveObjectState[{}]:",
+			i
+		);
+		reinterpret_cast<PASavedSpecialObjectState*>(
+			&m_checkpoint->m_vectorSpecialSaveObjectState[i]
+		)
+			->describe();
+	}
+	reinterpret_cast<PAEffectManagerState*>(&m_checkpoint->m_effectManagerState)
+		->describe();
+	if (m_checkpoint->m_gradientTriggerObjectArray) {
+		reinterpret_cast<PACCArray*>(m_checkpoint->m_gradientTriggerObjectArray)
+			->describe<GradientTriggerObject>();
+	}
+	log::info(
+		"[PersistentCheckpoint - describe] m_unk11e8: {}", m_checkpoint->m_unk11e8
+	);
+	l_size = m_checkpoint->m_sequenceTriggerStateUnorderedMap.size();
+	log::info(
+		"[PersistentCheckpoint - describe] "
+		"m_sequenceTriggerStateUnorderedMap.size(): {}",
+		l_size
+	);
+	int i = 0;
+	for (gd::pair<int, SequenceTriggerState> l_pair :
+		  m_checkpoint->m_sequenceTriggerStateUnorderedMap) {
+		log::info(
+			"[PersistentCheckpoint - describe] m_sequenceTriggerStateUnorderedMap "
+			"element {} key: {}",
+			i, l_pair.first
+		);
+		log::info(
+			"[PersistentCheckpoint - describe] m_sequenceTriggerStateUnorderedMap "
+			"element {} value:",
+			i
+		);
+		reinterpret_cast<PASequenceTriggerState*>(&l_pair.second)->describe();
+		i++;
+	}
+	log::info(
+		"[PersistentCheckpoint - describe] m_commandIndex: {}",
+		m_checkpoint->m_commandIndex
+	);
+
+	// Custom Data
+
+	log::info("[PersistentCheckpoint - describe] m_objectPos: {}", m_objectPos);
+	log::info("[PersistentCheckpoint - describe] m_time: {}", m_time);
+	log::info("[PersistentCheckpoint - describe] m_percent: {}", m_percent);
+	log::info("[PersistentCheckpoint - describe] m_persistentItemCountMap: {}", m_persistentItemCountMap);
+	log::info("[PersistentCheckpoint - describe] m_persistentTimerItemSet: {}", m_persistentTimerItemSet);
+}
+#endif

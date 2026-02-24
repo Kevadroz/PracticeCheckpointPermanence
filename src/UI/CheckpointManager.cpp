@@ -369,7 +369,9 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_deleteButton->setOpacity(255);
 	}
 
-	m_forceLoadButton->setVisible(playLayer->m_fields->m_loadError != LoadError::None);
+	m_forceLoadButton->setVisible(
+		playLayer->m_fields->m_loadError != LoadError::None
+	);
 
 	float layerSwitchOffset =
 		m_saveLayerLabel->getScaledContentWidth() / 2.f + 15.f;
@@ -507,6 +509,21 @@ CCNode* createCheckpointCell(
 	menu->addChildAtPosition(selectBtn, geode::Anchor::Left, ccp(35, 0));
 	menu->addChildAtPosition(label, geode::Anchor::Left, ccp(50, 0));
 	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-20, 0));
+
+#if defined(PA_DEBUG) && defined(PA_DESCRIBE)
+	CCSprite* describeSprite =
+		CCSprite::createWithSpriteFrameName("GJ_pasteBtn_001.png");
+	CCMenuItemSpriteExtra* describeBtn = CCMenuItemExt::createSpriteExtra(
+		describeSprite,
+		[checkpoint, selectBtn](CCMenuItemSpriteExtra* sender) {
+			selectBtn->activate();
+			checkpoint->describe();
+		}
+	);
+	describeBtn->m_baseScale = .75;
+	describeBtn->setScale(.75);
+	menu->addChildAtPosition(describeBtn, geode::Anchor::Right, ccp(-55, 0));
+#endif
 
 	return menu;
 }

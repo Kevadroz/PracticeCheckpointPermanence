@@ -26,4 +26,8 @@ public:
 	void deserialize(persistenceAPI::Stream& in, unsigned int saveVersion);
 	void setupPhysicalObject();
 	void toggleActive(bool);
+
+#if defined(PA_DEBUG) && defined(PA_DESCRIBE)
+	void describe();
+#endif
 };

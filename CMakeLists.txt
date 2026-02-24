@@ -16,6 +16,17 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 # Set up the mod binary
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+option(PERSISTENCEAPI_EXTERNAL "Use PersistenceAPI provided in build/geode-deps" OFF)
+
+# PersistenceAPI debug stuff
+option(WITH_PA_DESCRIBE "Log in depth info for saved/loaded classes" OFF)
+
+if(PERSISTENCEAPI_EXTERNAL AND WITH_PA_DESCRIBE)
+	add_definitions(-DPA_DESCRIBE)
+	add_definitions(-DPA_DEBUG)
+endif()
+# End of PersistenceAPI debug stuff
+
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
 else()
@@ -24,5 +35,6 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
-# Set up dependencies, resources, and link Geode.
-setup_geode_mod(${PROJECT_NAME})
+if(PERSISTENCEAPI_EXTERNAL)
+    setup_geode_mod(${PROJECT_NAME} EXTERNALS sabe.persistenceapi)
+endif()
