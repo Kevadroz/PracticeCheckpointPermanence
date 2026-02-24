@@ -4,6 +4,10 @@
 $execute {
 	Mod* mod = Mod::get();
 
+	geode::listenForSettingChanges<bool>("switcher-enabled", [](bool value) {
+		static_cast<ModUILayer*>(UILayer::get())->updateSwitcher();
+	});
+
 	for (std::string setting :
 		  {"switcher-label-active-opacity", "switcher-label-inactive-opacity",
 			"switcher-button-active-opacity", "switcher-button-inactive-opacity",
@@ -66,6 +70,7 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 	m_fields->m_switcherMenu = SwitcherMenu::create(playLayer);
 	m_fields->m_switcherMenu->setPosition(getSwitcherPosition());
 	m_fields->m_switcherMenu->setVisible(false);
+	m_fields->m_switcherMenu->setEnabled(false);
 
 	m_fields->m_switcherMenu->m_buttonMenu->setTouchEnabled(
 #if defined(GEODE_IS_MOBILE)
@@ -98,12 +103,14 @@ void ModUILayer::updateSwitcher() {
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	LoadError loadError = playLayer->m_fields->m_loadError;
 
-	m_fields->m_switcherMenu->setVisible(
+	bool switcherActive =
+		Mod::get()->getSettingValue<bool>("switcher-enabled") &&
 		playLayer->m_isPracticeMode &&
 		(playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
 		 playLayer->m_fields->m_activeSaveLayer > 0 ||
-		 loadError != LoadError::None)
-	);
+		 loadError != LoadError::None);
+	m_fields->m_switcherMenu->setVisible(switcherActive);
+	m_fields->m_switcherMenu->setEnabled(switcherActive);
 
 	if (loadError == LoadError::None)
 		m_fields->m_switcherMenu->setColor(ccWHITE);
