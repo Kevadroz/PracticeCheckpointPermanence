@@ -253,6 +253,11 @@ void ModPlayLayer::updateModUI() {
 		sprite->setPosition(
 			ccp(barWidth * (checkpoint->m_percent / 100.f) + 2, 0)
 		);
+		if (m_fields->m_activeCheckpoint > 0 &&
+			 checkpoint == m_fields->m_persistentCheckpointArray->objectAtIndex(
+									m_fields->m_activeCheckpoint - 1
+								))
+			sprite->setZOrder(1);
 		container->addChild(sprite);
 
 		currentCheckpoint++;

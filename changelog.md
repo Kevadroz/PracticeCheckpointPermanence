@@ -3,6 +3,7 @@
 - Disabled the mod for editor levels since it wasn't really usable (this also changes the location of the other save files)
 - Added handling for invalid save files
 - Fixed the buttons in the Checkpoint Manager list being clickable outside the list
+- Make the active checkpoint be on top of the others on the progress bar
 - Rearranged some settings
 
 ## Unreleased (1.3.4)
