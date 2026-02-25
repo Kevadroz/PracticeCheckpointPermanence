@@ -5,7 +5,7 @@
 #include <filesystem>
 
 void ModPauseLayer::customSetup() {
-	PlayLayer* playLayer = PlayLayer::get();
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 
 	PauseLayer::customSetup();
 
@@ -18,35 +18,34 @@ void ModPauseLayer::customSetup() {
 
 	CCMenuItemSpriteExtra* button = CCMenuItemExt::createSpriteExtra(
 		buttonSprite, [playLayer](CCObject* sender) {
-			if (playLayer->m_isPracticeMode)
+			if (playLayer->isPersistentSystemActive())
 				CheckpointManager::create()->show();
 			else {
-				ModPlayLayer* modPlayLayer = static_cast<ModPlayLayer*>(playLayer);
-				std::filesystem::path path = modPlayLayer->getSavePath();
+				std::filesystem::path path = playLayer->getSavePath();
 				if (std::filesystem::exists(path))
 					geode::createQuickPopup(
 						"Persistent Checkpoints",
 						"Open in practice mode to manage checkpoints.", "Ok",
-						"Delete Saved", [path, modPlayLayer](auto, bool confirmed) {
+						"Delete Saved", [path, playLayer](auto, bool confirmed) {
 							if (confirmed)
 								geode::createQuickPopup(
 									"Delete All",
 									"Delete all saved checkpoints for this level?\n"
 									"This action cannot be undone.",
 									"Cancel", "Delete",
-									[path, modPlayLayer](auto, bool confirmed) {
+									[path, playLayer](auto, bool confirmed) {
 										if (confirmed)
 											std::filesystem::remove(path);
 										while (true) {
-											modPlayLayer->m_fields->m_activeSaveLayer++;
+											playLayer->m_fields->m_activeSaveLayer++;
 											std::filesystem::path layerPath =
-												modPlayLayer->getSavePath();
+												playLayer->getSavePath();
 											if (std::filesystem::exists(layerPath))
 												std::filesystem::remove(layerPath);
 											else
 												break;
 										}
-										modPlayLayer->m_fields->m_activeSaveLayer = 0;
+										playLayer->m_fields->m_activeSaveLayer = 0;
 									}
 								);
 						}

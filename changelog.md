@@ -1,4 +1,7 @@
-## Unreleased
+## Unreleased (1.4)
+- Added a Save Manager, hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
+
+## Unreleased (1.3.4)
 - Migrate to Geometry Dash 2.2081 and Geode v5
 - Keep level attempt count the same when swapping between persistent checkpoints \[[Issue #21](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/21)\]
 - Add an option to disable the switcher \[[Issue #23](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/23)\]

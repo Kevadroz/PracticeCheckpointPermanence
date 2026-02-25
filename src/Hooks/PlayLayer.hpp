@@ -1,12 +1,8 @@
 #pragma once
 #include "../PersistentCheckpoint.hpp"
-#include "sabe.persistenceapi/include/util/Stream.hpp"
 
 #include <Geode/modify/PlayLayer.hpp>
-#include <functional>
-#include <optional>
 #include <sabe.persistenceapi/include/PersistenceAPI.hpp>
-#include <variant>
 
 using namespace geode::prelude;
 using namespace persistenceAPI;
@@ -14,34 +10,17 @@ using namespace persistenceAPI;
 // Copied from PlatformerSaves
 #if defined(GEODE_IS_WINDOWS)
 #define UNIQUE_ID_OFFSET 0x6ba158
-#define PLATFORM 0
 #elif defined(GEODE_IS_ANDROID64)
 #define UNIQUE_ID_OFFSET 0x11fe018
-#define PLATFORM 1
 #elif defined(GEODE_IS_ANDROID32)
 #define UNIQUE_ID_OFFSET 0xa9f00c
-#define PLATFORM 2
 #elif defined(GEODE_IS_ARM_MAC)
 #define UNIQUE_ID_OFFSET 0x8aa39c
-#define PLATFORM 3
 #elif defined(GEODE_IS_INTEL_MAC)
 #define UNIQUE_ID_OFFSET 0x985500
-#define PLATFORM 4
 #elif defined(GEODE_IS_IOS)
 #define UNIQUE_ID_OFFSET 0x83f2e8
-#define PLATFORM 5
 #endif
-
-const std::hash<std::string> c_stringHasher;
-
-enum LoadError : char {
-	None,
-	Crash,
-	OutdatedData,
-	NewData,
-	OtherPlatform,
-	LevelVersionMismatch,
-};
 
 class $modify(ModPlayLayer, PlayLayer) {
 	struct Fields {
@@ -79,20 +58,16 @@ class $modify(ModPlayLayer, PlayLayer) {
 	// Custom
 	void registerKeybindListeners();
 	void updateModUI();
+	bool isPersistentSystemActive();
 
 	// Data
 	void serializeCheckpoints();
 	void deserializeCheckpoints(bool ignoreVerification = false);
 	void unloadPersistentCheckpoints();
-	static std::variant<unsigned int, LoadError> verifySaveStream(
-		persistenceAPI::Stream& stream, GJGameLevel* level,
-		ModPlayLayer* playLayer = nullptr
-	);
-	static std::variant<unsigned int, LoadError> verifySavePath(
-		std::filesystem::path path, GJGameLevel* level,
-		ModPlayLayer* playLayer = nullptr
-	);
+
 	std::filesystem::path getSavePath();
+	static std::filesystem::path
+	getSavePath(GJGameLevel* level, bool lowDetail, unsigned int saveLayer);
 
 	// Checkpoints
 	void nextCheckpoint();

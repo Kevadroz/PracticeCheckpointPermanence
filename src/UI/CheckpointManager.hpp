@@ -19,17 +19,17 @@ private:
 	CCLayerColor* m_listContainer = nullptr;
 	ListView* m_listView = nullptr;
 	CCLabelBMFont* m_emptyListLabel = nullptr;
-	
+
 	Ref<CCArray> m_cellsArray = CCArray::create();
 
 	void createList(bool resetPosition = false);
+	CCNode* createCheckpointCell(
+		PersistentCheckpoint* checkpoint,
+		std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> removeCallback
+	);
+
 	void updateUIElements(bool resetListPosition = false);
 };
-
-CCNode* createCheckpointCell(
-	PersistentCheckpoint* checkpoint,
-	std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
-	std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
-	std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
-	std::function<void(CCMenuItemSpriteExtra*)> removeCallback
-);

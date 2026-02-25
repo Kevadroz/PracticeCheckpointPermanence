@@ -19,7 +19,8 @@ bool ModPlayLayer::init(
 	if (!PlayLayer::init(level, useReplay, dontCreateObjects))
 		return false;
 
-	if (m_fields->m_persistentCheckpointArray != nullptr && m_isPracticeMode &&
+	if (m_fields->m_persistentCheckpointArray != nullptr &&
+		 isPersistentSystemActive() &&
 		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
 		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
@@ -63,7 +64,8 @@ void ModPlayLayer::setupHasCompleted() {
 	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
 	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
 
-	if (m_isPracticeMode && !m_fields->m_hasAttemptedToLoadCheckpoints) {
+	if (isPersistentSystemActive() &&
+		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
 		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
 		updateSaveLayerCount();
@@ -92,7 +94,7 @@ void ModPlayLayer::processCreateObjectsFromSetup() {
 
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (m_isPracticeMode) {
+	if (isPersistentSystemActive()) {
 		unsigned int loadIndex = 0;
 		if (m_fields->m_ghostActiveCheckpoint > 0)
 			loadIndex = m_fields->m_ghostActiveCheckpoint;
@@ -170,7 +172,7 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-create-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down && !repeat)
+			if (isPersistentSystemActive() && down && !repeat)
 				markPersistentCheckpoint();
 		}
 	);
@@ -178,7 +180,7 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-remove-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down && !repeat) {
+			if (isPersistentSystemActive() && down && !repeat) {
 				if (m_fields->m_ghostActiveCheckpoint != 0)
 					removeGhostPersistentCheckpoint();
 				else if (m_fields->m_activeCheckpoint != 0)
@@ -190,7 +192,7 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down)
 				previousCheckpoint();
 		}
 	);
@@ -198,7 +200,7 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down)
 				nextCheckpoint();
 		}
 	);
@@ -206,7 +208,7 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down)
 				previousSaveLayer();
 		}
 	);
@@ -214,7 +216,7 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down)
 				nextSaveLayer();
 		}
 	);
@@ -230,7 +232,7 @@ void ModPlayLayer::updateModUI() {
 		return;
 
 	CCNodeRGBA* container = m_fields->m_pbCheckpointContainer;
-	container->setVisible(m_isPracticeMode);
+	container->setVisible(isPersistentSystemActive());
 	container->removeAllChildren();
 
 	unsigned int currentCheckpoint = 0;
@@ -258,4 +260,8 @@ void ModPlayLayer::updateModUI() {
 
 	// Update Cascade Opacity (Why is it protected?)
 	container->setOpacity(container->getOpacity());
+}
+
+bool ModPlayLayer::isPersistentSystemActive() {
+	return m_isPracticeMode && m_level->m_levelType != GJLevelType::Editor;
 }

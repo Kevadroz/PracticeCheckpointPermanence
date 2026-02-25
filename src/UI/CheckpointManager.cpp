@@ -1,10 +1,7 @@
 #include "CheckpointManager.hpp"
 #include "../Hooks/PlayLayer.hpp"
-#include "Geode/ui/Layout.hpp"
+#include "ListMenu.hpp"
 
-#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
-#include <Geode/binding/FLAlertLayer.hpp>
-#include <Geode/binding/PlayLayer.hpp>
 #include <Geode/ui/GeodeUI.hpp>
 
 CheckpointManager* CheckpointManager::create() {
@@ -347,6 +344,9 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 			text = "The level version has changed, the checkpoints cannot "
 					 "be loaded.";
 			break;
+		case BadFile:
+			text = "The save file is corrupt or is not a save file.";
+			break;
 		}
 
 		bool hasLoadError = playLayer->m_fields->m_loadError != LoadError::None;
@@ -421,7 +421,7 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	m_buttonMenu->updateLayout(false);
 }
 
-CCNode* createCheckpointCell(
+CCNode* CheckpointManager::createCheckpointCell(
 	PersistentCheckpoint* checkpoint,
 	std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
 	std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
@@ -430,7 +430,7 @@ CCNode* createCheckpointCell(
 ) {
 	PlayLayer* playLayer = PlayLayer::get();
 
-	CCMenu* menu = CCMenu::create();
+	CCMenu* menu = ListMenu::create(m_listContainer);
 	menu->setContentSize(ccp(230, 40));
 
 	CCSprite* moveUpSpr =
@@ -514,8 +514,7 @@ CCNode* createCheckpointCell(
 	CCSprite* describeSprite =
 		CCSprite::createWithSpriteFrameName("GJ_pasteBtn_001.png");
 	CCMenuItemSpriteExtra* describeBtn = CCMenuItemExt::createSpriteExtra(
-		describeSprite,
-		[checkpoint, selectBtn](CCMenuItemSpriteExtra* sender) {
+		describeSprite, [checkpoint, selectBtn](CCMenuItemSpriteExtra* sender) {
 			selectBtn->activate();
 			checkpoint->describe();
 		}

@@ -92,7 +92,7 @@ void PersistentCheckpoint::serialize(Stream& out) {
 	out << m_persistentTimerItemSet;
 }
 
-void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
+void PersistentCheckpoint::deserialize(Stream& in, SaveHeader header) {
 	reinterpret_cast<PACCNode*>(m_checkpoint.data())->load(in);
 
 	bool hasP2;
@@ -156,7 +156,7 @@ void PersistentCheckpoint::deserialize(Stream& in, unsigned int saveVersion) {
 
 	// Custom data
 	in >> m_objectPos;
-	if (saveVersion <= 1) {
+	if (header.saveVersion <= 1) {
 		in.ignore(sizeof(int));
 	}
 	in >> m_time;

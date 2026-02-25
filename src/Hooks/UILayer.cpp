@@ -105,7 +105,7 @@ void ModUILayer::updateSwitcher() {
 
 	bool switcherActive =
 		Mod::get()->getSettingValue<bool>("switcher-enabled") &&
-		playLayer->m_isPracticeMode &&
+		playLayer->isPersistentSystemActive() &&
 		(playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
 		 playLayer->m_fields->m_activeSaveLayer > 0 ||
 		 loadError != LoadError::None);
@@ -147,6 +147,9 @@ void ModUILayer::updateSwitcher() {
 		break;
 	case LevelVersionMismatch:
 		checkpointString = "LVL VERS";
+		break;
+	case BadFile:
+		checkpointString = "BAD FILE";
 		break;
 	}
 

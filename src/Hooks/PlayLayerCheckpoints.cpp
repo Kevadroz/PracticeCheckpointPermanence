@@ -1,7 +1,7 @@
 #include "PlayLayer.hpp"
 
 void ModPlayLayer::nextCheckpoint() {
-	if (!m_isPracticeMode || m_levelEndAnimationStarted)
+	if (!isPersistentSystemActive() || m_levelEndAnimationStarted)
 		return;
 
 	unsigned int nextCheckpoint = m_fields->m_activeCheckpoint + 1;
@@ -11,7 +11,7 @@ void ModPlayLayer::nextCheckpoint() {
 }
 
 void ModPlayLayer::previousCheckpoint() {
-	if (!m_isPracticeMode || m_levelEndAnimationStarted)
+	if (!isPersistentSystemActive() || m_levelEndAnimationStarted)
 		return;
 
 	unsigned int nextCheckpoint = m_fields->m_activeCheckpoint - 1;

@@ -1,4 +1,6 @@
 #pragma once
+#include "SaveParser.hpp"
+
 #include <Geode/binding/CheckpointObject.hpp>
 #include <Geode/modify/CheckpointObject.hpp>
 
@@ -23,7 +25,7 @@ public:
 	);
 
 	void serialize(persistenceAPI::Stream& out);
-	void deserialize(persistenceAPI::Stream& in, unsigned int saveVersion);
+	void deserialize(persistenceAPI::Stream& in, SaveHeader);
 	void setupPhysicalObject();
 	void toggleActive(bool);
 
