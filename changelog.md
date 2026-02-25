@@ -1,5 +1,8 @@
 ## Unreleased (1.4)
 - Added a Save Manager, hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
+- Disabled the mod for editor levels since it wasn't really usable (this also changes the location of the other save files)
+- Added handling for invalid save files
+- Fixed the buttons in the Checkpoint Manager list being clickable outside the list
 
 ## Unreleased (1.3.4)
 - Migrate to Geometry Dash 2.2081 and Geode v5
