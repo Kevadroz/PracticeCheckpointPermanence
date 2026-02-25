@@ -3,6 +3,7 @@
 - Disabled the mod for editor levels since it wasn't really usable (this also changes the location of the other save files)
 - Added handling for invalid save files
 - Fixed the buttons in the Checkpoint Manager list being clickable outside the list
+- Rearranged some settings
 
 ## Unreleased (1.3.4)
 - Migrate to Geometry Dash 2.2081 and Geode v5

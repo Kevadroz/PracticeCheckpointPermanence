@@ -31,18 +31,11 @@
 		}
 	},
 	"settings": {
-		"percentage-display-decimals": {
-			"name": "Displayed decimals for percentages",
-			"type": "int",
-			"default": 2,
-			"min": 0,
-			"max": 8,
-			"control": {
-				"slider": true,
-				"slider-step": 1,
-				"arrows": true,
-				"arrow-step": 1
-			}
+		"practice-buttons-position": {
+			"name": "Position of Practice Buttons",
+			"type": "string",
+			"one-of": [ "Horizontal", "Above", "Below" ],
+			"default": "Horizontal"
 		},
 		"supress-auto-checkpoints": {
 			"name": "Supress Auto Checkpoints",
@@ -55,6 +48,19 @@
 			"type": "bool",
 			"default": true,
 			"description": "Sets the attempts to one when switching checkpoints"
+		},
+		"percentage-display-decimals": {
+			"name": "Displayed decimals for percentages",
+			"type": "int",
+			"default": 2,
+			"min": 0,
+			"max": 8,
+			"control": {
+				"slider": true,
+				"slider-step": 1,
+				"arrows": true,
+				"arrow-step": 1
+			}
 		},
 		"active-checkpoint-opacity": {
 			"name": "Active Checkpoint Opacity",
@@ -94,12 +100,6 @@
 				"arrows": true,
 				"arrow-step": 0.1
 			}
-		},
-		"practice-buttons-position": {
-			"name": "Position of Practice Buttons",
-			"type": "string",
-			"one-of": [ "Horizontal", "Above", "Below" ],
-			"default": "Horizontal"
 		},
 		"title-switcher": {
 			"type": "title",
