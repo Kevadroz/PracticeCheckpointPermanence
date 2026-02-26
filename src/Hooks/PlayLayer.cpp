@@ -11,6 +11,33 @@ $execute {
 				);
 		})
 		.leak();
+
+	SettingChangedEvent(Mod::get(), "switch-in-out-normal-mode")
+		.listen(+[](std::shared_ptr<SettingV3> setting) {
+			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+			if (playLayer != nullptr && !playLayer->m_isPracticeMode) {
+				if (playLayer->m_fields->m_persistentCheckpointArray == nullptr)
+					return;
+
+				playLayer->m_fields->m_activeSaveLayer = 0;
+				playLayer->unloadPersistentCheckpoints();
+				if (typeinfo_pointer_cast<BoolSettingV3>(setting)->getValue()) {
+					playLayer->updateSaveLayerCount();
+					playLayer->deserializeCheckpoints();
+				}
+				playLayer->updateModUI();
+			}
+		})
+		.leak();
+
+	SettingChangedEvent(Mod::get(), "show-checkpoints-in-normal-mode")
+		.listen(+[](std::shared_ptr<SettingV3> setting) {
+			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+			if (playLayer != nullptr && !playLayer->m_isPracticeMode &&
+				 Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+				playLayer->updateModUI();
+		})
+		.leak();
 }
 
 bool ModPlayLayer::init(
@@ -94,7 +121,7 @@ void ModPlayLayer::processCreateObjectsFromSetup() {
 
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (isPersistentSystemActive()) {
+	if (isPersistentSystemActive() && m_isPracticeMode) {
 		unsigned int loadIndex = 0;
 		if (m_fields->m_ghostActiveCheckpoint > 0)
 			loadIndex = m_fields->m_ghostActiveCheckpoint;
@@ -145,7 +172,8 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 void ModPlayLayer::togglePracticeMode(bool enabled) {
 	PlayLayer::togglePracticeMode(enabled);
 
-	if (m_fields->m_persistentCheckpointArray == nullptr)
+	if (m_fields->m_persistentCheckpointArray == nullptr ||
+		 Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
 		return;
 
 	m_fields->m_activeSaveLayer = 0;
@@ -172,52 +200,73 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-create-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down && !repeat)
-				markPersistentCheckpoint();
+			if (isPersistentSystemActive() && down) {
+				if (!repeat)
+					markPersistentCheckpoint();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-remove-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down && !repeat) {
-				if (m_fields->m_ghostActiveCheckpoint != 0)
-					removeGhostPersistentCheckpoint();
-				else if (m_fields->m_activeCheckpoint != 0)
-					removeCurrentPersistentCheckpoint();
+			if (isPersistentSystemActive() && down) {
+				if (!repeat) {
+					if (m_fields->m_ghostActiveCheckpoint != 0)
+						removeGhostPersistentCheckpoint();
+					else if (m_fields->m_activeCheckpoint != 0)
+						removeCurrentPersistentCheckpoint();
+				}
+
+				return true;
 			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down)
+			if (isPersistentSystemActive() && down) {
 				previousCheckpoint();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down)
+			if (isPersistentSystemActive() && down) {
 				nextCheckpoint();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down)
+			if (isPersistentSystemActive() && down) {
 				previousSaveLayer();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down)
+			if (isPersistentSystemActive() && down) {
 				nextSaveLayer();
+				return true;
+			}
+			return false;
 		}
 	);
 }
@@ -231,9 +280,13 @@ void ModPlayLayer::updateModUI() {
 	if (m_isPlatformer)
 		return;
 
+	bool checkpointsVisible = isModUIVisible();
+
 	CCNodeRGBA* container = m_fields->m_pbCheckpointContainer;
-	container->setVisible(isPersistentSystemActive());
+	container->setVisible(checkpointsVisible);
 	container->removeAllChildren();
+
+	m_fields->m_persistentCheckpointBatchNode->setVisible(checkpointsVisible);
 
 	unsigned int currentCheckpoint = 0;
 	float barWidth = m_progressBar->getContentWidth() - 4;
@@ -268,5 +321,22 @@ void ModPlayLayer::updateModUI() {
 }
 
 bool ModPlayLayer::isPersistentSystemActive() {
-	return m_isPracticeMode && m_level->m_levelType != GJLevelType::Editor;
+	return (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") ||
+			  m_isPracticeMode) &&
+			 m_level->m_levelType != GJLevelType::Editor;
+}
+
+bool ModPlayLayer::isModUIVisible() {
+	if (m_level->m_levelType == GJLevelType::Editor)
+		return false;
+
+	if (m_isPracticeMode)
+		return true;
+
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+		return Mod::get()->getSettingValue<bool>(
+			"show-checkpoints-in-normal-mode"
+		);
+
+	return false;
 }

@@ -59,6 +59,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void registerKeybindListeners();
 	void updateModUI();
 	bool isPersistentSystemActive();
+	bool isModUIVisible();
 
 	// Data
 	void serializeCheckpoints();

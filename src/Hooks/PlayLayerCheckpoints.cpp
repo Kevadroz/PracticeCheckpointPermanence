@@ -28,6 +28,11 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	if (m_fields->m_activeCheckpoint == nextCheckpoint)
 		return;
 
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
+		 (nextCheckpoint != 0) != m_isPracticeMode) {
+		togglePracticeMode(!m_isPracticeMode);
+	}
+
 	if (!ignoreLastCheckpoint && m_fields->m_activeCheckpoint != 0)
 		reinterpret_cast<PersistentCheckpoint*>(
 			m_fields->m_persistentCheckpointArray->objectAtIndex(
@@ -59,7 +64,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 }
 
 void ModPlayLayer::markPersistentCheckpoint() {
-	if (m_playerDied || m_levelEndAnimationStarted)
+	if (m_playerDied || m_levelEndAnimationStarted || !m_isPracticeMode)
 		return;
 
 	if (m_fields->m_loadError != LoadError::None) {
@@ -73,8 +78,9 @@ void ModPlayLayer::markPersistentCheckpoint() {
 			m_effectManager->m_persistentItemCountMap,
 			m_effectManager->m_persistentTimerItemSet
 		);
-	m_fields->m_ghostActiveCheckpoint =
-		storePersistentCheckpoint(checkpoint) + 1;
+	unsigned int newCheckpointIndex = storePersistentCheckpoint(checkpoint) + 1;
+	if (m_isPracticeMode)
+		m_fields->m_ghostActiveCheckpoint = newCheckpointIndex;
 	serializeCheckpoints();
 
 	if (m_fields->m_persistentCheckpointArray->count() == 1)

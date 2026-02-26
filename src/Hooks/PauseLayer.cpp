@@ -9,6 +9,9 @@ void ModPauseLayer::customSetup() {
 
 	PauseLayer::customSetup();
 
+	if (playLayer->m_level->m_levelType == GJLevelType::Editor)
+		return;
+
 	CircleButtonSprite* buttonSprite =
 		CircleButtonSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
 	buttonSprite->setScale(.6f);

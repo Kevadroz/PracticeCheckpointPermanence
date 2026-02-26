@@ -18,7 +18,7 @@ SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
 
 	stream >> saveVersion;
 
-	if (saveVersion < CURRENT_VERSION)
+	if (saveVersion < 3)
 		loadError = LoadError::OutdatedData;
 	else if (saveVersion > CURRENT_VERSION)
 		loadError = LoadError::NewData;

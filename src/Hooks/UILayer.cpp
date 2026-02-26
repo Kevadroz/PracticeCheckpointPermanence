@@ -106,6 +106,7 @@ void ModUILayer::updateSwitcher() {
 	bool switcherActive =
 		Mod::get()->getSettingValue<bool>("switcher-enabled") &&
 		playLayer->isPersistentSystemActive() &&
+		// Save file exists
 		(playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
 		 playLayer->m_fields->m_activeSaveLayer > 0 ||
 		 loadError != LoadError::None);
@@ -193,6 +194,12 @@ void ModUILayer::updateSwitcher() {
 	double iconInactiveOpacity =
 		checkpointSpriteOpacity *
 		mod->getSettingValue<double>("switcher-icon-inactive-opacity");
+
+	if (!playLayer->isModUIVisible()) {
+		labelInactiveOpacity = 0;
+		buttonInactiveOpacity = 0;
+		iconInactiveOpacity = 0;
+	}
 
 	std::vector<std::tuple<CCNode*, GLubyte, GLubyte>> nodes;
 	if (labelActiveOpacity != labelInactiveOpacity)

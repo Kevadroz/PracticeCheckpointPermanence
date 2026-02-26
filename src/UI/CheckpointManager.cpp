@@ -192,9 +192,13 @@ bool CheckpointManager::init() {
 			);
 		}
 	);
-	m_forceLoadButton->setVisible(
-		playLayer->m_fields->m_loadError != LoadError::None
-	);
+	bool forceLoadButtonActive =
+		playLayer->m_fields->m_loadError != LoadError::None &&
+		playLayer->m_fields->m_loadError != LoadError::BadFile &&
+		playLayer->m_fields->m_loadError != LoadError::OutdatedData &&
+		playLayer->m_fields->m_loadError != LoadError::NewData;
+	m_forceLoadButton->setVisible(forceLoadButtonActive);
+	m_forceLoadButton->setEnabled(forceLoadButtonActive);
 	m_forceLoadButton->m_baseScale = 0.7;
 	m_forceLoadButton->setScale(0.7);
 

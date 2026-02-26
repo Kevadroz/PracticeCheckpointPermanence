@@ -15,7 +15,7 @@ This mod also provides "Save Layers" (Save slots) with separate checkpoints, whi
 On the pause menu there's a new button that opens the <cg>persistent checkpoint list</c>, from which you can manage your saved checkpoints and layers.
 
 ### Save Manager
-If you use this mod a lot you may want to <cp>delete old save files to **save space**</c>, especially if you play a lot of heavy levels. Go to the *saved levels menu* and click / touch the new button on the bottom left, it'll open a menu where you'll be able to *see some save stats* such as file size and <cr>delete saves easily</c> without having to enter each level.
+If you use this mod a lot you may want to <co>delete old save files to **save space**</c>, especially if you play a lot of heavy levels. Go to the *saved levels menu* and click / touch the new button on the bottom left, it'll open a menu where you'll be able to *see some save stats* such as file size and <cr>delete saves easily</c> without having to enter each level.
 
 ## Default Keybinds
 

@@ -37,6 +37,18 @@
 			"one-of": [ "Horizontal", "Above", "Below" ],
 			"default": "Horizontal"
 		},
+		"switch-in-out-normal-mode": {
+			"name": "Integrated Normal Mode",
+			"type": "bool",
+			"default": false,
+			"description": "Loads the Persistent Checkpoints in normal mode and lets you switch between normal mode and practice mode by switching checkpoints.\nNo checkpoint active is normal mode, any checkpoint active is practice mode"
+		},
+		"show-checkpoints-in-normal-mode": {
+			"name": "Show checkpoints in Integrated Normal Mode",
+			"type": "bool",
+			"default": false,
+			"enable-if": "switch-in-out-normal-mode"
+		},
 		"supress-auto-checkpoints": {
 			"name": "Supress Auto Checkpoints",
 			"type": "bool",
@@ -46,7 +58,7 @@
 		"reset-attempts": {
 			"name": "Reset Attempts",
 			"type": "bool",
-			"default": true,
+			"default": false,
 			"description": "Sets the attempts to one when switching checkpoints"
 		},
 		"delete-saves-with-level": {

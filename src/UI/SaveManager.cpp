@@ -321,7 +321,7 @@ void SaveManager::updateGeneralInfoUI() {
 	unsigned int pageLevelStart = m_page * LEVELS_PER_PAGE;
 	m_levelCountLabel->setString(
 		fmt::format(
-			"{} to {}\nof {}", pageLevelStart + 1,
+			"{} to {}\nof {}", m_saveList.size() > 0 ? pageLevelStart + 1 : 0,
 			std::min(
 				pageLevelStart + LEVELS_PER_PAGE, (unsigned int)m_saveList.size()
 			),
