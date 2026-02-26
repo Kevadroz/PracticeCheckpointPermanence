@@ -89,21 +89,25 @@ void ModPlayLayer::swapSaveLayers(unsigned int left, unsigned int right) {
 }
 
 void ModPlayLayer::updateSaveLayerCount() {
-	unsigned int activeSaveLayer = m_fields->m_activeSaveLayer;
-	m_fields->m_saveLayerCount = 0;
+	m_fields->m_saveLayerCount = getSaveLayerCount(m_level, m_lowDetailMode);
+	m_fields->m_activeSaveLayer =
+		std::min(m_fields->m_activeSaveLayer, m_fields->m_saveLayerCount);
+}
+
+unsigned int
+ModPlayLayer::getSaveLayerCount(GJGameLevel* level, bool lowDetail) {
+	unsigned int saveLayerCount = 0;
 
 	while (true) {
-		m_fields->m_activeSaveLayer = m_fields->m_saveLayerCount;
-
-		std::optional<SaveHeader> optionalHeader =
-			SaveParser::fromPath(getSavePath(), m_level);
+		std::optional<SaveHeader> optionalHeader = SaveParser::fromPath(
+			getSavePath(level, lowDetail, saveLayerCount), level
+		);
 
 		if (!optionalHeader.has_value())
 			break;
 		else
-			m_fields->m_saveLayerCount++;
+			saveLayerCount++;
 	}
 
-	m_fields->m_activeSaveLayer =
-		std::min(activeSaveLayer, m_fields->m_saveLayerCount);
+	return saveLayerCount;
 }

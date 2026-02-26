@@ -49,6 +49,12 @@
 			"default": true,
 			"description": "Sets the attempts to one when switching checkpoints"
 		},
+		"delete-saves-with-level": {
+			"name": "Delete Saved Checkpoints with the level",
+			"type": "bool",
+			"default": true,
+			"description": "Deletes the checkpoints of a level when you manually delete that level from the saved levels"
+		},
 		"percentage-display-decimals": {
 			"name": "Displayed decimals for percentages",
 			"type": "int",
@@ -198,7 +204,7 @@
 			"default": "Alt+Z",
 			"description": "Creates a new persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/create_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/create_checkpoint"
 		},
 		"keybind-remove-checkpoint": {
 			"type": "keybind",
@@ -206,7 +212,7 @@
 			"default": "Alt+X",
 			"description": "Removes the active persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/remove_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/remove_checkpoint"
 		},
 		"keybind-previous-checkpoint": {
 			"type": "keybind",
@@ -214,7 +220,7 @@
 			"default": "Alt+Q",
 			"description": "Activates the previous persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/previous_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/previous_checkpoint"
 		},
 		"keybind-next-checkpoint": {
 			"type": "keybind",
@@ -222,7 +228,7 @@
 			"default": "Alt+E",
 			"description": "Activates the next persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/next_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/next_checkpoint"
 		},
 		"keybind-previous-layer": {
 			"type": "keybind",
@@ -230,7 +236,7 @@
 			"default": "Alt+Shift+Q",
 			"description": "Switches to the previous save layer",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/previous_layer"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/previous_layer"
 		},
 		"keybind-next-layer": {
 			"type": "keybind",
@@ -238,7 +244,7 @@
 			"default": "Alt+Shift+E",
 			"description": "Switches to the next save layer",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/next_layer"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/next_layer"
 		}
 	}
 }

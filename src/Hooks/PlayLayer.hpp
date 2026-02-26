@@ -88,6 +88,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void removeCurrentSaveLayer();
 	void swapSaveLayers(unsigned int left, unsigned int right);
 	void updateSaveLayerCount();
+	static unsigned int getSaveLayerCount(GJGameLevel* level, bool lowDetail);
 
 	static void onModify(auto& self) {
 		if (!self.setHookPriorityPost(
