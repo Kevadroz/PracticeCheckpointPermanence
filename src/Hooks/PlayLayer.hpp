@@ -31,12 +31,13 @@ class $modify(ModPlayLayer, PlayLayer) {
 		Ref<cocos2d::CCArray> m_persistentCheckpointArray = nullptr;
 		Ref<cocos2d::CCSpriteBatchNode> m_persistentCheckpointBatchNode = nullptr;
 
+		// For the Free Mode in the Fallback
+		Ref<TeleportPortalObject> m_holdedTeleportObject = nullptr;
+
 		unsigned int m_activeCheckpoint = 0;
 		unsigned int m_activeSaveLayer = 0;
 		unsigned int m_saveLayerCount = 0;
 		unsigned int m_ghostActiveCheckpoint = 0;
-
-		std::optional<size_t> m_levelStringHash;
 
 		CCNodeRGBA* m_pbCheckpointContainer = nullptr;
 	};
@@ -60,11 +61,13 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void updateModUI();
 	bool isPersistentSystemActive();
 	bool isModUIVisible();
+	bool isInFallbackMode();
 
 	// Data
 	void serializeCheckpoints();
 	void deserializeCheckpoints(bool ignoreVerification = false);
 	void unloadPersistentCheckpoints();
+	void resave();
 
 	std::filesystem::path getSavePath();
 	static std::filesystem::path
@@ -74,9 +77,10 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void nextCheckpoint();
 	void previousCheckpoint();
 	void
-	switchCurrentCheckpoint(unsigned int, bool ignoreLastCheckpoint = false);
+	switchCurrentCheckpoint(unsigned int, bool ignoreLastCheckpoint = false, bool noVisualUpdates = false);
 	void markPersistentCheckpoint();
-	unsigned int storePersistentCheckpoint(PersistentCheckpoint* checkpoint);
+	unsigned int
+	storePersistentCheckpoint(PersistentCheckpoint* checkpoint, bool reorder);
 	void removePersistentCheckpoint(PersistentCheckpoint* checkpoint);
 	void removeCurrentPersistentCheckpoint();
 	void removeGhostPersistentCheckpoint();

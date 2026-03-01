@@ -18,6 +18,7 @@ public:
 	CCLabelBMFont* m_checkpointLabel = nullptr;
 	CCSprite* m_checkpointSprite = nullptr;
 	CCLabelBMFont* m_layerLabel = nullptr;
+	CCLabelBMFont* m_errorLabel = nullptr;
 	CCNodeRGBA* m_previousBtn = nullptr;
 	CCNodeRGBA* m_nextBtn = nullptr;
 

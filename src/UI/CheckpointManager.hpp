@@ -32,4 +32,8 @@ private:
 	);
 
 	void updateUIElements(bool resetListPosition = false);
+
+	void saveLoadMenu();
+	void resavePopup();
+	void forceLoadPopup();
 };

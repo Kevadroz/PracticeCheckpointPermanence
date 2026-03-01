@@ -115,42 +115,44 @@ void ModUILayer::updateSwitcher() {
 
 	if (loadError == LoadError::None)
 		m_fields->m_switcherMenu->setColor(ccWHITE);
+	else if (playLayer->isInFallbackMode())
+		m_fields->m_switcherMenu->setColor(ccc3(224, 166, 111));
 	else
 		m_fields->m_switcherMenu->setColor(ccc3(224, 111, 111));
 
-	std::string checkpointString;
+	std::string ghostCheckpointString =
+		playLayer->m_fields->m_ghostActiveCheckpoint == 0
+			? ""
+			: fmt::format(" ({})", playLayer->m_fields->m_ghostActiveCheckpoint);
+	std::string checkpointString = fmt::format(
+		"{}{}/{}", playLayer->m_fields->m_activeCheckpoint, ghostCheckpointString,
+		playLayer->m_fields->m_persistentCheckpointArray->count()
+	);
+	const char* errorString;
 	switch (loadError) {
-	case None: {
-		std::string ghostCheckpointString =
-			playLayer->m_fields->m_ghostActiveCheckpoint == 0
-				? ""
-				: fmt::format(
-					  " ({})", playLayer->m_fields->m_ghostActiveCheckpoint
-				  );
-		checkpointString = fmt::format(
-			"{}{}/{}", playLayer->m_fields->m_activeCheckpoint,
-			ghostCheckpointString,
-			playLayer->m_fields->m_persistentCheckpointArray->count()
-		);
-		break;
-	}
 	case Crash:
-		checkpointString = "BAD DATA";
+		errorString = "BAD DATA";
+		break;
+	case GameVersionMismatch:
+		errorString = "GMD VERS";
 		break;
 	case OutdatedData:
-		checkpointString = "OUTDATED";
+		errorString = "OUTDATED";
 		break;
 	case NewData:
-		checkpointString = "NEW VERS";
+		errorString = "NEW VERS";
 		break;
 	case OtherPlatform:
-		checkpointString = "PLATFORM";
+		errorString = "PLATFORM";
 		break;
 	case LevelVersionMismatch:
-		checkpointString = "LVL VERS";
+		errorString = "LVL VERS";
 		break;
 	case BadFile:
-		checkpointString = "BAD FILE";
+		errorString = "BAD FILE";
+		break;
+	default:
+		errorString = "";
 		break;
 	}
 
@@ -164,6 +166,10 @@ void ModUILayer::updateSwitcher() {
 		)
 			.c_str()
 	);
+	m_fields->m_switcherMenu->m_errorLabel->setVisible(
+		playLayer->m_fields->m_loadError != LoadError::None
+	);
+	m_fields->m_switcherMenu->m_errorLabel->setString(errorString);
 
 	const char* checkpointFrameName;
 	GLubyte checkpointSpriteOpacity;

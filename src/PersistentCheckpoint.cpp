@@ -18,30 +18,23 @@ PersistentCheckpoint* PersistentCheckpoint::create() {
 	return checkpoint;
 }
 
-PersistentCheckpoint* PersistentCheckpoint::createFromCheckpoint(
-	CheckpointObject* checkpoint, int time, double percent,
-	gd::unordered_map<int, int> persistentItemCountMap,
-	gd::unordered_set<int> persistentTimerItemSet
+void PersistentCheckpoint::storeData(
+	CheckpointObject* checkpoint, PlayLayer* playLayer
 ) {
-	PersistentCheckpoint* newCheckpoint = new PersistentCheckpoint();
+	m_checkpoint = checkpoint;
 
-	newCheckpoint->m_checkpoint = checkpoint;
+	if (checkpoint->m_physicalCheckpointObject != nullptr) {
+		m_objectPos = checkpoint->m_physicalCheckpointObject->m_startPosition;
 
-	if (checkpoint->m_physicalCheckpointObject) {
-		newCheckpoint->m_objectPos =
-			checkpoint->m_physicalCheckpointObject->m_startPosition;
-
-		newCheckpoint->setupPhysicalObject();
+		setupPhysicalObject();
 	}
 
-	newCheckpoint->m_time = time;
-	newCheckpoint->m_percent = percent;
-	newCheckpoint->m_persistentItemCountMap = persistentItemCountMap;
-	newCheckpoint->m_persistentTimerItemSet = persistentTimerItemSet;
-
-	newCheckpoint->autorelease();
-
-	return newCheckpoint;
+	m_time = playLayer->m_timePlayed;
+	m_percent = playLayer->getCurrentPercent();
+	m_persistentItemCountMap =
+		playLayer->m_effectManager->m_persistentItemCountMap;
+	m_persistentTimerItemSet =
+		playLayer->m_effectManager->m_persistentTimerItemSet;
 }
 
 void PersistentCheckpoint::serialize(Stream& out) {
@@ -85,9 +78,6 @@ void PersistentCheckpoint::serialize(Stream& out) {
 	out << m_checkpoint->m_commandIndex;
 
 	// Custom data
-	out << m_objectPos;
-	out << m_time;
-	out << m_percent;
 	out << m_persistentItemCountMap;
 	out << m_persistentTimerItemSet;
 }
@@ -154,17 +144,127 @@ void PersistentCheckpoint::deserialize(Stream& in, SaveHeader header) {
 	in >> m_checkpoint->m_sequenceTriggerStateUnorderedMap;
 	in >> m_checkpoint->m_commandIndex;
 
+	// geode::log::debug("eof {}", m_commandIndex);
+
 	// Custom data
-	in >> m_objectPos;
-	if (header.saveVersion <= 1) {
-		in.ignore(sizeof(int));
-	}
-	in >> m_time;
-	in >> m_percent;
 	in >> m_persistentItemCountMap;
 	in >> m_persistentTimerItemSet;
+}
 
-	// geode::log::debug("eof {}", m_commandIndex);
+void PersistentCheckpoint::serializeExternal(Stream& out) {
+	out << m_objectPos;
+	out << m_time;
+	out << m_percent;
+
+	// Fallback
+	PlayerCheckpoint* p1Checkpoint = m_checkpoint->m_player1Checkpoint;
+	PlayerCheckpoint* p2Checkpoint = m_checkpoint->m_player2Checkpoint;
+
+	bool isDualMode =
+		p2Checkpoint != nullptr && m_checkpoint->m_gameState.m_isDualMode;
+
+	int mode = getGamemodeFromCheckpoint(p1Checkpoint);
+	out << mode;
+
+	int speed = (int)(p1Checkpoint->m_playerSpeed < 0.8f	 ? Speed::Slow
+							: p1Checkpoint->m_playerSpeed > 1.0f ? Speed::Fast
+							: p1Checkpoint->m_playerSpeed > 1.2f ? Speed::Faster
+							: p1Checkpoint->m_playerSpeed > 1.4f ? Speed::Fastest
+																			 : Speed::Normal);
+	out << speed;
+
+	out << p1Checkpoint->m_isMini;
+	out << isDualMode;
+	out << m_checkpoint->m_gameState.m_unkBool10; // Mirror Mode
+	out << p1Checkpoint->m_isSideways;
+	out << p1Checkpoint->m_isUpsideDown;
+	out << p1Checkpoint->m_isGoingLeft;
+
+	// Space reserved, but I don't think that this is possible.
+	int targetOrder = 0;
+	out << targetOrder;
+
+	out << m_checkpoint->m_gameState.m_currentChannel;
+
+	// Custom Data
+	CCPoint p1Velocity =
+		ccp(p1Checkpoint->m_platformerXVelocity, p1Checkpoint->m_yVelocity);
+
+	out << p1Velocity;
+
+	if (isDualMode) {
+		CCPoint p2Velocity =
+			ccp(p2Checkpoint->m_platformerXVelocity, p2Checkpoint->m_yVelocity);
+		int p2Gamemode = getGamemodeFromCheckpoint(p2Checkpoint);
+
+		out << p2Velocity;
+		out << p2Checkpoint->m_position;
+		out << p2Gamemode;
+		out << p2Checkpoint->m_isMini;
+		out << p2Checkpoint->m_isUpsideDown;
+		out << p2Checkpoint->m_isGoingLeft;
+	}
+
+	out << m_checkpoint->m_gameState.m_unkBool8; // Free Mode
+	out << m_checkpoint->m_gameState.m_cameraPosition;
+	out << m_checkpoint->m_gameState.m_cameraOffset;
+	out << m_checkpoint->m_gameState.m_cameraZoom;
+}
+
+void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
+	in >> m_objectPos;
+	in >> m_time;
+	in >> m_percent;
+
+	// Fallback
+	StartPosObject* startPos = StartPosObject::create();
+
+	LevelSettingsObject* settings = startPos->m_startSettings;
+	settings->m_startsWithStartPos = true;
+
+	in >> settings->m_startMode;
+
+	int speed;
+	in >> speed;
+	settings->m_startSpeed = (Speed)speed;
+
+	in >> settings->m_startMini;
+	in >> settings->m_startDual;
+	in >> settings->m_mirrorMode;
+	in >> settings->m_rotateGameplay;
+	in >> settings->m_isFlipped;
+	in >> settings->m_reverseGameplay;
+	in >> settings->m_targetOrder;
+	in >> settings->m_targetChannel;
+
+	// Custom Data
+	CCPoint cameraPosition;
+
+	in >> m_fallbackData.p1Velocity;
+
+	if (settings->m_startDual) {
+		int p2Gamemode;
+
+		in >> m_fallbackData.p2Velocity;
+		in >> m_fallbackData.p2Position;
+		in >> p2Gamemode;
+		in >> m_fallbackData.p2IsMini;
+		in >> m_fallbackData.p2IsFlipped;
+		in >> m_fallbackData.p2IsReverseGameplay;
+
+		m_fallbackData.p2Gamemode = (StartPosGameModes)p2Gamemode;
+	}
+
+	in >> m_fallbackData.freeMode;
+	in >> cameraPosition;
+	in >> m_fallbackData.cameraOffset;
+	in >> m_fallbackData.cameraZoom;
+	// Custom Data end
+
+	startPos->setSettings(settings);
+	startPos->setStartPos(cameraPosition);
+
+	m_fallbackData.startPos = startPos;
 }
 
 void PersistentCheckpoint::setupPhysicalObject() {
@@ -343,7 +443,25 @@ void PersistentCheckpoint::describe() {
 	log::info("[PersistentCheckpoint - describe] m_objectPos: {}", m_objectPos);
 	log::info("[PersistentCheckpoint - describe] m_time: {}", m_time);
 	log::info("[PersistentCheckpoint - describe] m_percent: {}", m_percent);
-	log::info("[PersistentCheckpoint - describe] m_persistentItemCountMap: {}", m_persistentItemCountMap);
-	log::info("[PersistentCheckpoint - describe] m_persistentTimerItemSet: {}", m_persistentTimerItemSet);
+	log::info(
+		"[PersistentCheckpoint - describe] m_persistentItemCountMap: {}",
+		m_persistentItemCountMap
+	);
+	log::info(
+		"[PersistentCheckpoint - describe] m_persistentTimerItemSet: {}",
+		m_persistentTimerItemSet
+	);
 }
 #endif
+
+StartPosGameModes
+PersistentCheckpoint::getGamemodeFromCheckpoint(PlayerCheckpoint* checkpoint) {
+	return checkpoint->m_isShip	  ? StartPosGameModes::Ship
+			 : checkpoint->m_isBall	  ? StartPosGameModes::Ball
+			 : checkpoint->m_isBird	  ? StartPosGameModes::UFO
+			 : checkpoint->m_isDart	  ? StartPosGameModes::Wave
+			 : checkpoint->m_isRobot  ? StartPosGameModes::Robot
+			 : checkpoint->m_isSpider ? StartPosGameModes::Spider
+			 : checkpoint->m_isSwing  ? StartPosGameModes::Swing
+											  : StartPosGameModes::Normal;
+}

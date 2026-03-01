@@ -34,7 +34,7 @@ SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
 	stream >> checkpointCount;
 
 	if (gameVersion != geode::Loader::get()->getGameVersion())
-		loadError = LoadError::OutdatedData;
+		loadError = LoadError::GameVersionMismatch;
 
 	else if (platform != PLATFORM)
 		loadError = LoadError::OtherPlatform;

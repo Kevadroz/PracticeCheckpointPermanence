@@ -55,6 +55,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 
 	const char* checkpointLabelString;
 	const char* layerLabelString;
+	const char* errorLabelString;
 	if (playLayer != nullptr) {
 		menu->m_checkpointSprite =
 			CCSprite::createWithSpriteFrameName("inactiveCheckpoint.png"_spr);
@@ -80,6 +81,10 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->m_layerLabel->setID("layer-label");
 	menu->m_layerLabel->setScale(.6f);
 
+	menu->m_errorLabel = CCLabelBMFont::create("NO ERROR", "bigFont.fnt");
+	menu->m_errorLabel->setID("error-label");
+	menu->m_errorLabel->setScale(.6f);
+
 	menu->addChildAtPosition(menu->m_buttonMenu, geode::Anchor::Center);
 	menu->addChildAtPosition(menu->m_labelMenu, geode::Anchor::Center);
 	menu->addChildAtPosition(menu->m_checkpointSprite, geode::Anchor::Center);
@@ -94,6 +99,9 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	);
 	menu->m_labelMenu->addChildAtPosition(
 		menu->m_layerLabel, geode::Anchor::Center, ccp(0, 31)
+	);
+	menu->m_labelMenu->addChildAtPosition(
+		menu->m_errorLabel, geode::Anchor::Center, ccp(0, 48)
 	);
 
 	menu->autorelease();

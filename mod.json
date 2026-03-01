@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.1",
+	"geode": "5.1.0",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
@@ -20,7 +20,7 @@
 		"utility"
 	],
 	"dependencies": {
-		"geode.node-ids": ">=v1.22.0-beta.2",
+		"geode.node-ids": ">=v1.22.0",
 		"sabe.persistenceapi": ">=v1.1.0"
 	},
 	"resources": {

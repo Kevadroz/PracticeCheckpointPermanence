@@ -168,35 +168,18 @@ bool CheckpointManager::init() {
 	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
 	m_emptyListLabel->setVisible(!hasCheckpoints);
 
-	ButtonSprite* forceLoadButtonSprite = ButtonSprite::create("Force Load");
+	ButtonSprite* saveMenuButtonSprite = ButtonSprite::create("");
 	m_forceLoadButton = CCMenuItemExt::createSpriteExtra(
-		forceLoadButtonSprite,
+		saveMenuButtonSprite,
 		[this, playLayer](CCMenuItemSpriteExtra* forceButton) {
-			geode::createQuickPopup(
-				"Force Load",
-				"This will force load and resave this layer.\n"
-				"When switching to a checkpoint the game will likely crash or the "
-				"level will break.\n"
-				"If things go very wrong you can try opening the checkpoint "
-				"manager outside of practice mode to remove all checkpoints.\n"
-				"Are you sure about this?",
-				"No", "YOLO", [this, playLayer](auto, bool confirmed) {
-					if (confirmed) {
-						playLayer->deserializeCheckpoints(true);
-						playLayer->serializeCheckpoints();
-
-						updateUIElements();
-						playLayer->updateModUI();
-					}
-				}
-			);
+			if (playLayer->m_fields->m_loadError != LoadError::None &&
+				 !playLayer->isInFallbackMode())
+				forceLoadPopup();
+			else
+				saveLoadMenu();
 		}
 	);
-	bool forceLoadButtonActive =
-		playLayer->m_fields->m_loadError != LoadError::None &&
-		playLayer->m_fields->m_loadError != LoadError::BadFile &&
-		playLayer->m_fields->m_loadError != LoadError::OutdatedData &&
-		playLayer->m_fields->m_loadError != LoadError::NewData;
+	bool forceLoadButtonActive = playLayer->isInFallbackMode();
 	m_forceLoadButton->setVisible(forceLoadButtonActive);
 	m_forceLoadButton->setEnabled(forceLoadButtonActive);
 	m_forceLoadButton->m_baseScale = 0.7;
@@ -334,6 +317,10 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		case Crash:
 			text = "Error while loading saved checkpoints.";
 			break;
+		case GameVersionMismatch:
+			text = "The version of the game has changed, the checkpoints cannot "
+					 "be loaded.";
+			break;
 		case OutdatedData:
 			text = "The version of the mod the checkpoints were saved in is no "
 					 "longer supported.";
@@ -373,6 +360,13 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_deleteButton->setOpacity(255);
 	}
 
+	const char* saveMenuString = "Save / Load";
+	if (playLayer->m_fields->m_loadError != LoadError::None &&
+		 !playLayer->isInFallbackMode())
+		saveMenuString = "Force Load";
+	typeinfo_cast<ButtonSprite*>(m_forceLoadButton->getChildByIndex(0))
+		->setString(saveMenuString);
+	m_forceLoadButton->updateSprite();
 	m_forceLoadButton->setVisible(
 		playLayer->m_fields->m_loadError != LoadError::None
 	);
@@ -529,4 +523,67 @@ CCNode* CheckpointManager::createCheckpointCell(
 #endif
 
 	return menu;
+}
+
+void CheckpointManager::saveLoadMenu() {
+	geode::createQuickPopup(
+		"Save / Load",
+		"<cy>Resave</c> allows you to manually save the current checkpoint layer "
+		"or "
+		"regenerate checkpoints in <co>Fallback Mode</c>.\n"
+		"<cr>Force Load</c> allows you to load a checkpoint layer even if there "
+		"are errors, this will likely result in a crash.",
+		"Resave", "Force Load",
+		[this](auto, bool option) {
+			if (option)
+				forceLoadPopup();
+			else
+				resavePopup();
+		},
+		true, true
+	);
+}
+void CheckpointManager::resavePopup() {
+	geode::createQuickPopup(
+		"Resave",
+		"Manually save the current checkpoint layer.\n"
+		"There is usually no reason to do this as saving is automatic.\n"
+		"However, in <co>Fallback Mode</c> this will turn the fallback data into "
+		"usable checkpoints.\n"
+		"Fallback data isn't very accurate, but it should be good enough for "
+		"most classic mode levels.\n"
+		"This will also restart the level, so don't do it on the middle of a "
+		"run.",
+		"Cancel", "Confirm", [this](auto, bool confirmed) {
+			if (confirmed) {
+				static_cast<ModPlayLayer*>(PlayLayer::get())->resave();
+
+				updateUIElements();
+			}
+		}
+	);
+}
+void CheckpointManager::forceLoadPopup() {
+	geode::createQuickPopup(
+		"Force Load",
+		"This will force load and resave this layer.\n"
+		"When switching to a checkpoint <cr>the game will likely crash or the "
+		"level will break</c>.\n"
+		"If things go very wrong you can try opening the checkpoint "
+		"manager outside of practice mode to remove all checkpoints or using the "
+		"save manager in the GD saved levels menu.\n"
+		"Are you sure about this?",
+		"No", "YOLO", [this](auto, bool confirmed) {
+			if (confirmed) {
+				ModPlayLayer* playLayer =
+					static_cast<ModPlayLayer*>(PlayLayer::get());
+
+				playLayer->deserializeCheckpoints(true);
+				playLayer->serializeCheckpoints();
+
+				updateUIElements();
+				playLayer->updateModUI();
+			}
+		}
+	);
 }

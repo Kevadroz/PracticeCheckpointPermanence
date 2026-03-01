@@ -121,18 +121,22 @@ void ModPlayLayer::processCreateObjectsFromSetup() {
 
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (isPersistentSystemActive() && m_isPracticeMode) {
-		unsigned int loadIndex = 0;
-		if (m_fields->m_ghostActiveCheckpoint > 0)
-			loadIndex = m_fields->m_ghostActiveCheckpoint;
-		else if (m_checkpointArray->count() == 0)
-			loadIndex = m_fields->m_activeCheckpoint;
+	if (m_fields->m_loadError == LoadError::None) {
+		if (isPersistentSystemActive() && m_isPracticeMode) {
+			unsigned int loadIndex = 0;
+			if (m_fields->m_ghostActiveCheckpoint > 0)
+				loadIndex = m_fields->m_ghostActiveCheckpoint;
+			else if (m_checkpointArray->count() == 0)
+				loadIndex = m_fields->m_activeCheckpoint;
 
-		if (loadIndex != 0) {
-			checkpoint = reinterpret_cast<PersistentCheckpoint*>(
-				m_fields->m_persistentCheckpointArray->objectAtIndex(loadIndex - 1)
-			);
-			m_checkpointArray->addObject(checkpoint->m_checkpoint);
+			if (loadIndex != 0) {
+				checkpoint = reinterpret_cast<PersistentCheckpoint*>(
+					m_fields->m_persistentCheckpointArray->objectAtIndex(
+						loadIndex - 1
+					)
+				);
+				m_checkpointArray->addObject(checkpoint->m_checkpoint);
+			}
 		}
 	}
 
@@ -169,14 +173,34 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 	}
 }
 
+// Can't call switchCurrentCheckpoint here because it would cause infinite
+// recursion in integrated normal mode.
 void ModPlayLayer::togglePracticeMode(bool enabled) {
 	PlayLayer::togglePracticeMode(enabled);
 
-	if (m_fields->m_persistentCheckpointArray == nullptr ||
-		 Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+	if (m_fields->m_persistentCheckpointArray == nullptr)
 		return;
 
-	m_fields->m_activeSaveLayer = 0;
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")) {
+		if (!enabled && m_fields->m_activeCheckpoint > 0) {
+			PersistentCheckpoint* checkpoint =
+				reinterpret_cast<PersistentCheckpoint*>(
+					m_fields->m_persistentCheckpointArray->objectAtIndex(
+						m_fields->m_activeCheckpoint - 1
+					)
+				);
+			if (checkpoint != nullptr) {
+				checkpoint->toggleActive(false);
+				m_currentCheckpoint = nullptr;
+				setStartPosObject(nullptr);
+				m_fields->m_activeCheckpoint = 0;
+			}
+			resetLevelFromStart();
+		}
+		updateModUI();
+
+		return;
+	}
 
 	if (enabled) {
 		updateSaveLayerCount();
@@ -322,13 +346,18 @@ void ModPlayLayer::updateModUI() {
 
 bool ModPlayLayer::isPersistentSystemActive() {
 	return (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") ||
-			  m_isPracticeMode) &&
-			 m_level->m_levelType != GJLevelType::Editor;
+			  m_isPracticeMode)
+#ifndef PCP_DEBUG
+			 && m_level->m_levelType != GJLevelType::Editor
+#endif
+		;
 }
 
 bool ModPlayLayer::isModUIVisible() {
+#ifndef PCP_DEBUG
 	if (m_level->m_levelType == GJLevelType::Editor)
 		return false;
+#endif
 
 	if (m_isPracticeMode)
 		return true;
@@ -339,4 +368,15 @@ bool ModPlayLayer::isModUIVisible() {
 		);
 
 	return false;
+}
+
+bool ModPlayLayer::isInFallbackMode() {
+	switch (m_fields->m_loadError) {
+	case GameVersionMismatch:
+	case LevelVersionMismatch:
+	case Crash:
+		return true;
+	default:
+		return false;
+	}
 }

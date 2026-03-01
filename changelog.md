@@ -1,5 +1,6 @@
 ## Unreleased (1.4)
-- Added a Save Manager, hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
+- Added a Save Manager, me is hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
+- Added experimental Fallback Mode, it's a bit broken sometimes right now \[[Issue #17](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/17)\]
 - Added the ability to swap between normal mode and practice mode by swapping checkpoints \[[Issue #22](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/22)\]
 - Disabled the mod for editor levels since it wasn't really usable (this also changes the location of the other save files)
 - Now when you delete a level the checkpoint saves of that level are also deleted (configurable) \[[Issue #25](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/25)\]

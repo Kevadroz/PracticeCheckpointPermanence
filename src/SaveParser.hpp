@@ -20,6 +20,7 @@
 enum LoadError : char {
 	None,
 	Crash,
+	GameVersionMismatch,
 	OutdatedData,
 	NewData,
 	OtherPlatform,
