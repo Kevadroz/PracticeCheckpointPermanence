@@ -156,6 +156,8 @@ void PersistentCheckpoint::serializeExternal(Stream& out) {
 	out << m_time;
 	out << m_percent;
 
+	out << m_name;
+
 	// Fallback
 	PlayerCheckpoint* p1Checkpoint = m_checkpoint->m_player1Checkpoint;
 	PlayerCheckpoint* p2Checkpoint = m_checkpoint->m_player2Checkpoint;
@@ -215,6 +217,8 @@ void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
 	in >> m_objectPos;
 	in >> m_time;
 	in >> m_percent;
+
+	in >> m_name;
 
 	// Fallback
 	StartPosObject* startPos = StartPosObject::create();
@@ -453,6 +457,27 @@ void PersistentCheckpoint::describe() {
 	);
 }
 #endif
+
+gd::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
+	gd::string label;
+	if (isPlatformer) {
+		int time = m_time;
+
+		label = fmt::format("{}s", time % 60);
+
+		if (time >= 60) {
+			label = fmt::format("{}m", (time % 3600) / 60) + label;
+
+			if (time >= 3600)
+				label = fmt::format("{}h", time / 3600) + label;
+		}
+	} else {
+		int decimals =
+			Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
+		label = fmt::format("{:.{}f}%", (float)m_percent, decimals);
+	}
+	return label;
+}
 
 StartPosGameModes
 PersistentCheckpoint::getGamemodeFromCheckpoint(PlayerCheckpoint* checkpoint) {

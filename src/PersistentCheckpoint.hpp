@@ -46,6 +46,8 @@ public:
 	gd::unordered_map<int, int> m_persistentItemCountMap;
 	gd::unordered_set<int> m_persistentTimerItemSet;
 
+	gd::string m_name = "";
+
 	static PersistentCheckpoint* create();
 	void storeData(CheckpointObject* checkpoint, PlayLayer* playLayer);
 
@@ -59,6 +61,8 @@ public:
 #if defined(PA_DEBUG) && defined(PA_DESCRIBE)
 	void describe();
 #endif
+
+	gd::string getDefaultLabel(bool isPlatformer);
 
 	static StartPosGameModes
 	getGamemodeFromCheckpoint(PlayerCheckpoint* checkpoint);

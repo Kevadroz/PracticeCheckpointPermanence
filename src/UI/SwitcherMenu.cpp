@@ -3,7 +3,7 @@
 SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
 
-	CCSize size = CCSizeMake(80, 80);
+	CCSize size = CCSizeMake(110, 110);
 
 	SwitcherMenu* menu = new SwitcherMenu();
 	menu->setContentSize(size);
@@ -53,6 +53,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->m_previousBtn->setID("previous");
 	menu->m_previousBtn->setLayoutOptions(previousLayoutOptions);
 
+	const char* nameLabelString;
 	const char* checkpointLabelString;
 	const char* layerLabelString;
 	const char* errorLabelString;
@@ -61,16 +62,26 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 			CCSprite::createWithSpriteFrameName("inactiveCheckpoint.png"_spr);
 		menu->m_checkpointSprite->setOpacity(192);
 
+		nameLabelString = "0%";
 		checkpointLabelString = "0/0";
-		layerLabelString = "Layer 1/0";
+		layerLabelString = "Lay 1/0";
 	} else {
 		menu->m_checkpointSprite =
 			CCSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
 
-		checkpointLabelString = "2/5";
-		layerLabelString = "Layer 2/3";
+		nameLabelString = "First Ship Hard Part";
+		checkpointLabelString = "2 (4)/5";
+		layerLabelString = "Lay 12/26";
 	}
 	menu->m_checkpointSprite->setID("checkpoint");
+
+	menu->m_nameLabel =
+		CCLabelBMFont::create(nameLabelString, "bigFont.fnt", 125.0f);
+	menu->m_nameLabel->setID("name-label");
+	menu->m_nameLabel->setLineBreakWithoutSpace(true);
+	menu->m_nameLabel->setScale(.6f);
+	menu->m_nameLabel->setAnchorPoint(ccp(0.5f, 1.0f));
+	menu->m_nameLabel->setAlignment(cocos2d::kCCTextAlignmentCenter);
 
 	menu->m_checkpointLabel =
 		CCLabelBMFont::create(checkpointLabelString, "bigFont.fnt");
@@ -93,6 +104,9 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	);
 	menu->m_buttonMenu->addChildAtPosition(
 		menu->m_nextBtn, geode::Anchor::Center, ccp(25, 0)
+	);
+	menu->m_labelMenu->addChildAtPosition(
+		menu->m_nameLabel, geode::Anchor::Center, ccp(0, -35)
 	);
 	menu->m_labelMenu->addChildAtPosition(
 		menu->m_checkpointLabel, geode::Anchor::Center, ccp(0, -28)

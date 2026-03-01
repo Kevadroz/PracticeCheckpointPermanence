@@ -16,7 +16,7 @@ CheckpointManager* CheckpointManager::create() {
 }
 
 bool CheckpointManager::init() {
-	if (!Popup::init(260.f, 280.f, "GJ_square02.png"))
+	if (!Popup::init(m_popupWidth, 280.f, "GJ_square02.png"))
 		return false;
 
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
@@ -131,7 +131,7 @@ bool CheckpointManager::init() {
 	m_moveLayerForwardBtn->setScale(.4);
 
 	m_listContainer = CCLayerColor::create();
-	m_listContainer->setContentSize(ccp(230, 190));
+	m_listContainer->setContentSize(ccp(m_popupWidth - 30.0f, 190));
 	m_listContainer->setAnchorPoint(ccp(.5, 1));
 	m_listContainer->setColor(ccc3(74, 97, 225));
 	m_listContainer->setOpacity(255);
@@ -426,10 +426,10 @@ CCNode* CheckpointManager::createCheckpointCell(
 	std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
 	std::function<void(CCMenuItemSpriteExtra*)> removeCallback
 ) {
-	PlayLayer* playLayer = PlayLayer::get();
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 
 	CCMenu* menu = ListMenu::create(m_listContainer);
-	menu->setContentSize(ccp(230, 40));
+	menu->setContentSize(ccp(m_popupWidth - 30.0f, 40));
 
 	CCSprite* moveUpSpr =
 		CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
@@ -464,25 +464,9 @@ CCNode* CheckpointManager::createCheckpointCell(
 	moveUpBtn->setRotation(90);
 	moveDownBtn->setRotation(90);
 
-	std::string progressString;
-	if (playLayer->m_level->isPlatformer()) {
-		int time = checkpoint->m_time;
-
-		progressString = fmt::format("{}s", time % 60);
-
-		if (time >= 60) {
-			progressString =
-				fmt::format("{}m", (time % 3600) / 60) + progressString;
-
-			if (time >= 3600)
-				progressString = fmt::format("{}h", time / 3600) + progressString;
-		}
-	} else {
-		int decimals =
-			Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
-		progressString =
-			fmt::format("{:.{}f}%", (float)checkpoint->m_percent, decimals);
-	}
+	std::string nameString = checkpoint->m_name;
+	if (nameString.empty())
+		nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
 
 	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(
 		checkpoint->m_checkpoint->m_physicalCheckpointObject->displayFrame()
@@ -490,10 +474,30 @@ CCNode* CheckpointManager::createCheckpointCell(
 	CCMenuItemSpriteExtra* selectBtn =
 		CCMenuItemExt::createSpriteExtra(checkpointSprite, selectCallback);
 
-	CCLabelBMFont* label =
-		CCLabelBMFont::create(progressString.c_str(), "goldFont.fnt");
+	CCLabelBMFont* label = CCLabelBMFont::create(
+		nameString.c_str(), "goldFont.fnt", m_popupWidth - 155.0f
+	);
+	label->setLineBreakWithoutSpace(true);
 	label->setAnchorPoint(ccp(0, .5));
 	label->setScale(.65);
+
+	CCSprite* renameSprite =
+		CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
+	CCMenuItemSpriteExtra* renameBtn = CCMenuItemExt::createSpriteExtra(
+		renameSprite,
+		[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
+			RenamePopup::create(
+				[this, playLayer]() -> void {
+					playLayer->serializeCheckpoints();
+					updateUIElements();
+				},
+				checkpoint
+			)
+				->show();
+		}
+	);
+	renameBtn->m_baseScale = .75;
+	renameBtn->setScale(.75);
 
 	CCSprite* removeSprite =
 		CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
@@ -506,6 +510,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 	menu->addChildAtPosition(moveDownBtn, geode::Anchor::Left, ccp(15, -10));
 	menu->addChildAtPosition(selectBtn, geode::Anchor::Left, ccp(35, 0));
 	menu->addChildAtPosition(label, geode::Anchor::Left, ccp(50, 0));
+	menu->addChildAtPosition(renameBtn, geode::Anchor::Right, ccp(-55, 0));
 	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-20, 0));
 
 #if defined(PA_DEBUG) && defined(PA_DESCRIBE)
@@ -519,7 +524,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 	);
 	describeBtn->m_baseScale = .75;
 	describeBtn->setScale(.75);
-	menu->addChildAtPosition(describeBtn, geode::Anchor::Right, ccp(-55, 0));
+	menu->addChildAtPosition(describeBtn, geode::Anchor::Right, ccp(-90, 0));
 #endif
 
 	return menu;
@@ -586,4 +591,59 @@ void CheckpointManager::forceLoadPopup() {
 			}
 		}
 	);
+}
+
+RenamePopup* RenamePopup::create(
+	std::function<void()> updateCallback, PersistentCheckpoint* checkpoint
+) {
+	auto ret = new RenamePopup();
+	if (ret->init(updateCallback, checkpoint)) {
+		ret->autorelease();
+		return ret;
+	}
+	delete ret;
+	return nullptr;
+}
+
+bool RenamePopup::init(
+	std::function<void()> updateCallback, PersistentCheckpoint* checkpoint
+) {
+	float width = 200.0f;
+
+	if (!Popup::init(width, 112.0f))
+		return false;
+
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+
+	m_checkpointName = checkpoint->m_name;
+
+	CCLabelBMFont* nameLabel = CCLabelBMFont::create("Name", "goldFont.fnt");
+	nameLabel->setAnchorPoint(ccp(0.0f, 0.5f));
+
+	TextInput* nameInput = TextInput::create(
+		width - 36.0f, checkpoint->getDefaultLabel(playLayer->m_isPlatformer)
+	);
+	nameInput->setString(m_checkpointName);
+	nameInput->setCommonFilter(CommonFilter::Any);
+	nameInput->setMaxCharCount(22);
+	nameInput->setCallback([this](const std::string name) {
+		m_checkpointName = name;
+	});
+
+	CCSprite* confirmBtnSprite = ButtonSprite::create("Confirm");
+	CCMenuItemSpriteExtra* confirmBtn = CCMenuItemExt::createSpriteExtra(
+		confirmBtnSprite, [this, checkpoint, updateCallback](CCObject* sender) {
+			checkpoint->m_name = m_checkpointName;
+			onClose(sender);
+			updateCallback();
+		}
+	);
+
+	m_mainLayer->addChildAtPosition(
+		nameLabel, Anchor::TopLeft, ccp(20.0f, -20.0f)
+	);
+	m_mainLayer->addChildAtPosition(nameInput, Anchor::Top, ccp(0.0f, -50.0f));
+	m_buttonMenu->addChildAtPosition(confirmBtn, Anchor::Top, ccp(0.0f, -85.0f));
+
+	return true;
 }

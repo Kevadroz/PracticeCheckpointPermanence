@@ -103,6 +103,14 @@ void ModUILayer::updateSwitcher() {
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	LoadError loadError = playLayer->m_fields->m_loadError;
 
+	PersistentCheckpoint* checkpoint = nullptr;
+	if (playLayer->m_fields->m_activeCheckpoint > 0)
+		checkpoint = static_cast<PersistentCheckpoint*>(
+			playLayer->m_fields->m_persistentCheckpointArray->objectAtIndex(
+				playLayer->m_fields->m_activeCheckpoint - 1
+			)
+		);
+
 	bool switcherActive =
 		Mod::get()->getSettingValue<bool>("switcher-enabled") &&
 		playLayer->isPersistentSystemActive() &&
@@ -120,6 +128,13 @@ void ModUILayer::updateSwitcher() {
 	else
 		m_fields->m_switcherMenu->setColor(ccc3(224, 111, 111));
 
+	gd::string nameString = "";
+	if (checkpoint != nullptr) {
+		if (checkpoint->m_name.empty())
+			nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
+		else
+			nameString = checkpoint->m_name;
+	}
 	std::string ghostCheckpointString =
 		playLayer->m_fields->m_ghostActiveCheckpoint == 0
 			? ""
@@ -127,6 +142,10 @@ void ModUILayer::updateSwitcher() {
 	std::string checkpointString = fmt::format(
 		"{}{}/{}", playLayer->m_fields->m_activeCheckpoint, ghostCheckpointString,
 		playLayer->m_fields->m_persistentCheckpointArray->count()
+	);
+	std::string layerString = fmt::format(
+		"Lay {}/{}", playLayer->m_fields->m_activeSaveLayer + 1,
+		playLayer->m_fields->m_saveLayerCount
 	);
 	const char* errorString;
 	switch (loadError) {
@@ -156,16 +175,12 @@ void ModUILayer::updateSwitcher() {
 		break;
 	}
 
+	m_fields->m_switcherMenu->m_nameLabel->setVisible(checkpoint != nullptr);
+	m_fields->m_switcherMenu->m_nameLabel->setString(nameString.c_str());
 	m_fields->m_switcherMenu->m_checkpointLabel->setString(
 		checkpointString.c_str()
 	);
-	m_fields->m_switcherMenu->m_layerLabel->setString(
-		fmt::format(
-			"Layer {}/{}", playLayer->m_fields->m_activeSaveLayer + 1,
-			playLayer->m_fields->m_saveLayerCount
-		)
-			.c_str()
-	);
+	m_fields->m_switcherMenu->m_layerLabel->setString(layerString.c_str());
 	m_fields->m_switcherMenu->m_errorLabel->setVisible(
 		playLayer->m_fields->m_loadError != LoadError::None
 	);

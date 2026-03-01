@@ -9,6 +9,8 @@ public:
 	static CheckpointManager* create();
 
 private:
+	float m_popupWidth = 300.0f;
+
 	CCMenuItemSpriteExtra* m_deleteButton = nullptr;
 	CCMenuItemSpriteExtra* m_forceLoadButton = nullptr;
 	CCLabelBMFont* m_saveLayerLabel = nullptr;
@@ -36,4 +38,17 @@ private:
 	void saveLoadMenu();
 	void resavePopup();
 	void forceLoadPopup();
+};
+
+class RenamePopup : public Popup {
+public:
+	static RenamePopup* create(
+		std::function<void()> updateCallback, PersistentCheckpoint* checkpoint
+	);
+
+private:
+	gd::string m_checkpointName;
+
+	bool
+	init(std::function<void()> updateCallback, PersistentCheckpoint* checkpoint);
 };
