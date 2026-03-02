@@ -8,6 +8,11 @@ else()
 endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
+# set(ARC_FEATURE_NET ON CACHE BOOL "" FORCE)
+# set(ARC_FEATURE_TIME ON CACHE BOOL "" FORCE)
+# set(ARC_FEATURE_SIGNAL ON CACHE BOOL "" FORCE)
+# set(ARC_FEATURE_DEBUG ON CACHE BOOL "" FORCE)
+
 project(PracticeCheckpointPermanence VERSION 1.0.0)
 
 # Add all source files inside src (recursively)
