@@ -293,24 +293,22 @@ void PersistentCheckpoint::setupPhysicalObject() {
 	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
 }
 
-void PersistentCheckpoint::toggleActive(bool active) {
-	const char* frameName;
-	if (active) {
-		frameName = "activeCheckpoint.png"_spr;
-		m_checkpoint->m_physicalCheckpointObject->setOpacity(255);
-		m_checkpoint->m_physicalCheckpointObject->setOpacity(
-			Mod::get()->getSettingValue<double>("active-checkpoint-opacity") * 255
-		);
+void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {
+	const char* frameName = active && !isGhost ? "activeCheckpoint.png"_spr
+															 : "inactiveCheckpoint.png"_spr;
+	double opacity;
+	if (isGhost && active) {
+		opacity = 1;
 	} else {
-		frameName = "inactiveCheckpoint.png"_spr;
-		m_checkpoint->m_physicalCheckpointObject->setOpacity(
-			Mod::get()->getSettingValue<double>("inactive-checkpoint-opacity") *
-			255
-		);
+		const char* settingKey =
+			active ? "active-checkpoint-opacity" : "inactive-checkpoint-opacity";
+		opacity = Mod::get()->getSettingValue<double>(settingKey);
 	}
+
 	m_checkpoint->m_physicalCheckpointObject->setDisplayFrame(
 		CCSpriteFrameCache::get()->spriteFrameByName(frameName)
 	);
+	m_checkpoint->m_physicalCheckpointObject->setOpacity(opacity * 255);
 }
 
 #if defined(PA_DEBUG) && defined(PA_DESCRIBE)
@@ -459,7 +457,7 @@ void PersistentCheckpoint::describe() {
 #endif
 
 gd::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
-	gd::string label;
+	std::string label;
 	if (isPlatformer) {
 		int time = m_time;
 
@@ -476,6 +474,7 @@ gd::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
 			Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
 		label = fmt::format("{:.{}f}%", (float)m_percent, decimals);
 	}
+
 	return label;
 }
 

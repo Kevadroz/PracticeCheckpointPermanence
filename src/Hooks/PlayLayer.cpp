@@ -124,9 +124,10 @@ void ModPlayLayer::resetLevel() {
 	if (m_fields->m_loadError == LoadError::None) {
 		if (isPersistentSystemActive() && m_isPracticeMode) {
 			unsigned int loadIndex = 0;
-			if (m_fields->m_ghostActiveCheckpoint > 0)
+			if (m_fields->m_ghostActiveCheckpoint > 0) {
 				loadIndex = m_fields->m_ghostActiveCheckpoint;
-			else if (m_checkpointArray->count() == 0)
+				m_fields->m_ghostCheckpointUsedTime = m_attemptTime;
+			} else if (m_checkpointArray->count() == 0)
 				loadIndex = m_fields->m_activeCheckpoint;
 
 			if (loadIndex != 0) {
@@ -215,7 +216,7 @@ void ModPlayLayer::storeCheckpoint(CheckpointObject* p0) {
 	PlayLayer::storeCheckpoint(p0);
 
 	if (m_fields->m_ghostActiveCheckpoint > 0) {
-		m_fields->m_ghostActiveCheckpoint = 0;
+		switchGhostCheckpoint(0);
 		static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
 	}
 }

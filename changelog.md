@@ -5,8 +5,10 @@
 - Added the ability to name checkpoints \[[Issue #24](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/24)\]
 - Added the load error and the current checkpoint name to the switcher menu
 - Disabled the mod for editor levels since it wasn't really usable (this also changes the location of the other save files)
+- Newly placed checkpoints are now fully opaque to help with placement \[[Issue #27](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/27)\]
 - Now when you delete a level the checkpoint saves of that level are also deleted (configurable) \[[Issue #25](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/25)\]
 - Added handling for invalid save files
+- When placing a persistent checkpoint the auto checkpoints will be supressed for a configurable amount of time (default 3 seconds)
 - Fixed the buttons in the Checkpoint Manager list being clickable outside the list
 - Make the active checkpoint be on top of the others on the progress bar
 - Changed the default value of the setting "Reset Attempts" to false

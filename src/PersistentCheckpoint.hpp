@@ -56,7 +56,7 @@ public:
 	void serializeExternal(persistenceAPI::Stream& out);
 	void deserializeExternal(persistenceAPI::Stream& in, SaveHeader);
 	void setupPhysicalObject();
-	void toggleActive(bool);
+	void toggleActive(bool active, bool isGhost = false);
 
 #if defined(PA_DEBUG) && defined(PA_DESCRIBE)
 	void describe();

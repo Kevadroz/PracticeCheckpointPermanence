@@ -55,6 +55,20 @@
 			"default": true,
 			"description": "Disables auto checkpoints when a persistent checkpoint is active"
 		},
+		"ghost-auto-checkpoint-inactive-time": {
+			"name": "Ghost Auto Checkpoint supress time",
+			"type": "float",
+			"default": 3.0,
+			"min": 0.0,
+			"max": 15.0,
+			"control": {
+				"slider": true,
+				"slider-step": 0.25,
+				"arrows": true,
+				"arrow-step": 1.0
+			},
+			"description": "Disables auto checkpoints for this amount of time when placing a new persistent checkpoint"
+		},
 		"reset-attempts": {
 			"name": "Reset Attempts",
 			"type": "bool",

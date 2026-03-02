@@ -39,6 +39,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 		unsigned int m_saveLayerCount = 0;
 		unsigned int m_ghostActiveCheckpoint = 0;
 
+		double m_ghostCheckpointUsedTime = 0;
+
 		CCNodeRGBA* m_pbCheckpointContainer = nullptr;
 	};
 
@@ -76,8 +78,13 @@ class $modify(ModPlayLayer, PlayLayer) {
 	// Checkpoints
 	void nextCheckpoint();
 	void previousCheckpoint();
-	void
-	switchCurrentCheckpoint(unsigned int, bool ignoreLastCheckpoint = false, bool noVisualUpdates = false);
+	void switchCurrentCheckpoint(
+		unsigned int nextCheckpoint, bool ignoreLastCheckpoint = false,
+		bool noVisualUpdates = false
+	);
+	void switchGhostCheckpoint(
+		unsigned int nextCheckpoint, bool noVisualUpdates = false
+	);
 	void markPersistentCheckpoint();
 	unsigned int
 	storePersistentCheckpoint(PersistentCheckpoint* checkpoint, bool reorder);
