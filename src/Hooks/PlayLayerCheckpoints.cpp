@@ -122,7 +122,6 @@ void ModPlayLayer::markPersistentCheckpoint() {
 	checkpoint->storeData(createCheckpoint(), this);
 	unsigned int newCheckpointIndex =
 		storePersistentCheckpoint(checkpoint, true) + 1;
-	serializeCheckpoints();
 
 	if (m_isPracticeMode) {
 		switchGhostCheckpoint(newCheckpointIndex);
@@ -135,6 +134,7 @@ void ModPlayLayer::markPersistentCheckpoint() {
 	if (m_fields->m_persistentCheckpointArray->count() == 1)
 		updateSaveLayerCount();
 
+	serializeCheckpoints();
 	updateModUI();
 }
 

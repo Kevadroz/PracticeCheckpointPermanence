@@ -40,8 +40,9 @@ bool CheckpointManager::init() {
 		CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png");
 	m_deleteButton = CCMenuItemExt::createSpriteExtra(
 		deleteSprite, [this, playLayer](CCMenuItemSpriteExtra* deleteButton) {
-			if (playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
-				 playLayer->m_fields->m_loadError != LoadError::None)
+			if ((playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
+				  playLayer->m_fields->m_loadError != LoadError::None) &&
+				 playLayer->m_fields->m_currentDiskOperation == DiskOperation::None)
 				geode::createQuickPopup(
 					"Delete All",
 					"Delete all saved checkpoints for this layer?\n"
@@ -213,6 +214,10 @@ bool CheckpointManager::init() {
 	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
 	m_buttonMenu->addChildAtPosition(m_forceLoadButton, geode::Anchor::Bottom);
 	m_buttonMenu->addChildAtPosition(m_errorButton, geode::Anchor::TopRight);
+
+	addEventListener(DeserializationFinishedEvent(), [this]() {
+		updateUIElements();
+	});
 
 	return true;
 }
@@ -580,9 +585,6 @@ void CheckpointManager::forceLoadPopup() {
 
 				playLayer->deserializeCheckpoints(true);
 				playLayer->serializeCheckpoints();
-
-				updateUIElements();
-				playLayer->updateModUI();
 			}
 		}
 	);

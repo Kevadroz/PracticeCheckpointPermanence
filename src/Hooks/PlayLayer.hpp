@@ -7,8 +7,29 @@
 using namespace geode::prelude;
 using namespace persistenceAPI;
 
+// Copied from PlatformerSaves
+#if defined(GEODE_IS_WINDOWS)
+#define UNIQUE_ID_OFFSET 0x6ba158
+#elif defined(GEODE_IS_ANDROID64)
+#define UNIQUE_ID_OFFSET 0x11fe018
+#elif defined(GEODE_IS_ANDROID32)
+#define UNIQUE_ID_OFFSET 0xa9f00c
+#elif defined(GEODE_IS_ARM_MAC)
+#define UNIQUE_ID_OFFSET 0x8aa39c
+#elif defined(GEODE_IS_INTEL_MAC)
+#define UNIQUE_ID_OFFSET 0x985500
+#elif defined(GEODE_IS_IOS)
+#define UNIQUE_ID_OFFSET 0x83f2e8
+#endif
+
+enum class DiskOperation { None, Serializing, Deserializing };
+
 class $modify(ModPlayLayer, PlayLayer) {
 	struct Fields {
+		DiskOperation m_currentDiskOperation = DiskOperation::None;
+		bool m_serializationQueued = false;
+		bool m_deserializationQueued = false;
+
 		bool m_startedLoadingObjects = false;
 		LoadError m_loadError = LoadError::None;
 		bool m_hasAttemptedToLoadCheckpoints = false;
@@ -53,6 +74,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	// Data
 	void serializeCheckpoints();
 	void deserializeCheckpoints(bool ignoreVerification = false);
+	void diskOperationFinished();
 	void unloadPersistentCheckpoints();
 	void resave();
 
@@ -93,4 +115,10 @@ class $modify(ModPlayLayer, PlayLayer) {
 			 ))
 			log::warn("Failed to set PlayLayer::setupHasCompleted hook priority!");
 	}
+};
+
+class DeserializationFinishedEvent
+	 : public Event<DeserializationFinishedEvent, void()> {
+public:
+	using Event::Event;
 };
