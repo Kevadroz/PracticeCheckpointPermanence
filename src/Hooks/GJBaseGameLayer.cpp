@@ -23,7 +23,7 @@ void ModGJBaseGameLayer::loadStartPosObject() {
 					m_player2->m_platformerXVelocity = fallbackData.p2Velocity.x;
 
 					switch (fallbackData.p2Gamemode) {
-					case 0:
+					case StartPosGameModes::Normal:
 						m_player2->toggleFlyMode(false, false);
 						m_player2->toggleRollMode(false, false);
 						m_player2->toggleBirdMode(false, false);
@@ -32,25 +32,25 @@ void ModGJBaseGameLayer::loadStartPosObject() {
 						m_player2->toggleSpiderMode(false, false);
 						m_player2->toggleSwingMode(false, false);
 						break;
-					case 1:
+					case StartPosGameModes::Ship:
 						m_player2->toggleFlyMode(true, true);
 						break;
-					case 2:
+					case StartPosGameModes::Ball:
 						m_player2->toggleRollMode(true, true);
 						break;
-					case 3:
+					case StartPosGameModes::UFO:
 						m_player2->toggleBirdMode(true, true);
 						break;
-					case 4:
+					case StartPosGameModes::Wave:
 						m_player2->toggleDartMode(true, true);
 						break;
-					case 5:
+					case StartPosGameModes::Robot:
 						m_player2->toggleRobotMode(true, true);
 						break;
-					case 6:
+					case StartPosGameModes::Spider:
 						m_player2->toggleSpiderMode(true, true);
 						break;
-					case 7:
+					case StartPosGameModes::Swing:
 						m_player2->toggleSwingMode(true, true);
 						break;
 					}

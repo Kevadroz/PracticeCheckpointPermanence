@@ -373,9 +373,9 @@ bool ModPlayLayer::isModUIVisible() {
 
 bool ModPlayLayer::isInFallbackMode() {
 	switch (m_fields->m_loadError) {
-	case GameVersionMismatch:
-	case LevelVersionMismatch:
-	case Crash:
+	case LoadError::GameVersionMismatch:
+	case LoadError::LevelVersionMismatch:
+	case LoadError::Crash:
 		return true;
 	default:
 		return false;

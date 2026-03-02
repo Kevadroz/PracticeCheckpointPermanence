@@ -8,7 +8,7 @@
 
 using namespace geode::prelude;
 
-enum StartPosGameModes : int {
+enum class StartPosGameModes : int {
 	Normal = 0,
 	Ship = 1,
 	Ball = 2,

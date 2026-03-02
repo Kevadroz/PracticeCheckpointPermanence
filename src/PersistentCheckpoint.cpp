@@ -165,7 +165,7 @@ void PersistentCheckpoint::serializeExternal(Stream& out) {
 	bool isDualMode =
 		p2Checkpoint != nullptr && m_checkpoint->m_gameState.m_isDualMode;
 
-	int mode = getGamemodeFromCheckpoint(p1Checkpoint);
+	int mode = static_cast<int>(getGamemodeFromCheckpoint(p1Checkpoint));
 	out << mode;
 
 	int speed = (int)(p1Checkpoint->m_playerSpeed < 0.8f	 ? Speed::Slow
@@ -197,7 +197,7 @@ void PersistentCheckpoint::serializeExternal(Stream& out) {
 	if (isDualMode) {
 		CCPoint p2Velocity =
 			ccp(p2Checkpoint->m_platformerXVelocity, p2Checkpoint->m_yVelocity);
-		int p2Gamemode = getGamemodeFromCheckpoint(p2Checkpoint);
+		int p2Gamemode = static_cast<int>(getGamemodeFromCheckpoint(p2Checkpoint));
 
 		out << p2Velocity;
 		out << p2Checkpoint->m_position;

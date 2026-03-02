@@ -308,34 +308,34 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	if (playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
 		const char* text;
 		switch (playLayer->m_fields->m_loadError) {
-		case None:
+		case LoadError::None:
 			if (saveLayer == 0)
 				text = "No checkpoints saved in this level.";
 			else
 				text = "No checkpoints saved in the current layer.";
 			break;
-		case Crash:
+		case LoadError::Crash:
 			text = "Error while loading saved checkpoints.";
 			break;
-		case GameVersionMismatch:
+		case LoadError::GameVersionMismatch:
 			text = "The version of the game has changed, the checkpoints cannot "
 					 "be loaded.";
 			break;
-		case OutdatedData:
+		case LoadError::OutdatedData:
 			text = "The version of the mod the checkpoints were saved in is no "
 					 "longer supported.";
 			break;
-		case NewData:
+		case LoadError::NewData:
 			text = "The checkpoints were saved with a newer version of the mod.";
 			break;
-		case OtherPlatform:
+		case LoadError::OtherPlatform:
 			text = "The checkpoints were saved in another platform or device.";
 			break;
-		case LevelVersionMismatch:
+		case LoadError::LevelVersionMismatch:
 			text = "The level version has changed, the checkpoints cannot "
 					 "be loaded.";
 			break;
-		case BadFile:
+		case LoadError::BadFile:
 			text = "The save file is corrupt or is not a save file.";
 			break;
 		}

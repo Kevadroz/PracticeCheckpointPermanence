@@ -17,7 +17,7 @@
 #define SAVE_HEADER "PCP SAVE FILE"
 #define CURRENT_VERSION 3
 
-enum LoadError : char {
+enum class LoadError : char {
 	None,
 	Crash,
 	GameVersionMismatch,

@@ -149,25 +149,25 @@ void ModUILayer::updateSwitcher() {
 	);
 	const char* errorString;
 	switch (loadError) {
-	case Crash:
+	case LoadError::Crash:
 		errorString = "BAD DATA";
 		break;
-	case GameVersionMismatch:
+	case LoadError::GameVersionMismatch:
 		errorString = "GMD VERS";
 		break;
-	case OutdatedData:
+	case LoadError::OutdatedData:
 		errorString = "OUTDATED";
 		break;
-	case NewData:
+	case LoadError::NewData:
 		errorString = "NEW VERS";
 		break;
-	case OtherPlatform:
+	case LoadError::OtherPlatform:
 		errorString = "PLATFORM";
 		break;
-	case LevelVersionMismatch:
+	case LoadError::LevelVersionMismatch:
 		errorString = "LVL VERS";
 		break;
-	case BadFile:
+	case LoadError::BadFile:
 		errorString = "BAD FILE";
 		break;
 	default:

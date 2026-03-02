@@ -72,7 +72,7 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 
 	m_fields->m_loadError = header.loadError;
 
-	if (header.loadError != None && !isInFallbackMode())
+	if (header.loadError != LoadError::None && !isInFallbackMode())
 		return;
 
 	for (unsigned int i = header.checkpointCount; i > 0; i--) {
