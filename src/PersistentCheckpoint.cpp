@@ -197,7 +197,8 @@ void PersistentCheckpoint::serializeExternal(Stream& out) {
 	if (isDualMode) {
 		CCPoint p2Velocity =
 			ccp(p2Checkpoint->m_platformerXVelocity, p2Checkpoint->m_yVelocity);
-		int p2Gamemode = static_cast<int>(getGamemodeFromCheckpoint(p2Checkpoint));
+		int p2Gamemode =
+			static_cast<int>(getGamemodeFromCheckpoint(p2Checkpoint));
 
 		out << p2Velocity;
 		out << p2Checkpoint->m_position;
@@ -445,14 +446,27 @@ void PersistentCheckpoint::describe() {
 	log::info("[PersistentCheckpoint - describe] m_objectPos: {}", m_objectPos);
 	log::info("[PersistentCheckpoint - describe] m_time: {}", m_time);
 	log::info("[PersistentCheckpoint - describe] m_percent: {}", m_percent);
-	log::info(
-		"[PersistentCheckpoint - describe] m_persistentItemCountMap: {}",
-		m_persistentItemCountMap
-	);
-	log::info(
-		"[PersistentCheckpoint - describe] m_persistentTimerItemSet: {}",
-		m_persistentTimerItemSet
-	);
+	for (gd::pair<int, int> l_pair : m_persistentItemCountMap) {
+		log::info(
+			"[PersistentCheckpoint - describe] m_persistentItemCountMap element "
+			"{} key: {}",
+			i, l_pair.first
+		);
+		log::info(
+			"[PersistentCheckpoint - describe] m_persistentItemCountMap element "
+			"{} value: {}",
+			i, l_pair.second
+		);
+		i++;
+	}
+	for (int l_value : m_persistentTimerItemSet) {
+		log::info(
+			"[PersistentCheckpoint - describe] m_persistentTimerItemSet element "
+			"{} value: {}",
+			i, l_value
+		);
+		i++;
+	}
 }
 #endif
 
