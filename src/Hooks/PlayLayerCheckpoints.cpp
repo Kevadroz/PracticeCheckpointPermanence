@@ -31,13 +31,6 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	if (m_fields->m_activeCheckpoint == nextCheckpoint)
 		return;
 
-	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
-		 (nextCheckpoint != 0) != m_isPracticeMode) {
-		PlayLayer::togglePracticeMode(!m_isPracticeMode);
-		if (!m_isPracticeMode)
-			return;
-	}
-
 	if (!ignoreLastCheckpoint && m_fields->m_activeCheckpoint != 0)
 		reinterpret_cast<PersistentCheckpoint*>(
 			m_fields->m_persistentCheckpointArray->objectAtIndex(
@@ -71,6 +64,13 @@ void ModPlayLayer::switchCurrentCheckpoint(
 			startPos = checkpoint->m_fallbackData.startPos;
 		}
 		setStartPosObject(startPos);
+	}
+
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
+		 (nextCheckpoint != 0) != m_isPracticeMode) {
+		PlayLayer::togglePracticeMode(!m_isPracticeMode);
+		if (!m_isPracticeMode)
+			return;
 	}
 
 	if (!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts"))
@@ -192,14 +192,6 @@ void ModPlayLayer::removePersistentCheckpoint(
 	else if (m_fields->m_ghostActiveCheckpoint > 0)
 		switchGhostCheckpoint(m_fields->m_ghostActiveCheckpoint - 1, true);
 
-	serializeCheckpoints();
-
-	if (m_fields->m_persistentCheckpointArray->count() == 0) {
-		if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
-			PlayLayer::togglePracticeMode(false);
-		return;
-	}
-
 	if (switchCheckpoint)
 		switchCurrentCheckpoint(m_fields->m_activeCheckpoint - 1, true);
 	else {
@@ -208,6 +200,8 @@ void ModPlayLayer::removePersistentCheckpoint(
 
 		updateModUI();
 	}
+
+	serializeCheckpoints();
 }
 
 void ModPlayLayer::removeCurrentPersistentCheckpoint() {

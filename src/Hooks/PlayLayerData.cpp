@@ -119,6 +119,8 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {
+	switchGhostCheckpoint(0);
+	
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
 		  )) {
