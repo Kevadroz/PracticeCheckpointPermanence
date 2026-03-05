@@ -1,4 +1,5 @@
 ## Unreleased (1.4)
+- Migrate to Geometry Dash 2.2081 and Geode v5
 - Added a Save Manager, me is hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
 - Added experimental Fallback Mode, it's a bit broken sometimes right now \[[Issue #17](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/17)\]
 - Added the ability to swap between normal mode and practice mode by swapping checkpoints \[[Issue #22](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/22)\]
@@ -10,15 +11,11 @@
 - Added handling for invalid save files
 - When placing a persistent checkpoint the auto checkpoints will be supressed for a configurable amount of time (default 3 seconds)
 - Fixed the buttons in the Checkpoint Manager list being clickable outside the list
+- Keep level attempt count the same when swapping between persistent checkpoints \[[Issue #21](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/21)\]
 - Make the active checkpoint be on top of the others on the progress bar
 - Changed the default value of the setting "Reset Attempts" to false
-- Rearranged some settings
-- Fix vanilla checkpoint being placed alongside the persistent one with the default keybind
-
-## Unreleased (1.3.4)
-- Migrate to Geometry Dash 2.2081 and Geode v5
-- Keep level attempt count the same when swapping between persistent checkpoints \[[Issue #21](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/21)\]
 - Add an option to disable the switcher \[[Issue #23](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/23)\]
+- Rearranged some settings
 
 ## 1.3.3 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.3)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.3))
 - Make the last placed persistent checkpoint be "ghost" active until switching to another checkpoint or placing a regular checkpoint \[[Issue #20](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/20)\]
