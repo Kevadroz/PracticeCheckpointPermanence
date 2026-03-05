@@ -1,6 +1,21 @@
 #include "PlayLayer.hpp"
 #include "UILayer.hpp"
 
+// Copied from PlatformerSaves
+#if defined(GEODE_IS_WINDOWS)
+#define UNIQUE_ID_OFFSET 0x6ba158
+#elif defined(GEODE_IS_ANDROID64)
+#define UNIQUE_ID_OFFSET 0x122f018
+#elif defined(GEODE_IS_ANDROID32)
+#define UNIQUE_ID_OFFSET 0xab900c
+#elif defined(GEODE_IS_ARM_MAC)
+#define UNIQUE_ID_OFFSET 0x8b58ac
+#elif defined(GEODE_IS_INTEL_MAC)
+#define UNIQUE_ID_OFFSET 0x99e600
+#elif defined(GEODE_IS_IOS)
+#define UNIQUE_ID_OFFSET 0x84c1e8
+#endif
+
 $execute {
 	SettingChangedEvent(Mod::get(), "progressbar-checkpoint-opacity")
 		.listen(+[](std::shared_ptr<SettingV3> setting) {
@@ -11,6 +26,33 @@ $execute {
 				);
 		})
 		.leak();
+
+	SettingChangedEvent(Mod::get(), "switch-in-out-normal-mode")
+		.listen(+[](std::shared_ptr<SettingV3> setting) {
+			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+			if (playLayer != nullptr && !playLayer->m_isPracticeMode) {
+				if (playLayer->m_fields->m_persistentCheckpointArray == nullptr)
+					return;
+
+				playLayer->m_fields->m_activeSaveLayer = 0;
+				playLayer->unloadPersistentCheckpoints();
+				if (typeinfo_pointer_cast<BoolSettingV3>(setting)->getValue()) {
+					playLayer->updateSaveLayerCount();
+					playLayer->deserializeCheckpoints();
+				}
+				playLayer->updateModUI();
+			}
+		})
+		.leak();
+
+	SettingChangedEvent(Mod::get(), "show-checkpoints-in-normal-mode")
+		.listen(+[](std::shared_ptr<SettingV3> setting) {
+			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+			if (playLayer != nullptr && !playLayer->m_isPracticeMode &&
+				 Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+				playLayer->updateModUI();
+		})
+		.leak();
 }
 
 bool ModPlayLayer::init(
@@ -19,7 +61,8 @@ bool ModPlayLayer::init(
 	if (!PlayLayer::init(level, useReplay, dontCreateObjects))
 		return false;
 
-	if (m_fields->m_persistentCheckpointArray != nullptr && m_isPracticeMode &&
+	if (m_fields->m_persistentCheckpointArray != nullptr &&
+		 isPersistentSystemActive() &&
 		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
 		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
@@ -63,7 +106,8 @@ void ModPlayLayer::setupHasCompleted() {
 	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
 	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
 
-	if (m_isPracticeMode && !m_fields->m_hasAttemptedToLoadCheckpoints) {
+	if (isPersistentSystemActive() &&
+		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
 		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
 		updateSaveLayerCount();
@@ -80,30 +124,35 @@ void ModPlayLayer::destructor() {
 
 // Copied from PlatformerSaves
 void ModPlayLayer::processCreateObjectsFromSetup() {
-	// if (!m_fields->m_startedLoadingObjects) {
-	// 	m_fields->m_startedLoadingObjects = true;
-	// 	*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET) = 12;
-	// 	reinterpret_cast<persistenceAPI::PAPlayLayer*>(this)
-	// 		->m_fields->m_uniqueIDBase =
-	// 		*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET);
-	// }
+	if (!m_fields->m_startedLoadingObjects) {
+		m_fields->m_startedLoadingObjects = true;
+		*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET) = 12;
+		reinterpret_cast<persistenceAPI::PAPlayLayer*>(this)
+			->m_fields->m_uniqueIDBase =
+			*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET);
+	}
 	PlayLayer::processCreateObjectsFromSetup();
 }
 
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (m_isPracticeMode) {
-		unsigned int loadIndex = 0;
-		if (m_fields->m_ghostActiveCheckpoint > 0)
-			loadIndex = m_fields->m_ghostActiveCheckpoint;
-		else if (m_checkpointArray->count() == 0)
-			loadIndex = m_fields->m_activeCheckpoint;
+	if (m_fields->m_loadError == LoadError::None) {
+		if (isPersistentSystemActive() && m_isPracticeMode) {
+			unsigned int loadIndex = 0;
+			if (m_fields->m_ghostActiveCheckpoint > 0) {
+				loadIndex = m_fields->m_ghostActiveCheckpoint;
+				m_fields->m_ghostCheckpointUsedTime = m_attemptTime;
+			} else if (m_checkpointArray->count() == 0)
+				loadIndex = m_fields->m_activeCheckpoint;
 
-		if (loadIndex != 0) {
-			checkpoint = reinterpret_cast<PersistentCheckpoint*>(
-				m_fields->m_persistentCheckpointArray->objectAtIndex(loadIndex - 1)
-			);
-			m_checkpointArray->addObject(checkpoint->m_checkpoint);
+			if (loadIndex != 0) {
+				checkpoint = reinterpret_cast<PersistentCheckpoint*>(
+					m_fields->m_persistentCheckpointArray->objectAtIndex(
+						loadIndex - 1
+					)
+				);
+				m_checkpointArray->addObject(checkpoint->m_checkpoint);
+			}
 		}
 	}
 
@@ -140,13 +189,34 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 	}
 }
 
+// Can't call switchCurrentCheckpoint here because it would cause infinite
+// recursion in integrated normal mode.
 void ModPlayLayer::togglePracticeMode(bool enabled) {
 	PlayLayer::togglePracticeMode(enabled);
 
 	if (m_fields->m_persistentCheckpointArray == nullptr)
 		return;
 
-	m_fields->m_activeSaveLayer = 0;
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")) {
+		if (!enabled && m_fields->m_activeCheckpoint > 0) {
+			PersistentCheckpoint* checkpoint =
+				reinterpret_cast<PersistentCheckpoint*>(
+					m_fields->m_persistentCheckpointArray->objectAtIndex(
+						m_fields->m_activeCheckpoint - 1
+					)
+				);
+			if (checkpoint != nullptr) {
+				checkpoint->toggleActive(false);
+				m_currentCheckpoint = nullptr;
+				setStartPosObject(nullptr);
+				m_fields->m_activeCheckpoint = 0;
+			}
+			resetLevelFromStart();
+		}
+		updateModUI();
+
+		return;
+	}
 
 	if (enabled) {
 		updateSaveLayerCount();
@@ -161,7 +231,7 @@ void ModPlayLayer::storeCheckpoint(CheckpointObject* p0) {
 	PlayLayer::storeCheckpoint(p0);
 
 	if (m_fields->m_ghostActiveCheckpoint > 0) {
-		m_fields->m_ghostActiveCheckpoint = 0;
+		switchGhostCheckpoint(0);
 		static_cast<ModUILayer*>(m_uiLayer)->updateSwitcher();
 	}
 }
@@ -170,52 +240,73 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-create-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down && !repeat)
-				markPersistentCheckpoint();
+			if (isPersistentSystemActive() && down) {
+				if (!repeat)
+					markPersistentCheckpoint();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-remove-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down && !repeat) {
-				if (m_fields->m_ghostActiveCheckpoint != 0)
-					removeGhostPersistentCheckpoint();
-				else if (m_fields->m_activeCheckpoint != 0)
-					removeCurrentPersistentCheckpoint();
+			if (isPersistentSystemActive() && down) {
+				if (!repeat) {
+					if (m_fields->m_ghostActiveCheckpoint != 0)
+						removeGhostPersistentCheckpoint();
+					else if (m_fields->m_activeCheckpoint != 0)
+						removeCurrentPersistentCheckpoint();
+				}
+
+				return true;
 			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down) {
 				previousCheckpoint();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down) {
 				nextCheckpoint();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down) {
 				previousSaveLayer();
+				return true;
+			}
+			return false;
 		}
 	);
 
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (m_isPracticeMode && down)
+			if (isPersistentSystemActive() && down) {
 				nextSaveLayer();
+				return true;
+			}
+			return false;
 		}
 	);
 }
@@ -229,9 +320,13 @@ void ModPlayLayer::updateModUI() {
 	if (m_isPlatformer)
 		return;
 
+	bool checkpointsVisible = isModUIVisible();
+
 	CCNodeRGBA* container = m_fields->m_pbCheckpointContainer;
-	container->setVisible(m_isPracticeMode);
+	container->setVisible(checkpointsVisible);
 	container->removeAllChildren();
+
+	m_fields->m_persistentCheckpointBatchNode->setVisible(checkpointsVisible);
 
 	unsigned int currentCheckpoint = 0;
 	float barWidth = m_progressBar->getContentWidth() - 4;
@@ -251,6 +346,11 @@ void ModPlayLayer::updateModUI() {
 		sprite->setPosition(
 			ccp(barWidth * (checkpoint->m_percent / 100.f) + 2, 0)
 		);
+		if (m_fields->m_activeCheckpoint > 0 &&
+			 checkpoint == m_fields->m_persistentCheckpointArray->objectAtIndex(
+									m_fields->m_activeCheckpoint - 1
+								))
+			sprite->setZOrder(1);
 		container->addChild(sprite);
 
 		currentCheckpoint++;
@@ -258,4 +358,41 @@ void ModPlayLayer::updateModUI() {
 
 	// Update Cascade Opacity (Why is it protected?)
 	container->setOpacity(container->getOpacity());
+}
+
+bool ModPlayLayer::isPersistentSystemActive() {
+	return (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") ||
+			  m_isPracticeMode)
+#ifndef PCP_DEBUG
+			 && m_level->m_levelType != GJLevelType::Editor
+#endif
+		;
+}
+
+bool ModPlayLayer::isModUIVisible() {
+#ifndef PCP_DEBUG
+	if (m_level->m_levelType == GJLevelType::Editor)
+		return false;
+#endif
+
+	if (m_isPracticeMode)
+		return true;
+
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+		return Mod::get()->getSettingValue<bool>(
+			"show-checkpoints-in-normal-mode"
+		);
+
+	return false;
+}
+
+bool ModPlayLayer::isInFallbackMode() {
+	switch (m_fields->m_loadError) {
+	case LoadError::GameVersionMismatch:
+	case LoadError::LevelVersionMismatch:
+	case LoadError::Crash:
+		return true;
+	default:
+		return false;
+	}
 }

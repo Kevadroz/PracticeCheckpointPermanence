@@ -1,7 +1,7 @@
 #include "PlayLayer.hpp"
 
 void ModPlayLayer::nextCheckpoint() {
-	if (!m_isPracticeMode || m_levelEndAnimationStarted)
+	if (!isPersistentSystemActive() || m_levelEndAnimationStarted)
 		return;
 
 	unsigned int nextCheckpoint = m_fields->m_activeCheckpoint + 1;
@@ -11,7 +11,7 @@ void ModPlayLayer::nextCheckpoint() {
 }
 
 void ModPlayLayer::previousCheckpoint() {
-	if (!m_isPracticeMode || m_levelEndAnimationStarted)
+	if (!isPersistentSystemActive() || m_levelEndAnimationStarted)
 		return;
 
 	unsigned int nextCheckpoint = m_fields->m_activeCheckpoint - 1;
@@ -20,13 +20,23 @@ void ModPlayLayer::previousCheckpoint() {
 	switchCurrentCheckpoint(nextCheckpoint);
 }
 
+// This may need a rewrite.
 void ModPlayLayer::switchCurrentCheckpoint(
-	unsigned int nextCheckpoint, bool ignoreLastCheckpoint
+	unsigned int nextCheckpoint, bool ignoreLastCheckpoint, bool noVisualUpdates
 ) {
+	bool isFallback = isInFallbackMode();
+
 	removeAllCheckpoints();
 
 	if (m_fields->m_activeCheckpoint == nextCheckpoint)
 		return;
+
+	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
+		 (nextCheckpoint != 0) != m_isPracticeMode) {
+		PlayLayer::togglePracticeMode(!m_isPracticeMode);
+		if (!m_isPracticeMode)
+			return;
+	}
 
 	if (!ignoreLastCheckpoint && m_fields->m_activeCheckpoint != 0)
 		reinterpret_cast<PersistentCheckpoint*>(
@@ -36,30 +46,71 @@ void ModPlayLayer::switchCurrentCheckpoint(
 		)
 			->toggleActive(false);
 
-	if (nextCheckpoint != 0)
+	if (!noVisualUpdates && nextCheckpoint != 0) {
 		reinterpret_cast<PersistentCheckpoint*>(
 			(m_fields->m_persistentCheckpointArray)
 				->objectAtIndex(nextCheckpoint - 1)
 		)
 			->toggleActive(true);
+	}
 
-	m_fields->m_ghostActiveCheckpoint = 0;
+	switchGhostCheckpoint(0);
 	m_fields->m_activeCheckpoint = nextCheckpoint;
 
-	if (Mod::get()->getSettingValue<bool>("reset-attempts"))
+	if (isFallback) {
+		m_currentCheckpoint = nullptr;
+		StartPosObject* startPos = nullptr;
+
+		if (nextCheckpoint != 0) {
+			PersistentCheckpoint* checkpoint =
+				reinterpret_cast<PersistentCheckpoint*>(
+					m_fields->m_persistentCheckpointArray->objectAtIndex(
+						nextCheckpoint - 1
+					)
+				);
+			startPos = checkpoint->m_fallbackData.startPos;
+		}
+		setStartPosObject(startPos);
+	}
+
+	if (!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts"))
 		m_attempts = 0;
 	else
 		m_attempts--;
 
 	m_level->setAttempts(m_level->m_attempts - 1);
 
-	updateModUI();
+	if (!noVisualUpdates)
+		updateModUI();
 
-	resetLevel();
+	PlayLayer::resetLevel();
+	if (!noVisualUpdates && isFallback)
+		startMusic();
+}
+
+void ModPlayLayer::switchGhostCheckpoint(
+	unsigned int nextCheckpoint, bool noVisualUpdates
+) {
+	if (!noVisualUpdates && m_fields->m_ghostActiveCheckpoint > 0)
+		static_cast<PersistentCheckpoint*>(
+			m_fields->m_persistentCheckpointArray->objectAtIndex(
+				m_fields->m_ghostActiveCheckpoint - 1
+			)
+		)
+			->toggleActive(false, true);
+
+	m_fields->m_ghostActiveCheckpoint = nextCheckpoint;
+
+	if (!noVisualUpdates && nextCheckpoint > 0)
+		static_cast<PersistentCheckpoint*>(m_fields->m_persistentCheckpointArray
+														  ->objectAtIndex(nextCheckpoint - 1))
+			->toggleActive(true, true);
+
+	updateModUI();
 }
 
 void ModPlayLayer::markPersistentCheckpoint() {
-	if (m_playerDied || m_levelEndAnimationStarted)
+	if (m_playerDied || m_levelEndAnimationStarted || !m_isPracticeMode)
 		return;
 
 	if (m_fields->m_loadError != LoadError::None) {
@@ -67,15 +118,19 @@ void ModPlayLayer::markPersistentCheckpoint() {
 		return;
 	}
 
-	PersistentCheckpoint* checkpoint =
-		PersistentCheckpoint::createFromCheckpoint(
-			createCheckpoint(), m_timePlayed, getCurrentPercent(),
-			m_effectManager->m_persistentItemCountMap,
-			m_effectManager->m_persistentTimerItemSet
-		);
-	m_fields->m_ghostActiveCheckpoint =
-		storePersistentCheckpoint(checkpoint) + 1;
+	PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
+	checkpoint->storeData(createCheckpoint(), this);
+	unsigned int newCheckpointIndex =
+		storePersistentCheckpoint(checkpoint, true) + 1;
 	serializeCheckpoints();
+
+	if (m_isPracticeMode) {
+		switchGhostCheckpoint(newCheckpointIndex);
+		if (Mod::get()->getSettingValue<double>(
+				 "ghost-auto-checkpoint-inactive-time"
+			 ) > 0.0)
+			m_fields->m_ghostCheckpointUsedTime = m_attemptTime;
+	}
 
 	if (m_fields->m_persistentCheckpointArray->count() == 1)
 		updateSaveLayerCount();
@@ -83,12 +138,13 @@ void ModPlayLayer::markPersistentCheckpoint() {
 	updateModUI();
 }
 
-unsigned int
-ModPlayLayer::storePersistentCheckpoint(PersistentCheckpoint* checkpoint) {
+unsigned int ModPlayLayer::storePersistentCheckpoint(
+	PersistentCheckpoint* checkpoint, bool reorder
+) {
 	CCArray* array = m_fields->m_persistentCheckpointArray;
 
 	unsigned int index = 0;
-	if (array->count() > 0)
+	if (reorder && array->count() > 0)
 		for (PersistentCheckpoint* arrayCheckpoint :
 			  CCArrayExt<PersistentCheckpoint*>(array)) {
 			if (m_isPlatformer
@@ -101,7 +157,7 @@ ModPlayLayer::storePersistentCheckpoint(PersistentCheckpoint* checkpoint) {
 	m_fields->m_persistentCheckpointBatchNode->addChild(
 		checkpoint->m_checkpoint->m_physicalCheckpointObject
 	);
-	if (index < array->count())
+	if (reorder && index < array->count())
 		array->insertObject(checkpoint, index);
 	else
 		array->addObject(checkpoint);
@@ -132,9 +188,17 @@ void ModPlayLayer::removePersistentCheckpoint(
 	m_fields->m_persistentCheckpointArray->removeObjectAtIndex(removeIndex);
 
 	if (removeIndex + 1 == m_fields->m_ghostActiveCheckpoint)
-		m_fields->m_ghostActiveCheckpoint = 0;
+		switchGhostCheckpoint(0, true);
 	else if (m_fields->m_ghostActiveCheckpoint > 0)
-		m_fields->m_ghostActiveCheckpoint--;
+		switchGhostCheckpoint(m_fields->m_ghostActiveCheckpoint - 1, true);
+
+	serializeCheckpoints();
+
+	if (m_fields->m_persistentCheckpointArray->count() == 0) {
+		if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+			PlayLayer::togglePracticeMode(false);
+		return;
+	}
 
 	if (switchCheckpoint)
 		switchCurrentCheckpoint(m_fields->m_activeCheckpoint - 1, true);
@@ -144,8 +208,6 @@ void ModPlayLayer::removePersistentCheckpoint(
 
 		updateModUI();
 	}
-
-	serializeCheckpoints();
 }
 
 void ModPlayLayer::removeCurrentPersistentCheckpoint() {
@@ -166,7 +228,8 @@ void ModPlayLayer::removeCurrentPersistentCheckpoint() {
 }
 
 void ModPlayLayer::removeGhostPersistentCheckpoint() {
-	assert(m_fields->m_loadError == LoadError::None);
+	if (m_fields->m_loadError != LoadError::None)
+		return;
 
 	if (m_fields->m_ghostActiveCheckpoint > 0) {
 		PersistentCheckpoint* checkpoint =
@@ -190,9 +253,9 @@ void ModPlayLayer::swapPersistentCheckpoints(
 		m_fields->m_activeCheckpoint = left + 1;
 
 	if (m_fields->m_ghostActiveCheckpoint == left + 1)
-		m_fields->m_ghostActiveCheckpoint = right + 1;
+		switchGhostCheckpoint(right + 1, true);
 	else if (m_fields->m_ghostActiveCheckpoint == right + 1)
-		m_fields->m_ghostActiveCheckpoint = left + 1;
+		switchGhostCheckpoint(left + 1, true);
 
 	serializeCheckpoints();
 	updateModUI();

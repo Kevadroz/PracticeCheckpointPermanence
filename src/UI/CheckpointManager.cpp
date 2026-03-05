@@ -1,10 +1,7 @@
 #include "CheckpointManager.hpp"
 #include "../Hooks/PlayLayer.hpp"
-#include "Geode/ui/Layout.hpp"
+#include "ListMenu.hpp"
 
-#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
-#include <Geode/binding/FLAlertLayer.hpp>
-#include <Geode/binding/PlayLayer.hpp>
 #include <Geode/ui/GeodeUI.hpp>
 
 CheckpointManager* CheckpointManager::create() {
@@ -19,7 +16,7 @@ CheckpointManager* CheckpointManager::create() {
 }
 
 bool CheckpointManager::init() {
-	if (!Popup::init(260.f, 280.f, "GJ_square02.png"))
+	if (!Popup::init(m_popupWidth, 280.f, "GJ_square02.png"))
 		return false;
 
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
@@ -134,7 +131,7 @@ bool CheckpointManager::init() {
 	m_moveLayerForwardBtn->setScale(.4);
 
 	m_listContainer = CCLayerColor::create();
-	m_listContainer->setContentSize(ccp(230, 190));
+	m_listContainer->setContentSize(ccp(m_popupWidth - 30.0f, 190));
 	m_listContainer->setAnchorPoint(ccp(.5, 1));
 	m_listContainer->setColor(ccc3(74, 97, 225));
 	m_listContainer->setOpacity(255);
@@ -171,33 +168,20 @@ bool CheckpointManager::init() {
 	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
 	m_emptyListLabel->setVisible(!hasCheckpoints);
 
-	ButtonSprite* forceLoadButtonSprite = ButtonSprite::create("Force Load");
+	ButtonSprite* saveMenuButtonSprite = ButtonSprite::create("");
 	m_forceLoadButton = CCMenuItemExt::createSpriteExtra(
-		forceLoadButtonSprite,
+		saveMenuButtonSprite,
 		[this, playLayer](CCMenuItemSpriteExtra* forceButton) {
-			geode::createQuickPopup(
-				"Force Load",
-				"This will force load and resave this layer.\n"
-				"When switching to a checkpoint the game will likely crash or the "
-				"level will break.\n"
-				"If things go very wrong you can try opening the checkpoint "
-				"manager outside of practice mode to remove all checkpoints.\n"
-				"Are you sure about this?",
-				"No", "YOLO", [this, playLayer](auto, bool confirmed) {
-					if (confirmed) {
-						playLayer->deserializeCheckpoints(true);
-						playLayer->serializeCheckpoints();
-
-						updateUIElements();
-						playLayer->updateModUI();
-					}
-				}
-			);
+			if (playLayer->m_fields->m_loadError != LoadError::None &&
+				 !playLayer->isInFallbackMode())
+				forceLoadPopup();
+			else
+				saveLoadMenu();
 		}
 	);
-	m_forceLoadButton->setVisible(
-		playLayer->m_fields->m_loadError != LoadError::None
-	);
+	bool forceLoadButtonActive = playLayer->isInFallbackMode();
+	m_forceLoadButton->setVisible(forceLoadButtonActive);
+	m_forceLoadButton->setEnabled(forceLoadButtonActive);
 	m_forceLoadButton->m_baseScale = 0.7;
 	m_forceLoadButton->setScale(0.7);
 
@@ -324,28 +308,35 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	if (playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
 		const char* text;
 		switch (playLayer->m_fields->m_loadError) {
-		case None:
+		case LoadError::None:
 			if (saveLayer == 0)
 				text = "No checkpoints saved in this level.";
 			else
 				text = "No checkpoints saved in the current layer.";
 			break;
-		case Crash:
+		case LoadError::Crash:
 			text = "Error while loading saved checkpoints.";
 			break;
-		case OutdatedData:
+		case LoadError::GameVersionMismatch:
+			text = "The version of the game has changed, the checkpoints cannot "
+					 "be loaded.";
+			break;
+		case LoadError::OutdatedData:
 			text = "The version of the mod the checkpoints were saved in is no "
 					 "longer supported.";
 			break;
-		case NewData:
+		case LoadError::NewData:
 			text = "The checkpoints were saved with a newer version of the mod.";
 			break;
-		case OtherPlatform:
+		case LoadError::OtherPlatform:
 			text = "The checkpoints were saved in another platform or device.";
 			break;
-		case LevelVersionMismatch:
+		case LoadError::LevelVersionMismatch:
 			text = "The level version has changed, the checkpoints cannot "
 					 "be loaded.";
+			break;
+		case LoadError::BadFile:
+			text = "The save file is corrupt or is not a save file.";
 			break;
 		}
 
@@ -369,6 +360,13 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_deleteButton->setOpacity(255);
 	}
 
+	const char* saveMenuString = "Save / Load";
+	if (playLayer->m_fields->m_loadError != LoadError::None &&
+		 !playLayer->isInFallbackMode())
+		saveMenuString = "Force Load";
+	typeinfo_cast<ButtonSprite*>(m_forceLoadButton->getChildByIndex(0))
+		->setString(saveMenuString);
+	m_forceLoadButton->updateSprite();
 	m_forceLoadButton->setVisible(
 		playLayer->m_fields->m_loadError != LoadError::None
 	);
@@ -421,17 +419,17 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	m_buttonMenu->updateLayout(false);
 }
 
-CCNode* createCheckpointCell(
+CCNode* CheckpointManager::createCheckpointCell(
 	PersistentCheckpoint* checkpoint,
 	std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
 	std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
 	std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
 	std::function<void(CCMenuItemSpriteExtra*)> removeCallback
 ) {
-	PlayLayer* playLayer = PlayLayer::get();
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 
-	CCMenu* menu = CCMenu::create();
-	menu->setContentSize(ccp(230, 40));
+	CCMenu* menu = ListMenu::create(m_listContainer);
+	menu->setContentSize(ccp(m_popupWidth - 30.0f, 40));
 
 	CCSprite* moveUpSpr =
 		CCSprite::createWithSpriteFrameName("navArrowBtn_001.png");
@@ -466,25 +464,9 @@ CCNode* createCheckpointCell(
 	moveUpBtn->setRotation(90);
 	moveDownBtn->setRotation(90);
 
-	std::string progressString;
-	if (playLayer->m_level->isPlatformer()) {
-		int time = checkpoint->m_time;
-
-		progressString = fmt::format("{}s", time % 60);
-
-		if (time >= 60) {
-			progressString =
-				fmt::format("{}m", (time % 3600) / 60) + progressString;
-
-			if (time >= 3600)
-				progressString = fmt::format("{}h", time / 3600) + progressString;
-		}
-	} else {
-		int decimals =
-			Mod::get()->getSettingValue<int64_t>("percentage-display-decimals");
-		progressString =
-			fmt::format("{:.{}f}%", (float)checkpoint->m_percent, decimals);
-	}
+	std::string nameString = checkpoint->m_name;
+	if (nameString.empty())
+		nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
 
 	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(
 		checkpoint->m_checkpoint->m_physicalCheckpointObject->displayFrame()
@@ -492,10 +474,30 @@ CCNode* createCheckpointCell(
 	CCMenuItemSpriteExtra* selectBtn =
 		CCMenuItemExt::createSpriteExtra(checkpointSprite, selectCallback);
 
-	CCLabelBMFont* label =
-		CCLabelBMFont::create(progressString.c_str(), "goldFont.fnt");
+	CCLabelBMFont* label = CCLabelBMFont::create(
+		nameString.c_str(), "goldFont.fnt", m_popupWidth - 155.0f
+	);
+	label->setLineBreakWithoutSpace(true);
 	label->setAnchorPoint(ccp(0, .5));
 	label->setScale(.65);
+
+	CCSprite* renameSprite =
+		CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
+	CCMenuItemSpriteExtra* renameBtn = CCMenuItemExt::createSpriteExtra(
+		renameSprite,
+		[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
+			RenamePopup::create(
+				[this, playLayer]() -> void {
+					playLayer->serializeCheckpoints();
+					updateUIElements();
+				},
+				checkpoint
+			)
+				->show();
+		}
+	);
+	renameBtn->m_baseScale = .75;
+	renameBtn->setScale(.75);
 
 	CCSprite* removeSprite =
 		CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
@@ -508,22 +510,140 @@ CCNode* createCheckpointCell(
 	menu->addChildAtPosition(moveDownBtn, geode::Anchor::Left, ccp(15, -10));
 	menu->addChildAtPosition(selectBtn, geode::Anchor::Left, ccp(35, 0));
 	menu->addChildAtPosition(label, geode::Anchor::Left, ccp(50, 0));
+	menu->addChildAtPosition(renameBtn, geode::Anchor::Right, ccp(-55, 0));
 	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-20, 0));
 
 #if defined(PA_DEBUG) && defined(PA_DESCRIBE)
 	CCSprite* describeSprite =
 		CCSprite::createWithSpriteFrameName("GJ_pasteBtn_001.png");
 	CCMenuItemSpriteExtra* describeBtn = CCMenuItemExt::createSpriteExtra(
-		describeSprite,
-		[checkpoint, selectBtn](CCMenuItemSpriteExtra* sender) {
+		describeSprite, [checkpoint, selectBtn](CCMenuItemSpriteExtra* sender) {
 			selectBtn->activate();
 			checkpoint->describe();
 		}
 	);
 	describeBtn->m_baseScale = .75;
 	describeBtn->setScale(.75);
-	menu->addChildAtPosition(describeBtn, geode::Anchor::Right, ccp(-55, 0));
+	menu->addChildAtPosition(describeBtn, geode::Anchor::Right, ccp(-90, 0));
 #endif
 
 	return menu;
+}
+
+void CheckpointManager::saveLoadMenu() {
+	geode::createQuickPopup(
+		"Save / Load",
+		"<cy>Resave</c> allows you to manually save the current checkpoint layer "
+		"or "
+		"regenerate checkpoints in <co>Fallback Mode</c>.\n"
+		"<cr>Force Load</c> allows you to load a checkpoint layer even if there "
+		"are errors, this will likely result in a crash.",
+		"Resave", "Force Load",
+		[this](auto, bool option) {
+			if (option)
+				forceLoadPopup();
+			else
+				resavePopup();
+		},
+		true, true
+	);
+}
+void CheckpointManager::resavePopup() {
+	geode::createQuickPopup(
+		"Resave",
+		"Manually save the current checkpoint layer.\n"
+		"There is usually no reason to do this as saving is automatic.\n"
+		"However, in <co>Fallback Mode</c> this will turn the fallback data into "
+		"usable checkpoints.\n"
+		"Fallback data isn't very accurate, but it should be good enough for "
+		"most classic mode levels.\n"
+		"This will also restart the level, so don't do it on the middle of a "
+		"run.",
+		"Cancel", "Confirm", [this](auto, bool confirmed) {
+			if (confirmed) {
+				static_cast<ModPlayLayer*>(PlayLayer::get())->resave();
+
+				updateUIElements();
+			}
+		}
+	);
+}
+void CheckpointManager::forceLoadPopup() {
+	geode::createQuickPopup(
+		"Force Load",
+		"This will force load and resave this layer.\n"
+		"When switching to a checkpoint <cr>the game will likely crash or the "
+		"level will break</c>.\n"
+		"If things go very wrong you can try opening the checkpoint "
+		"manager outside of practice mode to remove all checkpoints or using the "
+		"save manager in the GD saved levels menu.\n"
+		"Are you sure about this?",
+		"No", "YOLO", [this](auto, bool confirmed) {
+			if (confirmed) {
+				ModPlayLayer* playLayer =
+					static_cast<ModPlayLayer*>(PlayLayer::get());
+
+				playLayer->deserializeCheckpoints(true);
+				playLayer->serializeCheckpoints();
+
+				updateUIElements();
+				playLayer->updateModUI();
+			}
+		}
+	);
+}
+
+RenamePopup* RenamePopup::create(
+	std::function<void()> updateCallback, PersistentCheckpoint* checkpoint
+) {
+	auto ret = new RenamePopup();
+	if (ret->init(updateCallback, checkpoint)) {
+		ret->autorelease();
+		return ret;
+	}
+	delete ret;
+	return nullptr;
+}
+
+bool RenamePopup::init(
+	std::function<void()> updateCallback, PersistentCheckpoint* checkpoint
+) {
+	float width = 200.0f;
+
+	if (!Popup::init(width, 112.0f))
+		return false;
+
+	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
+
+	m_checkpointName = checkpoint->m_name;
+
+	CCLabelBMFont* nameLabel = CCLabelBMFont::create("Name", "goldFont.fnt");
+	nameLabel->setAnchorPoint(ccp(0.0f, 0.5f));
+
+	TextInput* nameInput = TextInput::create(
+		width - 36.0f, checkpoint->getDefaultLabel(playLayer->m_isPlatformer)
+	);
+	nameInput->setString(m_checkpointName);
+	nameInput->setCommonFilter(CommonFilter::Any);
+	nameInput->setMaxCharCount(22);
+	nameInput->setCallback([this](const std::string name) {
+		m_checkpointName = name;
+	});
+
+	CCSprite* confirmBtnSprite = ButtonSprite::create("Confirm");
+	CCMenuItemSpriteExtra* confirmBtn = CCMenuItemExt::createSpriteExtra(
+		confirmBtnSprite, [this, checkpoint, updateCallback](CCObject* sender) {
+			checkpoint->m_name = m_checkpointName;
+			onClose(sender);
+			updateCallback();
+		}
+	);
+
+	m_mainLayer->addChildAtPosition(
+		nameLabel, Anchor::TopLeft, ccp(20.0f, -20.0f)
+	);
+	m_mainLayer->addChildAtPosition(nameInput, Anchor::Top, ccp(0.0f, -50.0f));
+	m_buttonMenu->addChildAtPosition(confirmBtn, Anchor::Top, ccp(0.0f, -85.0f));
+
+	return true;
 }

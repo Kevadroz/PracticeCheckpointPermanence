@@ -103,9 +103,18 @@ void ModUILayer::updateSwitcher() {
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	LoadError loadError = playLayer->m_fields->m_loadError;
 
+	PersistentCheckpoint* checkpoint = nullptr;
+	if (playLayer->m_fields->m_activeCheckpoint > 0)
+		checkpoint = static_cast<PersistentCheckpoint*>(
+			playLayer->m_fields->m_persistentCheckpointArray->objectAtIndex(
+				playLayer->m_fields->m_activeCheckpoint - 1
+			)
+		);
+
 	bool switcherActive =
 		Mod::get()->getSettingValue<bool>("switcher-enabled") &&
-		playLayer->m_isPracticeMode &&
+		playLayer->isPersistentSystemActive() &&
+		// Save file exists
 		(playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
 		 playLayer->m_fields->m_activeSaveLayer > 0 ||
 		 loadError != LoadError::None);
@@ -114,52 +123,68 @@ void ModUILayer::updateSwitcher() {
 
 	if (loadError == LoadError::None)
 		m_fields->m_switcherMenu->setColor(ccWHITE);
+	else if (playLayer->isInFallbackMode())
+		m_fields->m_switcherMenu->setColor(ccc3(224, 166, 111));
 	else
 		m_fields->m_switcherMenu->setColor(ccc3(224, 111, 111));
 
-	std::string checkpointString;
-	switch (loadError) {
-	case None: {
-		std::string ghostCheckpointString =
-			playLayer->m_fields->m_ghostActiveCheckpoint == 0
-				? ""
-				: fmt::format(
-					  " ({})", playLayer->m_fields->m_ghostActiveCheckpoint
-				  );
-		checkpointString = fmt::format(
-			"{}{}/{}", playLayer->m_fields->m_activeCheckpoint,
-			ghostCheckpointString,
-			playLayer->m_fields->m_persistentCheckpointArray->count()
-		);
-		break;
+	gd::string nameString = "";
+	if (checkpoint != nullptr) {
+		if (checkpoint->m_name.empty())
+			nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
+		else
+			nameString = checkpoint->m_name;
 	}
-	case Crash:
-		checkpointString = "BAD DATA";
+	std::string ghostCheckpointString =
+		playLayer->m_fields->m_ghostActiveCheckpoint == 0
+			? ""
+			: fmt::format(" ({})", playLayer->m_fields->m_ghostActiveCheckpoint);
+	std::string checkpointString = fmt::format(
+		"{}{}/{}", playLayer->m_fields->m_activeCheckpoint, ghostCheckpointString,
+		playLayer->m_fields->m_persistentCheckpointArray->count()
+	);
+	std::string layerString = fmt::format(
+		"Lay {}/{}", playLayer->m_fields->m_activeSaveLayer + 1,
+		playLayer->m_fields->m_saveLayerCount
+	);
+	const char* errorString;
+	switch (loadError) {
+	case LoadError::Crash:
+		errorString = "BAD DATA";
 		break;
-	case OutdatedData:
-		checkpointString = "OUTDATED";
+	case LoadError::GameVersionMismatch:
+		errorString = "GMD VERS";
 		break;
-	case NewData:
-		checkpointString = "NEW VERS";
+	case LoadError::OutdatedData:
+		errorString = "OUTDATED";
 		break;
-	case OtherPlatform:
-		checkpointString = "PLATFORM";
+	case LoadError::NewData:
+		errorString = "NEW VERS";
 		break;
-	case LevelVersionMismatch:
-		checkpointString = "LVL VERS";
+	case LoadError::OtherPlatform:
+		errorString = "PLATFORM";
+		break;
+	case LoadError::LevelVersionMismatch:
+		errorString = "LVL VERS";
+		break;
+	case LoadError::BadFile:
+		errorString = "BAD FILE";
+		break;
+	default:
+		errorString = "";
 		break;
 	}
 
+	m_fields->m_switcherMenu->m_nameLabel->setVisible(checkpoint != nullptr);
+	m_fields->m_switcherMenu->m_nameLabel->setString(nameString.c_str());
 	m_fields->m_switcherMenu->m_checkpointLabel->setString(
 		checkpointString.c_str()
 	);
-	m_fields->m_switcherMenu->m_layerLabel->setString(
-		fmt::format(
-			"Layer {}/{}", playLayer->m_fields->m_activeSaveLayer + 1,
-			playLayer->m_fields->m_saveLayerCount
-		)
-			.c_str()
+	m_fields->m_switcherMenu->m_layerLabel->setString(layerString.c_str());
+	m_fields->m_switcherMenu->m_errorLabel->setVisible(
+		playLayer->m_fields->m_loadError != LoadError::None
 	);
+	m_fields->m_switcherMenu->m_errorLabel->setString(errorString);
 
 	const char* checkpointFrameName;
 	GLubyte checkpointSpriteOpacity;
@@ -190,6 +215,12 @@ void ModUILayer::updateSwitcher() {
 	double iconInactiveOpacity =
 		checkpointSpriteOpacity *
 		mod->getSettingValue<double>("switcher-icon-inactive-opacity");
+
+	if (!playLayer->isModUIVisible()) {
+		labelInactiveOpacity = 0;
+		buttonInactiveOpacity = 0;
+		iconInactiveOpacity = 0;
+	}
 
 	std::vector<std::tuple<CCNode*, GLubyte, GLubyte>> nodes;
 	if (labelActiveOpacity != labelInactiveOpacity)

@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.1",
+	"geode": "5.3.0",
 	"gd": {
 		"win": "2.2081",
 		"mac": "2.2081",
@@ -20,7 +20,7 @@
 		"utility"
 	],
 	"dependencies": {
-		"geode.node-ids": ">=v1.22.0-beta.2",
+		"geode.node-ids": ">=v1.22.0",
 		"sabe.persistenceapi": ">=v1.1.0"
 	},
 	"resources": {
@@ -31,6 +31,56 @@
 		}
 	},
 	"settings": {
+		"practice-buttons-position": {
+			"name": "Position of Practice Buttons",
+			"type": "string",
+			"one-of": [ "Horizontal", "Above", "Below" ],
+			"default": "Horizontal"
+		},
+		"switch-in-out-normal-mode": {
+			"name": "Integrated Normal Mode",
+			"type": "bool",
+			"default": false,
+			"description": "Loads the Persistent Checkpoints in normal mode and lets you switch between normal mode and practice mode by switching checkpoints.\nNo checkpoint active is normal mode, any checkpoint active is practice mode"
+		},
+		"show-checkpoints-in-normal-mode": {
+			"name": "Show checkpoints in Integrated Normal Mode",
+			"type": "bool",
+			"default": false,
+			"enable-if": "switch-in-out-normal-mode"
+		},
+		"supress-auto-checkpoints": {
+			"name": "Supress Auto Checkpoints",
+			"type": "bool",
+			"default": true,
+			"description": "Disables auto checkpoints when a persistent checkpoint is active"
+		},
+		"ghost-auto-checkpoint-inactive-time": {
+			"name": "Ghost Auto Checkpoint supress time",
+			"type": "float",
+			"default": 3.0,
+			"min": 0.0,
+			"max": 15.0,
+			"control": {
+				"slider": true,
+				"slider-step": 0.25,
+				"arrows": true,
+				"arrow-step": 1.0
+			},
+			"description": "Disables auto checkpoints for this amount of time when placing a new persistent checkpoint"
+		},
+		"reset-attempts": {
+			"name": "Reset Attempts",
+			"type": "bool",
+			"default": false,
+			"description": "Sets the attempts to one when switching checkpoints"
+		},
+		"delete-saves-with-level": {
+			"name": "Delete Saved Checkpoints with the level",
+			"type": "bool",
+			"default": true,
+			"description": "Deletes the checkpoints of a level when you manually delete that level from the saved levels"
+		},
 		"percentage-display-decimals": {
 			"name": "Displayed decimals for percentages",
 			"type": "int",
@@ -43,18 +93,6 @@
 				"arrows": true,
 				"arrow-step": 1
 			}
-		},
-		"supress-auto-checkpoints": {
-			"name": "Supress Auto Checkpoints",
-			"type": "bool",
-			"default": true,
-			"description": "Disables auto checkpoints when a persistent checkpoint is active"
-		},
-		"reset-attempts": {
-			"name": "Reset Attempts",
-			"type": "bool",
-			"default": true,
-			"description": "Sets the attempts to one when switching checkpoints"
 		},
 		"active-checkpoint-opacity": {
 			"name": "Active Checkpoint Opacity",
@@ -94,12 +132,6 @@
 				"arrows": true,
 				"arrow-step": 0.1
 			}
-		},
-		"practice-buttons-position": {
-			"name": "Position of Practice Buttons",
-			"type": "string",
-			"one-of": [ "Horizontal", "Above", "Below" ],
-			"default": "Horizontal"
 		},
 		"title-switcher": {
 			"type": "title",
@@ -198,7 +230,7 @@
 			"default": "Alt+Z",
 			"description": "Creates a new persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/create_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/create_checkpoint"
 		},
 		"keybind-remove-checkpoint": {
 			"type": "keybind",
@@ -206,7 +238,7 @@
 			"default": "Alt+X",
 			"description": "Removes the active persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/remove_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/remove_checkpoint"
 		},
 		"keybind-previous-checkpoint": {
 			"type": "keybind",
@@ -214,7 +246,7 @@
 			"default": "Alt+Q",
 			"description": "Activates the previous persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/previous_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/previous_checkpoint"
 		},
 		"keybind-next-checkpoint": {
 			"type": "keybind",
@@ -222,7 +254,7 @@
 			"default": "Alt+E",
 			"description": "Activates the next persistent checkpoint",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/next_checkpoint"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/next_checkpoint"
 		},
 		"keybind-previous-layer": {
 			"type": "keybind",
@@ -230,7 +262,7 @@
 			"default": "Alt+Shift+Q",
 			"description": "Switches to the previous save layer",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/previous_layer"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/previous_layer"
 		},
 		"keybind-next-layer": {
 			"type": "keybind",
@@ -238,7 +270,7 @@
 			"default": "Alt+Shift+E",
 			"description": "Switches to the next save layer",
 			"category": "gameplay",
-    		"migrate-from": "kevadroz.practicecheckpointpermanence/next_layer"
+			"migrate-from": "kevadroz.practicecheckpointpermanence/next_layer"
 		}
 	}
 }

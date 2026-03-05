@@ -18,14 +18,16 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 option(PERSISTENCEAPI_EXTERNAL "Use PersistenceAPI provided in build/geode-deps" OFF)
 
-# PersistenceAPI debug stuff
-option(WITH_PA_DESCRIBE "Log in depth info for saved/loaded classes" OFF)
+option(PCP_DEBUG "Debug Mode" OFF)
 
-if(PERSISTENCEAPI_EXTERNAL AND WITH_PA_DESCRIBE)
+if(PCP_DEBUG)
+	add_definitions(-DPCP_DEBUG)
+endif()
+
+if(PERSISTENCEAPI_EXTERNAL AND PCP_DEBUG)
 	add_definitions(-DPA_DESCRIBE)
 	add_definitions(-DPA_DEBUG)
 endif()
-# End of PersistenceAPI debug stuff
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")

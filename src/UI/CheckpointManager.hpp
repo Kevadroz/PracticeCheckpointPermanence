@@ -9,6 +9,8 @@ public:
 	static CheckpointManager* create();
 
 private:
+	float m_popupWidth = 300.0f;
+
 	CCMenuItemSpriteExtra* m_deleteButton = nullptr;
 	CCMenuItemSpriteExtra* m_forceLoadButton = nullptr;
 	CCLabelBMFont* m_saveLayerLabel = nullptr;
@@ -19,17 +21,34 @@ private:
 	CCLayerColor* m_listContainer = nullptr;
 	ListView* m_listView = nullptr;
 	CCLabelBMFont* m_emptyListLabel = nullptr;
-	
+
 	Ref<CCArray> m_cellsArray = CCArray::create();
 
 	void createList(bool resetPosition = false);
+	CCNode* createCheckpointCell(
+		PersistentCheckpoint* checkpoint,
+		std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> removeCallback
+	);
+
 	void updateUIElements(bool resetListPosition = false);
+
+	void saveLoadMenu();
+	void resavePopup();
+	void forceLoadPopup();
 };
 
-CCNode* createCheckpointCell(
-	PersistentCheckpoint* checkpoint,
-	std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
-	std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
-	std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
-	std::function<void(CCMenuItemSpriteExtra*)> removeCallback
-);
+class RenamePopup : public Popup {
+public:
+	static RenamePopup* create(
+		std::function<void()> updateCallback, PersistentCheckpoint* checkpoint
+	);
+
+private:
+	gd::string m_checkpointName;
+
+	bool
+	init(std::function<void()> updateCallback, PersistentCheckpoint* checkpoint);
+};
