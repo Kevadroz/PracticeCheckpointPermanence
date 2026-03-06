@@ -20,6 +20,25 @@ bool SaveManager::init() {
 
 	setTitle("PCP Save Manager");
 
+	CCSprite* infoBtnSprite =
+		CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
+	CCMenuItemSpriteExtra* infoBtn = CCMenuItemExt::createSpriteExtra(
+		infoBtnSprite, [](CCMenuItemSpriteExtra* sender) {
+			FLAlertLayer::create(
+				"Save Manager",
+				"<cy>Checkpoint</c> - The total number of Persistent Checkpoints\n"
+				"<cb>Folder</c> - Normal save layers\n"
+				"<cg>ldm Folder</c> - Low detail mode layers\n"
+				"<cr>Red Exclamations</c> - A save layer can't be loaded, two if "
+				"no save layer can be loaded normally\n"
+				"<co>Orange Exclamations</c> - A save layer can only be loaded in "
+				"fallback mode, two if this is the case for all save layers\n",
+				"Ok"
+			)
+				->show();
+		}
+	);
+
 	m_pageLabel = CCLabelBMFont::create("Page 0/0", "bigFont.fnt");
 	m_pageLabel->setScale(.6);
 
@@ -67,6 +86,7 @@ bool SaveManager::init() {
 
 	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
 
+	m_buttonMenu->addChildAtPosition(infoBtn, geode::Anchor::BottomRight);
 	m_buttonMenu->addChildAtPosition(
 		m_previousPageBtn, geode::Anchor::TopLeft, ccp(25, -50)
 	);
@@ -155,10 +175,22 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	std::string fileSizeString = byteSizeAsFormattedString(info.fullFileSize);
 
 	unsigned int totalCheckpointCount = 0;
+	unsigned int criticalErrorCount = 0;
+	unsigned int warningErrorCount = 0;
+	bool allErrors = true;
+
 	for (std::vector<SaveLayerInfo> layers :
 		  {info.standardLayers, info.ldmLayers})
-		for (SaveLayerInfo layer : info.standardLayers)
+		for (SaveLayerInfo layer : layers) {
 			totalCheckpointCount += layer.header.checkpointCount;
+			if (layer.header.loadError != LoadError::None) {
+				if (SaveParser::isErrorFallbackCapable(layer.header.loadError))
+					warningErrorCount++;
+				else
+					criticalErrorCount++;
+			} else
+				allErrors = false;
+		}
 
 	CCMenu* detailMenu = CCMenu::create();
 	detailMenu->setAnchorPoint(ccp(0.0, 0.5));
@@ -230,6 +262,39 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	detailMenu->addChild(checkpointsMenu);
 	detailMenu->addChild(standardLayersMenu);
 	detailMenu->addChild(ldmLayersMenu);
+
+	if (warningErrorCount > 0 || criticalErrorCount > 0) {
+		CCMenu* errorMenu = CCMenu::create();
+
+		RowLayout* errorMenuLayout = RowLayout::create();
+		errorMenuLayout->setAutoScale(false);
+		errorMenuLayout->setAutoGrowAxis(0.0F);
+		errorMenuLayout->setGap(2.0F);
+		errorMenu->setLayout(errorMenuLayout);
+
+		if (criticalErrorCount > 0) {
+			CCLabelBMFont* criticalIndicator =
+				CCLabelBMFont::create(allErrors ? "!!" : "!", "bigFont.fnt");
+			criticalIndicator->setColor(ccc3(224, 111, 111));
+			criticalIndicator->setScale(.7);
+
+			errorMenu->addChild(criticalIndicator);
+		}
+
+		if (warningErrorCount > 0) {
+			CCLabelBMFont* warningIndicator = CCLabelBMFont::create(
+				allErrors && criticalErrorCount == 0 ? "!!" : "!", "bigFont.fnt"
+			);
+			warningIndicator->setColor(ccc3(224, 166, 111));
+			warningIndicator->setScale(.7);
+
+			errorMenu->addChild(warningIndicator);
+		}
+		errorMenu->updateLayout();
+
+		detailMenu->addChild(errorMenu);
+	}
+
 	detailMenu->updateLayout();
 
 	CCSprite* removeSprite =

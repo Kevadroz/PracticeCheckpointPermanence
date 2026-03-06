@@ -45,4 +45,6 @@ SaveHeader
 fromStream(persistenceAPI::Stream& stream, GJGameLevel* level = nullptr);
 std::optional<SaveHeader>
 fromPath(std::filesystem::path path, GJGameLevel* level = nullptr);
+
+bool isErrorFallbackCapable(LoadError error);
 }; // namespace SaveParser

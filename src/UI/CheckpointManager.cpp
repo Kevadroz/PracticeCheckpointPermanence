@@ -168,6 +168,21 @@ bool CheckpointManager::init() {
 	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
 	m_emptyListLabel->setVisible(!hasCheckpoints);
 
+	CCSprite* errorBtnSpr =
+		CCSprite::createWithSpriteFrameName("GJ_reportBtn_001.png");
+	m_errorButton = CCMenuItemExt::createSpriteExtra(
+		errorBtnSpr, [playLayer](CCMenuItemSpriteExtra* errorButton) {
+			const char* text = getErrorMessage(playLayer->m_fields->m_loadError);
+
+			FLAlertLayer::create("Load Error", text, "Ok")->show();
+		}
+	);
+	m_errorButton->m_baseScale = .6;
+	m_errorButton->setScale(.6);
+	m_errorButton->setVisible(
+		playLayer->m_fields->m_loadError != LoadError::None
+	);
+
 	ButtonSprite* saveMenuButtonSprite = ButtonSprite::create("");
 	m_forceLoadButton = CCMenuItemExt::createSpriteExtra(
 		saveMenuButtonSprite,
@@ -197,6 +212,7 @@ bool CheckpointManager::init() {
 	m_listContainer->addChildAtPosition(borders, geode::Anchor::Center);
 	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
 	m_buttonMenu->addChildAtPosition(m_forceLoadButton, geode::Anchor::Bottom);
+	m_buttonMenu->addChildAtPosition(m_errorButton, geode::Anchor::TopRight);
 
 	return true;
 }
@@ -307,38 +323,13 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 
 	if (playLayer->m_fields->m_persistentCheckpointArray->count() == 0) {
 		const char* text;
-		switch (playLayer->m_fields->m_loadError) {
-		case LoadError::None:
+		if (playLayer->m_fields->m_loadError == LoadError::None) {
 			if (saveLayer == 0)
 				text = "No checkpoints saved in this level.";
 			else
 				text = "No checkpoints saved in the current layer.";
-			break;
-		case LoadError::Crash:
-			text = "Error while loading saved checkpoints.";
-			break;
-		case LoadError::GameVersionMismatch:
-			text = "The version of the game has changed, the checkpoints cannot "
-					 "be loaded.";
-			break;
-		case LoadError::OutdatedData:
-			text = "The version of the mod the checkpoints were saved in is no "
-					 "longer supported.";
-			break;
-		case LoadError::NewData:
-			text = "The checkpoints were saved with a newer version of the mod.";
-			break;
-		case LoadError::OtherPlatform:
-			text = "The checkpoints were saved in another platform or device.";
-			break;
-		case LoadError::LevelVersionMismatch:
-			text = "The level version has changed, the checkpoints cannot "
-					 "be loaded.";
-			break;
-		case LoadError::BadFile:
-			text = "The save file is corrupt or is not a save file.";
-			break;
-		}
+		} else
+			text = "There was an error, check the '!' button to see the error.";
 
 		bool hasLoadError = playLayer->m_fields->m_loadError != LoadError::None;
 
@@ -359,6 +350,10 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 		m_deleteButton->setColor(ccc3(255, 255, 255));
 		m_deleteButton->setOpacity(255);
 	}
+
+	m_errorButton->setVisible(
+		playLayer->m_fields->m_loadError != LoadError::None
+	);
 
 	const char* saveMenuString = "Save / Load";
 	if (playLayer->m_fields->m_loadError != LoadError::None &&
@@ -646,4 +641,26 @@ bool RenamePopup::init(
 	m_buttonMenu->addChildAtPosition(confirmBtn, Anchor::Top, ccp(0.0f, -85.0f));
 
 	return true;
+}
+
+const char* CheckpointManager::getErrorMessage(LoadError error) {
+	switch (error) {
+	case LoadError::None:
+		return "There was no error.";
+	case LoadError::Crash:
+		return "Error while loading saved checkpoints.";
+	case LoadError::GameVersionMismatch:
+		return "The version of the game has changed.";
+	case LoadError::OutdatedData:
+		return "The version of the mod the checkpoints were saved in is no "
+				 "longer supported.";
+	case LoadError::NewData:
+		return "The checkpoints were saved with a newer version of the mod.";
+	case LoadError::OtherPlatform:
+		return "The checkpoints were saved in another platform or device.";
+	case LoadError::LevelVersionMismatch:
+		return "The level version has changed.";
+	case LoadError::BadFile:
+		return "The save file is corrupt or is not a save file.";
+	}
 }

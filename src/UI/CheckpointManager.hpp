@@ -21,6 +21,7 @@ private:
 	CCLayerColor* m_listContainer = nullptr;
 	ListView* m_listView = nullptr;
 	CCLabelBMFont* m_emptyListLabel = nullptr;
+	CCMenuItemSpriteExtra* m_errorButton = nullptr;
 
 	Ref<CCArray> m_cellsArray = CCArray::create();
 
@@ -38,6 +39,8 @@ private:
 	void saveLoadMenu();
 	void resavePopup();
 	void forceLoadPopup();
+
+	static const char* getErrorMessage(LoadError error);
 };
 
 class RenamePopup : public Popup {

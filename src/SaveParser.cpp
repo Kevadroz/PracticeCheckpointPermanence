@@ -59,3 +59,14 @@ SaveParser::fromPath(std::filesystem::path path, GJGameLevel* level) {
 
 	return header;
 }
+
+bool SaveParser::isErrorFallbackCapable(LoadError error) {
+	switch (error) {
+	case LoadError::GameVersionMismatch:
+	case LoadError::LevelVersionMismatch:
+	case LoadError::Crash:
+		return true;
+	default:
+		return false;
+	}
+}

@@ -387,12 +387,5 @@ bool ModPlayLayer::isModUIVisible() {
 }
 
 bool ModPlayLayer::isInFallbackMode() {
-	switch (m_fields->m_loadError) {
-	case LoadError::GameVersionMismatch:
-	case LoadError::LevelVersionMismatch:
-	case LoadError::Crash:
-		return true;
-	default:
-		return false;
-	}
+	return SaveParser::isErrorFallbackCapable(m_fields->m_loadError);
 }
