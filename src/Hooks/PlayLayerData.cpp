@@ -25,8 +25,8 @@ void ModPlayLayer::serializeCheckpoints() {
 	persistenceAPI::Stream stream;
 	stream.setFile(string::pathToString(getSavePath()), 2, true);
 
-	gd::string header = SAVE_HEADER;
-	stream << header;
+	char header[] = SAVE_HEADER;
+	stream.write(header, sizeof(SAVE_HEADER));
 	stream << saveVersion;
 	stream << gameVersion;
 	stream << platform;

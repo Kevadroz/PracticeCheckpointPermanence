@@ -2,7 +2,7 @@
 
 SaveHeader
 SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
-	gd::string loadedHeader;
+	char loadedHeader[sizeof(SAVE_HEADER)];
 	LoadError loadError = LoadError::None;
 	unsigned int saveVersion;
 	gd::string gameVersion;
@@ -11,8 +11,8 @@ SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
 	gd::string levelName;
 	unsigned int checkpointCount;
 
-	stream >> loadedHeader;
-	if (loadedHeader != SAVE_HEADER)
+	stream.read(loadedHeader, sizeof(SAVE_HEADER));
+	if (strcmp(loadedHeader, SAVE_HEADER) != 0)
 		return SaveHeader{LoadError::BadFile, 0, "Unknown", PLATFORM, 0, 0,
 								"Unknown"};
 
