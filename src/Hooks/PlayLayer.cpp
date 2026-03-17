@@ -317,16 +317,16 @@ void ModPlayLayer::updateModUI() {
 	if (m_fields->m_pbCheckpointContainer == nullptr)
 		return;
 
+	bool checkpointsVisible = isModUIVisible();
+
+	m_fields->m_persistentCheckpointBatchNode->setVisible(checkpointsVisible);
+
 	if (m_isPlatformer)
 		return;
-
-	bool checkpointsVisible = isModUIVisible();
 
 	CCNodeRGBA* container = m_fields->m_pbCheckpointContainer;
 	container->setVisible(checkpointsVisible);
 	container->removeAllChildren();
-
-	m_fields->m_persistentCheckpointBatchNode->setVisible(checkpointsVisible);
 
 	unsigned int currentCheckpoint = 0;
 	float barWidth = m_progressBar->getContentWidth() - 4;
