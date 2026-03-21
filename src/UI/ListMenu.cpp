@@ -14,8 +14,7 @@ ListMenu* ListMenu::create(CCLayerColor* listContainer) {
 }
 
 bool ListMenu::ccTouchBegan(CCTouch* touch, CCEvent* event) {
-	cocos2d::CCPoint pos =
-		m_listContainer->convertToNodeSpace(touch->getLocation());
+	CCPoint pos = m_listContainer->convertToNodeSpace(touch->getLocation());
 
 	if (pos.x < 0 || pos.y < 0 || pos.x > m_listContainer->getContentWidth() ||
 		 pos.y > m_listContainer->getContentHeight())

@@ -358,14 +358,12 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 void createButtonBindsLabel(
 	CCNode* parent, const std::string& action, bool right
 ) {
-	CCNodeRGBA* bindContainer = cocos2d::CCNodeRGBA::create();
+	CCNodeRGBA* bindContainer = CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
 	for (auto bind : Mod::get()->getSettingValue<std::vector<Keybind>>(action)) {
 		if (!first) {
-			bindContainer->addChild(
-				cocos2d::CCLabelBMFont::create("/", "bigFont.fnt")
-			);
+			bindContainer->addChild(CCLabelBMFont::create("/", "bigFont.fnt"));
 		}
 		first = false;
 		bindContainer->addChild(bind.createNode());

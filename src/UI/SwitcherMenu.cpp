@@ -81,7 +81,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->m_nameLabel->setLineBreakWithoutSpace(true);
 	menu->m_nameLabel->setScale(.6f);
 	menu->m_nameLabel->setAnchorPoint(ccp(0.5f, 1.0f));
-	menu->m_nameLabel->setAlignment(cocos2d::kCCTextAlignmentCenter);
+	menu->m_nameLabel->setAlignment(kCCTextAlignmentCenter);
 
 	menu->m_checkpointLabel =
 		CCLabelBMFont::create(checkpointLabelString, "bigFont.fnt");

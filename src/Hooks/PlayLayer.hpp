@@ -13,8 +13,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 		LoadError m_loadError = LoadError::None;
 		bool m_hasAttemptedToLoadCheckpoints = false;
 
-		Ref<cocos2d::CCArray> m_persistentCheckpointArray = nullptr;
-		Ref<cocos2d::CCSpriteBatchNode> m_persistentCheckpointBatchNode = nullptr;
+		Ref<CCArray> m_persistentCheckpointArray = nullptr;
+		Ref<CCSpriteBatchNode> m_persistentCheckpointBatchNode = nullptr;
 
 		// For the Free Mode in the Fallback
 		Ref<TeleportPortalObject> m_holdedTeleportObject = nullptr;
