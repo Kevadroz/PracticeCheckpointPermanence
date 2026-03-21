@@ -662,5 +662,7 @@ const char* CheckpointManager::getErrorMessage(LoadError error) {
 		return "The level version has changed.";
 	case LoadError::BadFile:
 		return "The save file is corrupt or is not a save file.";
+	case LoadError::ForcedFallback:
+		return "Fallback mode is forcibly enabled. You can disable it in the mod settings";
 	}
 }

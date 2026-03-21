@@ -170,6 +170,9 @@ void ModUILayer::updateSwitcher() {
 	case LoadError::BadFile:
 		errorString = "BAD FILE";
 		break;
+	case LoadError::ForcedFallback:
+		errorString = "FALLBACK";
+		break;
 	default:
 		errorString = "";
 		break;

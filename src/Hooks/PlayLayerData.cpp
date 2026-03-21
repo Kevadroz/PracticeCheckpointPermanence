@@ -65,8 +65,8 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 
 	SaveHeader header = SaveParser::fromStream(stream, m_level);
 
-	// >DEBUG Force Fallback
-	// header.loadError = LoadError::LevelVersionMismatch;
+	if (Mod::get()->getSettingValue<bool>("debug-force-fallback"))
+		header.loadError = LoadError::ForcedFallback;
 
 	removeAllCheckpoints();
 

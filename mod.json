@@ -220,7 +220,7 @@
 				"arrow-step": 0.1
 			}
 		},
-		"keybinds": {
+		"title-keybinds": {
 			"type": "title",
 			"name": "Keybinds"
 		},
@@ -271,6 +271,16 @@
 			"description": "Switches to the next save layer",
 			"category": "gameplay",
 			"migrate-from": "kevadroz.practicecheckpointpermanence/next_layer"
+		},
+		"title-debug": {
+			"type": "title",
+			"name": "Debug",
+			"description": "This is for testing mod features, don't touch this unless you know what you're doing."
+		},
+		"debug-force-fallback": {
+			"type": "bool",
+			"name": "Force Fallback Mode",
+			"default": false
 		}
 	}
 }

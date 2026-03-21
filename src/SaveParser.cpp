@@ -65,6 +65,7 @@ bool SaveParser::isErrorFallbackCapable(LoadError error) {
 	case LoadError::GameVersionMismatch:
 	case LoadError::LevelVersionMismatch:
 	case LoadError::Crash:
+	case LoadError::ForcedFallback:
 		return true;
 	default:
 		return false;

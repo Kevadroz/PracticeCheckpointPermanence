@@ -26,6 +26,8 @@ enum class LoadError : char {
 	OtherPlatform,
 	LevelVersionMismatch,
 	BadFile,
+
+	ForcedFallback,
 };
 
 struct SaveHeader {
