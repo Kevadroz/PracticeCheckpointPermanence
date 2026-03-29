@@ -334,8 +334,8 @@ void PersistentCheckpoint::setupPhysicalObject() {
 		GameObjectType::Decoration;
 	m_checkpoint->m_physicalCheckpointObject->m_glowSprite = nullptr;
 
-	// m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
-	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_fallbackData.startPos->m_startPosition);
+	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
+	// m_checkpoint->m_physicalCheckpointObject->setStartPos(m_fallbackData.startPos->m_startPosition);
 }
 
 void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {

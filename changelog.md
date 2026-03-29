@@ -1,4 +1,4 @@
-## Unreleased (1.4)
+## 1.4.0 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.0)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.0))
 - Migrate to Geometry Dash 2.2081 and Geode v5
 - Added a Save Manager, me is hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
 - Added experimental Fallback Mode, it's a bit broken sometimes right now \[[Issue #17](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/17)\]

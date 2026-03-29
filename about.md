@@ -1,3 +1,5 @@
+### <cr>iOS support</c>
+iOS builds are broken and I don't have an iPhone to fix them, if anyone wants to contribute some fixes it would be very appreciated.
 
 # Practice Checkpoint Permanence (PCP)
 
