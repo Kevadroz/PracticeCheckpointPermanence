@@ -314,7 +314,7 @@ createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 
 #ifdef GEODE_IS_DESKTOP
 	if (playLayer != nullptr)
-		createButtonBindsLabel(button, "keybind-create_checkpoint", false);
+		createButtonBindsLabel(button, "keybind-create-checkpoint", false);
 #endif
 
 	button->setCascadeOpacityEnabled(true);
