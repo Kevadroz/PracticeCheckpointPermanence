@@ -31,6 +31,7 @@ struct FallbackData {
 	bool p2IsReverseGameplay;
 
 	bool freeMode;
+	CCPoint cameraPosition;
 	CCPoint cameraOffset;
 	float cameraZoom;
 };

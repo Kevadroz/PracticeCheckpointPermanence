@@ -23,18 +23,76 @@ void PersistentCheckpoint::storeData(
 ) {
 	m_checkpoint = checkpoint;
 
-	if (checkpoint->m_physicalCheckpointObject != nullptr) {
-		m_objectPos = checkpoint->m_physicalCheckpointObject->m_startPosition;
-
-		setupPhysicalObject();
-	}
-
 	m_time = playLayer->m_timePlayed;
 	m_percent = playLayer->getCurrentPercent();
 	m_persistentItemCountMap =
 		playLayer->m_effectManager->m_persistentItemCountMap;
 	m_persistentTimerItemSet =
 		playLayer->m_effectManager->m_persistentTimerItemSet;
+
+	// Fallback
+	PlayerCheckpoint* p1Checkpoint = m_checkpoint->m_player1Checkpoint;
+	PlayerCheckpoint* p2Checkpoint = m_checkpoint->m_player2Checkpoint;
+
+	bool isDual =
+		p2Checkpoint != nullptr && m_checkpoint->m_gameState.m_isDualMode;
+
+	StartPosObject* startPos = StartPosObject::create();
+	LevelSettingsObject* spSettings = startPos->m_startSettings;
+
+	spSettings->m_startMode =
+		static_cast<int>(getGamemodeFromCheckpoint(p1Checkpoint));
+
+	spSettings->m_startSpeed =
+		p1Checkpoint->m_playerSpeed < 0.8f	 ? Speed::Slow
+		: p1Checkpoint->m_playerSpeed > 1.0f ? Speed::Fast
+		: p1Checkpoint->m_playerSpeed > 1.2f ? Speed::Faster
+		: p1Checkpoint->m_playerSpeed > 1.4f ? Speed::Fastest
+														 : Speed::Normal;
+
+	spSettings->m_startMini = p1Checkpoint->m_isMini;
+	spSettings->m_startDual = isDual;
+	spSettings->m_mirrorMode =
+		m_checkpoint->m_gameState.m_unkBool10; // Mirror Mode
+	spSettings->m_rotateGameplay = p1Checkpoint->m_isSideways;
+	spSettings->m_isFlipped = p1Checkpoint->m_isUpsideDown;
+	spSettings->m_reverseGameplay = p1Checkpoint->m_isGoingLeft;
+
+	// Space reserved, but I don't think that this is possible.
+	spSettings->m_targetOrder = 0;
+
+	spSettings->m_targetChannel = m_checkpoint->m_gameState.m_currentChannel;
+
+	// Custom Data
+	m_fallbackData.p1Velocity =
+		ccp(p1Checkpoint->m_platformerXVelocity, p1Checkpoint->m_yVelocity);
+
+	if (isDual) {
+		m_fallbackData.p2Velocity =
+			ccp(p2Checkpoint->m_platformerXVelocity, p2Checkpoint->m_yVelocity);
+		m_fallbackData.p2Position = p2Checkpoint->m_position;
+		m_fallbackData.p2Gamemode = getGamemodeFromCheckpoint(p2Checkpoint);
+		m_fallbackData.p2IsMini = p2Checkpoint->m_isMini;
+		m_fallbackData.p2IsFlipped = p2Checkpoint->m_isUpsideDown;
+		m_fallbackData.p2IsReverseGameplay = p2Checkpoint->m_isGoingLeft;
+	}
+
+	m_fallbackData.freeMode = m_checkpoint->m_gameState.m_unkBool8; // Free Mode
+	m_fallbackData.cameraPosition = m_checkpoint->m_gameState.m_cameraPosition;
+	m_fallbackData.cameraOffset = m_checkpoint->m_gameState.m_cameraOffset;
+	m_fallbackData.cameraZoom = m_checkpoint->m_gameState.m_cameraZoom;
+	// Custom Data end
+
+	startPos->setSettings(spSettings);
+	startPos->setStartPos(m_objectPos);
+
+	m_fallbackData.startPos = startPos;
+
+	if (checkpoint->m_physicalCheckpointObject != nullptr) {
+		m_objectPos = checkpoint->m_physicalCheckpointObject->m_startPosition;
+
+		setupPhysicalObject();
+	}
 }
 
 void PersistentCheckpoint::serialize(Stream& out) {
@@ -159,59 +217,43 @@ void PersistentCheckpoint::serializeExternal(Stream& out) {
 	out << m_name;
 
 	// Fallback
-	PlayerCheckpoint* p1Checkpoint = m_checkpoint->m_player1Checkpoint;
-	PlayerCheckpoint* p2Checkpoint = m_checkpoint->m_player2Checkpoint;
+	LevelSettingsObject* settings = m_fallbackData.startPos->m_startSettings;
 
-	bool isDualMode =
-		p2Checkpoint != nullptr && m_checkpoint->m_gameState.m_isDualMode;
+	int speed = (int)settings->m_startSpeed;
 
-	int mode = static_cast<int>(getGamemodeFromCheckpoint(p1Checkpoint));
-	out << mode;
-
-	int speed = (int)(p1Checkpoint->m_playerSpeed < 0.8f	 ? Speed::Slow
-							: p1Checkpoint->m_playerSpeed > 1.0f ? Speed::Fast
-							: p1Checkpoint->m_playerSpeed > 1.2f ? Speed::Faster
-							: p1Checkpoint->m_playerSpeed > 1.4f ? Speed::Fastest
-																			 : Speed::Normal);
+	out << settings->m_startMode;
 	out << speed;
 
-	out << p1Checkpoint->m_isMini;
-	out << isDualMode;
-	out << m_checkpoint->m_gameState.m_unkBool10; // Mirror Mode
-	out << p1Checkpoint->m_isSideways;
-	out << p1Checkpoint->m_isUpsideDown;
-	out << p1Checkpoint->m_isGoingLeft;
+	out << settings->m_startMini;
+	out << settings->m_startDual;
+	out << settings->m_mirrorMode;
+	out << settings->m_rotateGameplay;
+	out << settings->m_isFlipped;
+	out << settings->m_reverseGameplay;
 
 	// Space reserved, but I don't think that this is possible.
-	int targetOrder = 0;
-	out << targetOrder;
+	out << settings->m_targetOrder;
 
 	out << m_checkpoint->m_gameState.m_currentChannel;
 
 	// Custom Data
-	CCPoint p1Velocity =
-		ccp(p1Checkpoint->m_platformerXVelocity, p1Checkpoint->m_yVelocity);
+	out << m_fallbackData.p1Velocity;
 
-	out << p1Velocity;
+	if (settings->m_startDual) {
+		int p2Gamemode = (int)m_fallbackData.p2Gamemode;
 
-	if (isDualMode) {
-		CCPoint p2Velocity =
-			ccp(p2Checkpoint->m_platformerXVelocity, p2Checkpoint->m_yVelocity);
-		int p2Gamemode =
-			static_cast<int>(getGamemodeFromCheckpoint(p2Checkpoint));
-
-		out << p2Velocity;
-		out << p2Checkpoint->m_position;
+		out << m_fallbackData.p2Velocity;
+		out << m_fallbackData.p2Position;
 		out << p2Gamemode;
-		out << p2Checkpoint->m_isMini;
-		out << p2Checkpoint->m_isUpsideDown;
-		out << p2Checkpoint->m_isGoingLeft;
+		out << m_fallbackData.p2IsMini;
+		out << m_fallbackData.p2IsFlipped;
+		out << m_fallbackData.p2IsReverseGameplay;
 	}
 
-	out << m_checkpoint->m_gameState.m_unkBool8; // Free Mode
-	out << m_checkpoint->m_gameState.m_cameraPosition;
-	out << m_checkpoint->m_gameState.m_cameraOffset;
-	out << m_checkpoint->m_gameState.m_cameraZoom;
+	out << m_fallbackData.freeMode;
+	out << m_fallbackData.cameraPosition;
+	out << m_fallbackData.cameraOffset;
+	out << m_fallbackData.cameraZoom;
 }
 
 void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
@@ -227,9 +269,10 @@ void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
 	LevelSettingsObject* settings = startPos->m_startSettings;
 	settings->m_startsWithStartPos = true;
 
+	int speed;
+
 	in >> settings->m_startMode;
 
-	int speed;
 	in >> speed;
 	settings->m_startSpeed = (Speed)speed;
 
@@ -261,13 +304,13 @@ void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
 	}
 
 	in >> m_fallbackData.freeMode;
-	in >> cameraPosition;
+	in >> m_fallbackData.cameraPosition;
 	in >> m_fallbackData.cameraOffset;
 	in >> m_fallbackData.cameraZoom;
 	// Custom Data end
 
 	startPos->setSettings(settings);
-	startPos->setStartPos(cameraPosition);
+	startPos->setStartPos(m_objectPos);
 
 	m_fallbackData.startPos = startPos;
 }
@@ -291,7 +334,8 @@ void PersistentCheckpoint::setupPhysicalObject() {
 		GameObjectType::Decoration;
 	m_checkpoint->m_physicalCheckpointObject->m_glowSprite = nullptr;
 
-	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
+	// m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
+	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_fallbackData.startPos->m_startPosition);
 }
 
 void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {

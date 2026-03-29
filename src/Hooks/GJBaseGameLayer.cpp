@@ -11,8 +11,6 @@ void ModGJBaseGameLayer::loadStartPosObject() {
 			if (m_startPosObject == checkpoint->m_fallbackData.startPos) {
 				FallbackData fallbackData = checkpoint->m_fallbackData;
 
-				m_player1->setPosition(checkpoint->m_objectPos);
-				m_player1->m_position = checkpoint->m_objectPos;
 				m_player1->setYVelocity(fallbackData.p1Velocity.y, 0);
 				m_player1->m_platformerXVelocity = fallbackData.p1Velocity.x;
 
@@ -71,7 +69,7 @@ void ModGJBaseGameLayer::loadStartPosObject() {
 					playLayer->m_fields->m_holdedTeleportObject = tpObj;
 				}
 
-				m_gameState.m_cameraPosition = fallbackData.startPos->getStartPos();
+				m_gameState.m_cameraPosition = fallbackData.cameraPosition;
 				m_gameState.m_cameraOffset = fallbackData.cameraOffset;
 				m_gameState.m_cameraZoom = fallbackData.cameraZoom;
 
