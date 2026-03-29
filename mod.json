@@ -226,7 +226,7 @@
 		"keybind-create-checkpoint": {
 			"type": "keybind",
 			"name": "Create Checkpoint",
-			"default": "Alt+Z",
+			"default": "Shift+Z",
 			"description": "Creates a new persistent checkpoint",
 			"category": "gameplay",
 			"migrate-from": "kevadroz.practicecheckpointpermanence/create_checkpoint"
@@ -234,7 +234,7 @@
 		"keybind-remove-checkpoint": {
 			"type": "keybind",
 			"name": "Remove Checkpoint",
-			"default": "Alt+X",
+			"default": "Shift+X",
 			"description": "Removes the active persistent checkpoint",
 			"category": "gameplay",
 			"migrate-from": "kevadroz.practicecheckpointpermanence/remove_checkpoint"
@@ -242,7 +242,7 @@
 		"keybind-previous-checkpoint": {
 			"type": "keybind",
 			"name": "Previous Checkpoint",
-			"default": "Alt+Q",
+			"default": "Shift+Q",
 			"description": "Activates the previous persistent checkpoint",
 			"category": "gameplay",
 			"migrate-from": "kevadroz.practicecheckpointpermanence/previous_checkpoint"
@@ -250,7 +250,7 @@
 		"keybind-next-checkpoint": {
 			"type": "keybind",
 			"name": "Next Checkpoint",
-			"default": "Alt+E",
+			"default": "Shift+E",
 			"description": "Activates the next persistent checkpoint",
 			"category": "gameplay",
 			"migrate-from": "kevadroz.practicecheckpointpermanence/next_checkpoint"

@@ -15,6 +15,7 @@
 - Make the active checkpoint be on top of the others on the progress bar
 - Changed the default value of the setting "Reset Attempts" to false
 - Add an option to disable the switcher \[[Issue #23](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/23)\]
+- Changed the default keybinds to use Shift instead of Alt to reduce conflicts with external programs such as Nvidia overlay (suggesetd by elniel on Discord)
 - Rearranged some settings
 
 ## 1.3.3 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.3.3)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.3.3))
