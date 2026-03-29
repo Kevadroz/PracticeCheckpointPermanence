@@ -5,7 +5,9 @@ $execute {
 	Mod* mod = Mod::get();
 
 	geode::listenForSettingChanges<bool>("switcher-enabled", [](bool value) {
-		static_cast<ModUILayer*>(UILayer::get())->updateSwitcher();
+		ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+		if (uiLayer != nullptr)
+			uiLayer->updateSwitcher();
 	});
 
 	for (std::string setting :
@@ -24,6 +26,9 @@ $execute {
 	geode::listenForSettingChanges<std::string>(
 		"practice-buttons-position", [](std::string value) {
 			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+			if (uiLayer == nullptr)
+				return;
+
 			setCheckpointButtonPosition(
 				uiLayer->m_fields->m_createCheckpointButton,
 				uiLayer->m_checkpointMenu->getChildByID("add-checkpoint-button"),
