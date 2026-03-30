@@ -1,3 +1,7 @@
+## 1.4.1 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.1)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.1))
+- Updated mod description
+- Added a donation link
+
 ## 1.4.0 ([Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.0)) ([Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.0))
 - Migrate to Geometry Dash 2.2081 and Geode v5
 - Added a Save Manager, me is hapi \[[Issue #5](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/5)\]
