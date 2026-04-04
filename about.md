@@ -1,5 +1,6 @@
-### <cr>iOS support</c>
-iOS builds are broken and I don't have an iPhone to fix them, if anyone wants to contribute some fixes it would be very appreciated.
+### <cr>iOS BUILDS MAY CRASH!!!</c>
+iOS builds are broken for some users and I don't have an iPhone to fix them, if anyone wants to contribute some fixes it would be very appreciated.
+If this mod crashes when unloading it's checkpoints (leaving practice mode, for example) then either disable or uninstall it until this is resolved and [post whatever info you think is relevant here](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/30).
 
 # Practice Checkpoint Permanence (PCP)
 
