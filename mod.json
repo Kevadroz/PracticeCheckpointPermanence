@@ -22,6 +22,9 @@
 		"geode.node-ids": ">=v1.22.0",
 		"sabe.persistenceapi": ">=v1.2.0"
 	},
+	"incompatibilities": {
+		"hiimjasmine00.checkpoint-switcher": "*"
+	},
 	"resources": {
 		"spritesheets": {
 			"MainSheet": [
