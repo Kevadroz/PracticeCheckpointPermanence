@@ -19,8 +19,12 @@ bool ModLevelBrowserLayer::init(GJSearchObject* p0) {
 			CCMenuItemExt::createSpriteExtra(buttonSprite, [](CCObject* sender) {
 				SaveManager::create()->show();
 			});
-		CCPoint buttonPosition =
-			savedMenu->getChildByID("favorite-button")->getPosition();
+
+		CCNode* favoriteButton = savedMenu->getChildByID("favorite-button");
+		if (favoriteButton == nullptr)
+			return true;
+
+		CCPoint buttonPosition = favoriteButton->getPosition();
 		button->setPosition(buttonPosition + ccp(0., 40.));
 		button->setID("save-manager"_spr);
 
