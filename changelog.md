@@ -1,10 +1,8 @@
-## Unreleased
-- Changed the format of the changelog a bit
-
 ## 1.4.2 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.2) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.2) )
 - Fix saved lists screen crashing on load \[[Issue #32](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/32)\]
 - Marked "Checkpoint Switcher" as incompatible \[[Issue #31](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/31)\]
 - Reenable iOS support with a warning (crash NOT fixed)
+- Changed the format of the changelog a bit
 
 ## 1.4.1 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.1) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.1) )
 - Updated mod description
