@@ -7,10 +7,12 @@
 void ModPauseLayer::customSetup() {
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 
+	bool isEditor = playLayer->m_level->m_levelType == GJLevelType::Editor;
+
 	PauseLayer::customSetup();
 
 #ifndef PCP_DEBUG
-	if (playLayer->m_level->m_levelType == GJLevelType::Editor)
+	if (isEditor)
 		return;
 #endif
 
