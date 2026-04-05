@@ -30,7 +30,6 @@ If applicable, add screenshots to help explain your problem.
 - Dependencies:
     - PersistenceAPI: [supported to latest]
     - NodeIDs: [supported to latest]
-    - Custom Keybinds: [supported to latest]
 
 **Additional context**
 Add any other context about the problem here.
