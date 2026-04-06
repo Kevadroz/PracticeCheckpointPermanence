@@ -47,30 +47,49 @@ void ModPlayLayer::serializeCheckpoints() {
 	stream << m_level->m_levelName;
 	stream << checkpointCount;
 
-	async::spawn(
-		[&stream, checkpoints] -> arc::Future<> {
-			for (PersistentCheckpoint* checkpoint : checkpoints) {
-				co_await arc::yield();
-				checkpoint->serializeExternal(stream);
-			}
+	auto postFn = [](ModPlayLayer* playLayer) {
+		playLayer->diskOperationFinished();
+		static_cast<ModUILayer*>(playLayer->m_uiLayer)->updateSwitcher();
+	};
 
-			for (PersistentCheckpoint* checkpoint : checkpoints) {
-				co_await arc::yield();
-				checkpoint->serialize(stream);
-			}
+	if (m_fields->m_isDiskOperationBlocking) {
+		for (PersistentCheckpoint* checkpoint : checkpoints)
+			checkpoint->serializeExternal(stream);
 
-			stream.end();
+		for (PersistentCheckpoint* checkpoint : checkpoints)
+			checkpoint->serialize(stream);
 
-			co_return;
-		},
-		[]() {
-			if (ModPlayLayer* playLayer =
-					 static_cast<ModPlayLayer*>(PlayLayer::get())) {
-				playLayer->diskOperationFinished();
-				static_cast<ModUILayer*>(playLayer->m_uiLayer)->updateSwitcher();
+		stream.end();
+
+		postFn(this);
+	} else
+		async::spawn(
+			[readonlyStream = stream, checkpoints] -> arc::Future<> {
+				Stream stream = std::move(readonlyStream);
+
+				for (PersistentCheckpoint* checkpoint : checkpoints) {
+					log::info("save external");
+					checkpoint->serializeExternal(stream);
+					co_await arc::yield();
+				}
+
+				for (PersistentCheckpoint* checkpoint : checkpoints) {
+					log::info("save");
+					checkpoint->serialize(stream);
+					co_await arc::yield();
+				}
+
+				stream.end();
+
+				co_return;
+			},
+			[postFn]() {
+				log::info("save postFn");
+				if (ModPlayLayer* playLayer =
+						 static_cast<ModPlayLayer*>(PlayLayer::get()))
+					postFn(playLayer);
 			}
-		}
-	);
+		);
 }
 
 void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
@@ -102,55 +121,99 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 	if (header.loadError != LoadError::None && !isInFallbackMode())
 		return;
 
-	async::spawn([ignoreVerification, &stream, header] -> arc::Future<> {
-		SaveHeader localHeader = header;
-
-		CCArrayExt<PersistentCheckpoint*> checkpoints =
-			CCArrayExt<PersistentCheckpoint*>(CCArray::create());
-
-		for (unsigned int i = localHeader.checkpointCount; i > 0; i--) {
+	auto loadExternalFn =
+		[header](Stream& stream, CCArrayExt<PersistentCheckpoint*>& checkpoints) {
 			PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
 
-			checkpoint->deserializeExternal(stream, localHeader);
+			checkpoint->deserializeExternal(stream, header);
 
 			checkpoint->setupPhysicalObject();
 			checkpoints.push_back(checkpoint);
-		}
-
-		auto test = [header, &checkpoints]() {
-			if (ModPlayLayer* playLayer =
-					 static_cast<ModPlayLayer*>(PlayLayer::get())) {
-				playLayer->unloadPersistentCheckpoints();
-				for (PersistentCheckpoint* checkpoint : checkpoints)
-					playLayer->storePersistentCheckpoint(checkpoint, false);
-
-				playLayer->m_fields->m_loadError = header.loadError;
-
-				playLayer->removeAllCheckpoints();
-
-				playLayer->diskOperationFinished();
-				playLayer->updateModUI();
-				DeserializationFinishedEvent().send();
-			}
 		};
 
+	auto postFn = [header](
+						  ModPlayLayer* playLayer,
+						  CCArrayExt<PersistentCheckpoint*> checkpoints
+					  ) {
+		playLayer->unloadPersistentCheckpoints();
+		for (PersistentCheckpoint* checkpoint : checkpoints)
+			playLayer->storePersistentCheckpoint(checkpoint, false);
+
+		playLayer->m_fields->m_loadError = header.loadError;
+
+		playLayer->removeAllCheckpoints();
+
+		playLayer->diskOperationFinished();
+		playLayer->updateModUI();
+	};
+
+	if (m_fields->m_isDiskOperationBlocking) {
+		CCArrayExt<PersistentCheckpoint*> checkpoints =
+			CCArrayExt<PersistentCheckpoint*>(CCArray::create());
+
+		for (unsigned int i = header.checkpointCount; i > 0; i--)
+			loadExternalFn(stream, checkpoints);
+
 		if (!ignoreVerification) {
-			if (localHeader.loadError != LoadError::None) {
+			if (header.loadError != LoadError::None) {
 				stream.end();
-				geode::queueInMainThread(test);
-				co_return;
+				postFn(this, checkpoints);
 			}
 		} else {
-			localHeader.loadError = LoadError::None;
+			header.loadError = LoadError::None;
 		}
 
 		for (PersistentCheckpoint* checkpoint : checkpoints)
-			checkpoint->deserialize(stream, localHeader);
+			checkpoint->deserialize(stream, header);
 
 		stream.end();
-		geode::queueInMainThread(test);
-		co_return;
-	});
+		postFn(this, checkpoints);
+	} else
+		async::spawn(
+			[ignoreVerification, readonlyStream = stream, readonlyHeader = header,
+			 loadExternalFn, postFn] -> arc::Future<> {
+				Stream stream = std::move(readonlyStream);
+				SaveHeader header = std::move(readonlyHeader);
+
+				CCArrayExt<PersistentCheckpoint*> checkpoints =
+					CCArrayExt<PersistentCheckpoint*>(CCArray::create());
+
+				for (unsigned int i = header.checkpointCount; i > 0; i--) {
+					log::info("load external");
+					loadExternalFn(stream, checkpoints);
+					co_await arc::yield();
+				}
+
+				if (!ignoreVerification) {
+					if (header.loadError != LoadError::None) {
+						stream.end();
+						geode::queueInMainThread([postFn, checkpoints]() {
+							if (ModPlayLayer* playLayer =
+									 static_cast<ModPlayLayer*>(PlayLayer::get()))
+								postFn(playLayer, checkpoints);
+						});
+						co_return;
+					}
+				} else {
+					header.loadError = LoadError::None;
+				}
+
+				for (PersistentCheckpoint* checkpoint : checkpoints) {
+					log::info("load");
+					checkpoint->deserialize(stream, header);
+					co_await arc::yield();
+				}
+
+				stream.end();
+				geode::queueInMainThread([postFn, checkpoints]() {
+					log::info("load postFn");
+					if (ModPlayLayer* playLayer =
+							 static_cast<ModPlayLayer*>(PlayLayer::get()))
+						postFn(playLayer, checkpoints);
+				});
+				co_return;
+			}
+		);
 }
 
 void ModPlayLayer::diskOperationFinished() {
@@ -166,7 +229,7 @@ void ModPlayLayer::diskOperationFinished() {
 
 void ModPlayLayer::unloadPersistentCheckpoints() {
 	switchGhostCheckpoint(0);
-	
+
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
 		  )) {

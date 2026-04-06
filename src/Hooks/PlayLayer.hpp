@@ -22,11 +22,17 @@ using namespace persistenceAPI;
 #define UNIQUE_ID_OFFSET 0x83f2e8
 #endif
 
+#define SaveLayerBlocking(playLayer, function)                                 \
+	playLayer->m_fields->m_isDiskOperationBlocking = true;                      \
+	playLayer->function;                                                        \
+	playLayer->m_fields->m_isDiskOperationBlocking = false
+
 enum class DiskOperation { None, Serializing, Deserializing };
 
 class $modify(ModPlayLayer, PlayLayer) {
 	struct Fields {
 		DiskOperation m_currentDiskOperation = DiskOperation::None;
+		bool m_isDiskOperationBlocking = false;
 		bool m_serializationQueued = false;
 		bool m_deserializationQueued = false;
 
@@ -115,10 +121,4 @@ class $modify(ModPlayLayer, PlayLayer) {
 			 ))
 			log::warn("Failed to set PlayLayer::setupHasCompleted hook priority!");
 	}
-};
-
-class DeserializationFinishedEvent
-	 : public Event<DeserializationFinishedEvent, void()> {
-public:
-	using Event::Event;
 };

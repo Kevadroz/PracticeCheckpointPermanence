@@ -49,7 +49,7 @@ bool CheckpointManager::init() {
 					"This action cannot be undone.",
 					"Cancel", "Delete", [this, playLayer](auto, bool confirmed) {
 						if (confirmed) {
-							playLayer->removeCurrentSaveLayer();
+							SaveLayerBlocking(playLayer, removeCurrentSaveLayer());
 							updateUIElements(true);
 						}
 					}
@@ -80,13 +80,13 @@ bool CheckpointManager::init() {
 
 	m_previousLayerBtn = CCMenuItemExt::createSpriteExtra(
 		previousLayerSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
-			playLayer->previousSaveLayer();
+			SaveLayerBlocking(playLayer, previousSaveLayer());
 			updateUIElements(true);
 		}
 	);
 	m_nextLayerBtn = CCMenuItemExt::createSpriteExtra(
 		nextLayerSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
-			playLayer->nextSaveLayer();
+			SaveLayerBlocking(playLayer, nextSaveLayer());
 			updateUIElements(true);
 		}
 	);
@@ -215,10 +215,6 @@ bool CheckpointManager::init() {
 	m_buttonMenu->addChildAtPosition(m_forceLoadButton, geode::Anchor::Bottom);
 	m_buttonMenu->addChildAtPosition(m_errorButton, geode::Anchor::TopRight);
 
-	addEventListener(DeserializationFinishedEvent(), [this]() {
-		updateUIElements();
-	});
-
 	return true;
 }
 
@@ -254,13 +250,17 @@ void CheckpointManager::createList(bool resetPosition) {
 		if (index != 0)
 			moveUpCallback = [this, index,
 									playLayer](CCMenuItemSpriteExtra* sender) {
-				playLayer->swapPersistentCheckpoints(index, index - 1);
+				SaveLayerBlocking(
+					playLayer, swapPersistentCheckpoints(index, index - 1)
+				);
 				createList();
 			};
 		if (index != checkpointArray->count() - 1)
 			moveDownCallback = [this, index,
 									  playLayer](CCMenuItemSpriteExtra* sender) {
-				playLayer->swapPersistentCheckpoints(index, index + 1);
+				SaveLayerBlocking(
+					playLayer, swapPersistentCheckpoints(index, index + 1)
+				);
 				createList();
 			};
 
@@ -282,7 +282,9 @@ void CheckpointManager::createList(bool resetPosition) {
 			[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 				bool updateLabel =
 					playLayer->m_fields->m_persistentCheckpointArray->count() == 1;
-				playLayer->removePersistentCheckpoint(checkpoint);
+				SaveLayerBlocking(
+					playLayer, removePersistentCheckpoint(checkpoint)
+				);
 
 				if (updateLabel)
 					updateUIElements();
@@ -488,7 +490,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 		[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 			RenamePopup::create(
 				[this, playLayer]() -> void {
-					playLayer->serializeCheckpoints();
+					SaveLayerBlocking(playLayer, serializeCheckpoints());
 					updateUIElements();
 				},
 				checkpoint
@@ -583,8 +585,8 @@ void CheckpointManager::forceLoadPopup() {
 				ModPlayLayer* playLayer =
 					static_cast<ModPlayLayer*>(PlayLayer::get());
 
-				playLayer->deserializeCheckpoints(true);
-				playLayer->serializeCheckpoints();
+				SaveLayerBlocking(playLayer, deserializeCheckpoints(true));
+				SaveLayerBlocking(playLayer, serializeCheckpoints());
 			}
 		}
 	);
@@ -665,6 +667,7 @@ const char* CheckpointManager::getErrorMessage(LoadError error) {
 	case LoadError::BadFile:
 		return "The save file is corrupt or is not a save file.";
 	case LoadError::ForcedFallback:
-		return "Fallback mode is forcibly enabled. You can disable it in the mod settings";
+		return "Fallback mode is forcibly enabled. You can disable it in the mod "
+				 "settings";
 	}
 }
