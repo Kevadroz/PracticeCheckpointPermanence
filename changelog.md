@@ -1,6 +1,6 @@
-## Unreleased
+## 1.4.3 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.3) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.3) )
 - Changed the "Delete Saved Checkpoints with the level" setting to be off by default
-- Fix Checkpoint Manager button not appearing in the Pause Menu when QOLMod's Level Edit Hack \[[Issue #33](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/33)\]
+- Fix Checkpoint Manager button not appearing in the Pause Menu with QOLMod's Level Edit Hack \[[Issue #33](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/33)\]
 
 ## 1.4.2 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.2) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.2) )
 - Fix saved lists screen crashing on load \[[Issue #32](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/32)\]
