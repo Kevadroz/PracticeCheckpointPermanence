@@ -81,7 +81,7 @@
 		"delete-saves-with-level": {
 			"name": "Delete Saved Checkpoints with the level",
 			"type": "bool",
-			"default": true,
+			"default": false,
 			"description": "Deletes the checkpoints of a level when you manually delete that level from the saved levels"
 		},
 		"percentage-display-decimals": {
