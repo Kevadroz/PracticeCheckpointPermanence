@@ -43,10 +43,14 @@ struct SaveHeader {
 };
 
 namespace SaveParser {
-SaveHeader
-fromStream(persistenceAPI::Stream& stream, GJGameLevel* level = nullptr);
-std::optional<SaveHeader>
-fromPath(std::filesystem::path path, GJGameLevel* level = nullptr);
+SaveHeader fromStream(
+	persistenceAPI::Stream& stream, GJGameLevel* level = nullptr,
+	bool isEditor = false
+);
+std::optional<SaveHeader> fromPath(
+	std::filesystem::path path, GJGameLevel* level = nullptr,
+	bool isEditor = false
+);
 
 bool isErrorFallbackCapable(LoadError error);
 }; // namespace SaveParser

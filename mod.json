@@ -21,7 +21,8 @@
 	],
 	"dependencies": {
 		"geode.node-ids": ">=v1.22.0",
-		"sabe.persistenceapi": ">=v1.2.0"
+		"sabe.persistenceapi": ">=v1.2.0",
+		"cvolton.level-id-api": ">=2.0.0"
 	},
 	"incompatibilities": {
 		"hiimjasmine00.checkpoint-switcher": ">=v0.0.0"

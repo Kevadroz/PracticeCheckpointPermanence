@@ -26,6 +26,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 
 		double m_ghostCheckpointUsedTime = 0;
 
+		std::optional<size_t> m_levelStringHash;
+
 		CCNodeRGBA* m_pbCheckpointContainer = nullptr;
 	};
 

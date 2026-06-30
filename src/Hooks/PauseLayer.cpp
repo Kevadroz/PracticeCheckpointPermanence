@@ -11,11 +11,6 @@ void ModPauseLayer::customSetup() {
 
 	PauseLayer::customSetup();
 
-#ifndef PCP_DEBUG
-	if (isEditor)
-		return;
-#endif
-
 	CircleButtonSprite* buttonSprite =
 		CircleButtonSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
 	buttonSprite->setScale(.6f);

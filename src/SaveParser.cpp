@@ -1,13 +1,17 @@
 #include "SaveParser.hpp"
 
-SaveHeader
-SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
+const std::hash<std::string> c_stringHasher;
+
+SaveHeader SaveParser::fromStream(
+	persistenceAPI::Stream& stream, GJGameLevel* level, bool isEditor
+) {
 	char loadedHeader[sizeof(SAVE_HEADER)];
 	LoadError loadError = LoadError::None;
 	unsigned int saveVersion;
 	gd::string gameVersion;
 	char platform;
 	unsigned int levelVersion;
+	size_t levelStringHash;
 	gd::string levelName;
 	unsigned int checkpointCount;
 
@@ -27,9 +31,15 @@ SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
 		return SaveHeader{loadError, saveVersion, "Unknown", PLATFORM,
 								0,			  0,				"Unknown"};
 
+	bool isEditorLevel =
+		level ? level->m_levelType == GJLevelType::Editor : isEditor;
+
 	stream >> gameVersion;
 	stream >> platform;
-	stream >> levelVersion;
+	if (!isEditorLevel)
+		stream >> levelVersion;
+	else
+		stream >> levelStringHash;
 	stream >> levelName;
 	stream >> checkpointCount;
 
@@ -39,22 +49,31 @@ SaveParser::fromStream(persistenceAPI::Stream& stream, GJGameLevel* level) {
 	if (platform != PLATFORM)
 		loadError = LoadError::OtherPlatform;
 
-	else if (level && levelVersion != level->m_levelVersion)
-		loadError = LoadError::LevelVersionMismatch;
+	else if (level) {
+		if (!isEditorLevel) {
+			if (levelVersion != level->m_levelVersion)
+				loadError = LoadError::LevelVersionMismatch;
+		} else {
+			size_t currentHash = c_stringHasher(level->m_levelString);
+			if (levelStringHash != currentHash)
+				loadError = LoadError::LevelVersionMismatch;
+		}
+	}
 
 	return SaveHeader{loadError,	  saveVersion,		 gameVersion, platform,
 							levelVersion, checkpointCount, levelName};
 }
 
-std::optional<SaveHeader>
-SaveParser::fromPath(std::filesystem::path path, GJGameLevel* level) {
+std::optional<SaveHeader> SaveParser::fromPath(
+	std::filesystem::path path, GJGameLevel* level, bool isEditor
+) {
 	if (!std::filesystem::exists(path))
 		return std::nullopt;
 
 	persistenceAPI::Stream stream;
 	stream.setFile(geode::utils::string::pathToString(path), 2);
 
-	SaveHeader header = fromStream(stream, level);
+	SaveHeader header = fromStream(stream, level, isEditor);
 	stream.end();
 
 	return header;

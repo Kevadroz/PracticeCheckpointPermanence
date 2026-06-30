@@ -1,5 +1,8 @@
 #include "PlayLayer.hpp"
 #include "sabe.persistenceapi/include/util/Stream.hpp"
+#include <cvolton.level-id-api/include/EditorIDs.hpp>
+
+const std::hash<std::string> c_stringHasher;
 
 void ModPlayLayer::serializeCheckpoints() {
 	if (m_fields->m_loadError != LoadError::None)
@@ -13,11 +16,6 @@ void ModPlayLayer::serializeCheckpoints() {
 		return;
 	}
 
-#ifndef PCP_DEBUG
-	if (m_level->m_levelType == GJLevelType::Editor)
-		return;
-#endif
-
 	char platform = PLATFORM;
 	unsigned int saveVersion = CURRENT_VERSION;
 	gd::string gameVersion = geode::Loader::get()->getGameVersion();
@@ -30,7 +28,14 @@ void ModPlayLayer::serializeCheckpoints() {
 	stream << saveVersion;
 	stream << gameVersion;
 	stream << platform;
-	stream << m_level->m_levelVersion;
+	if (m_level->m_levelType != GJLevelType::Editor)
+		stream << m_level->m_levelVersion;
+	else {
+		if (!m_fields->m_levelStringHash.has_value())
+			m_fields->m_levelStringHash = c_stringHasher(m_level->m_levelString);
+
+		stream << m_fields->m_levelStringHash.value();
+	}
 	stream << m_level->m_levelName;
 	stream << checkpointCount;
 
@@ -48,11 +53,6 @@ void ModPlayLayer::serializeCheckpoints() {
 }
 
 void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
-#ifndef PCP_DEBUG
-	if (m_level->m_levelType == GJLevelType::Editor)
-		return;
-#endif
-
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
@@ -163,19 +163,16 @@ std::filesystem::path ModPlayLayer::getSavePath(
 	GJGameLevel* level, bool lowDetail, unsigned int saveLayer
 ) {
 	std::string savePath = fmt::format(
-		"{}/saves/{}", string::pathToString(Mod::get()->getSaveDir()),
-		level->m_levelID.value()
+		"{}/saves/", string::pathToString(Mod::get()->getSaveDir())
 	);
+
+	if (level->m_levelType == GJLevelType::Editor)
+		savePath.append(fmt::format("editor/{}", EditorIDs::getID(level)));
+	else
+		savePath.append(fmt::to_string(level->m_levelID.value()));
 
 	if (lowDetail)
 		savePath.append("-lowDetail");
-
-#ifdef PCP_DEBUG
-	if (level->m_levelType == GJLevelType::Editor)
-		savePath = fmt::format(
-			"{}/saves/editor", string::pathToString(Mod::get()->getSaveDir())
-		);
-#endif
 
 	savePath.append(fmt::format("_{}.pcp", saveLayer));
 

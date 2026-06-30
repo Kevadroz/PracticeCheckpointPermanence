@@ -48,8 +48,10 @@ $execute {
 	SettingChangedEvent(Mod::get(), "show-checkpoints-in-normal-mode")
 		.listen(+[](std::shared_ptr<SettingV3> setting) {
 			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
-			if (playLayer != nullptr && !playLayer->m_isPracticeMode &&
-				 Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode"))
+			if (
+				playLayer != nullptr && !playLayer->m_isPracticeMode &&
+				Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")
+			)
 				playLayer->updateModUI();
 		})
 		.leak();
@@ -61,9 +63,10 @@ bool ModPlayLayer::init(
 	if (!PlayLayer::init(level, useReplay, dontCreateObjects))
 		return false;
 
-	if (m_fields->m_persistentCheckpointArray != nullptr &&
-		 isPersistentSystemActive() &&
-		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
+	if (
+		m_fields->m_persistentCheckpointArray != nullptr &&
+		isPersistentSystemActive() && !m_fields->m_hasAttemptedToLoadCheckpoints
+	) {
 		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
 		updateSaveLayerCount();
@@ -106,8 +109,9 @@ void ModPlayLayer::setupHasCompleted() {
 	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
 	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
 
-	if (isPersistentSystemActive() &&
-		 !m_fields->m_hasAttemptedToLoadCheckpoints) {
+	if (
+		isPersistentSystemActive() && !m_fields->m_hasAttemptedToLoadCheckpoints
+	) {
 		m_fields->m_hasAttemptedToLoadCheckpoints = true;
 
 		updateSaveLayerCount();
@@ -346,10 +350,12 @@ void ModPlayLayer::updateModUI() {
 		sprite->setPosition(
 			ccp(barWidth * (checkpoint->m_percent / 100.f) + 2, 0)
 		);
-		if (m_fields->m_activeCheckpoint > 0 &&
-			 checkpoint == m_fields->m_persistentCheckpointArray->objectAtIndex(
-									m_fields->m_activeCheckpoint - 1
-								))
+		if (
+			m_fields->m_activeCheckpoint > 0 &&
+			checkpoint == m_fields->m_persistentCheckpointArray->objectAtIndex(
+								  m_fields->m_activeCheckpoint - 1
+							  )
+		)
 			sprite->setZOrder(1);
 		container->addChild(sprite);
 
@@ -361,20 +367,11 @@ void ModPlayLayer::updateModUI() {
 }
 
 bool ModPlayLayer::isPersistentSystemActive() {
-	return (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") ||
-			  m_isPracticeMode)
-#ifndef PCP_DEBUG
-			 && m_level->m_levelType != GJLevelType::Editor
-#endif
-		;
+	return Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") ||
+			 m_isPracticeMode;
 }
 
 bool ModPlayLayer::isModUIVisible() {
-#ifndef PCP_DEBUG
-	if (m_level->m_levelType == GJLevelType::Editor)
-		return false;
-#endif
-
 	if (m_isPracticeMode)
 		return true;
 

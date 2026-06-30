@@ -167,6 +167,8 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	CCMenu* menu = ListMenu::create(m_listContainer);
 	menu->setContentSize(ccp(400, 50));
 
+	log::debug("lID: {}", info.levelID);
+
 	CCLabelBMFont* nameLabel =
 		CCLabelBMFont::create(info.levelName.c_str(), "bigFont.fnt");
 	nameLabel->setAnchorPoint(ccp(0, .5));
@@ -409,63 +411,89 @@ unsigned int SaveManager::getMaxPages() {
 }
 
 std::vector<LevelSaveInfo> SaveManager::getSaveList() {
-	std::vector<std::pair<SaveHeader, std::filesystem::directory_entry>> saves;
-	for (std::filesystem::directory_entry entry :
-		  std::filesystem::directory_iterator(
-			  fmt::format(
-				  "{}/saves/", string::pathToString(Mod::get()->getSaveDir())
-			  )
-		  )) {
-
-		saves.push_back(
-			std::pair(SaveParser::fromPath(entry.path()).value(), entry)
-		);
-	}
-
 	std::map<int, LevelSaveInfo> levels;
-	for (std::pair<SaveHeader, std::filesystem::directory_entry> save : saves) {
+	std::map<int, LevelSaveInfo> editorLevels;
 
-		if (save.second.is_directory())
-			continue;
+	for (std::map<int, LevelSaveInfo>* levelList : {&levels, &editorLevels}) {
+		std::vector<std::pair<SaveHeader, std::filesystem::directory_entry>>
+			saves;
 
-		std::filesystem::path path = save.second.path();
-		std::string filename = string::pathToString(path.filename());
-		std::string filenameNoExtension = string::split(filename, ".").front();
+		const char* subPath;
+		bool isEditor;
+		if (levelList == &levels) {
+			subPath = "";
+			isEditor = false;
+		} else {
+			subPath = "editor/";
+			isEditor = true;
+		}
 
-		std::vector<std::string> layerSplit =
-			string::split(filenameNoExtension, "_");
-		std::optional<unsigned int> saveLayerResult =
-			geode::utils::numFromString<unsigned int>(layerSplit.back()).ok();
-		if (!saveLayerResult.has_value())
-			continue;
-		unsigned int saveLayer = saveLayerResult.value();
+		for (std::filesystem::directory_entry entry :
+			  std::filesystem::directory_iterator(
+				  fmt::format(
+					  "{}/saves/{}", string::pathToString(Mod::get()->getSaveDir()),
+					  subPath
+				  )
+			  )) {
+			if (entry.is_directory())
+				continue;
 
-		std::vector<std::string> lowDetailSplit =
-			string::split(layerSplit.front(), "-");
-		bool lowDetail = lowDetailSplit.back() == "lowDetail";
+			saves.push_back(
+				std::pair(
+					SaveParser::fromPath(entry.path(), nullptr, isEditor).value(),
+					entry
+				)
+			);
+		}
 
-		std::optional<int> levelIDResult =
-			geode::utils::numFromString<int>(lowDetailSplit.front()).ok();
-		if (!levelIDResult.has_value())
-			continue;
-		int levelID = levelIDResult.value();
+		for (std::pair<SaveHeader, std::filesystem::directory_entry> save :
+			  saves) {
+			if (save.second.is_directory())
+				continue;
 
-		SaveLayerInfo saveLayerInfo = SaveLayerInfo{save.first, path};
+			std::filesystem::path path = save.second.path();
+			std::string filename = string::pathToString(path.filename());
+			std::string filenameNoExtension = string::split(filename, ".").front();
 
-		LevelSaveInfo* info =
-			&levels
-				 .try_emplace(levelID, LevelSaveInfo{levelID, save.first.levelName})
-				 .first->second;
+			std::vector<std::string> layerSplit =
+				string::split(filenameNoExtension, "_");
+			std::optional<unsigned int> saveLayerResult =
+				geode::utils::numFromString<unsigned int>(layerSplit.back()).ok();
+			if (!saveLayerResult.has_value())
+				continue;
+			unsigned int saveLayer = saveLayerResult.value();
 
-		std::vector<SaveLayerInfo>* layers =
-			lowDetail ? &info->ldmLayers : &info->standardLayers;
-		layers->push_back(saveLayerInfo);
+			std::vector<std::string> lowDetailSplit =
+				string::split(layerSplit.front(), "-");
+			bool lowDetail = lowDetailSplit.back() == "lowDetail";
 
-		info->fullFileSize += save.second.file_size();
+			std::optional<int> levelIDResult =
+				geode::utils::numFromString<int>(lowDetailSplit.front()).ok();
+			if (!levelIDResult.has_value())
+				continue;
+			int levelID = levelIDResult.value();
+
+			SaveLayerInfo saveLayerInfo = SaveLayerInfo{save.first, path};
+
+			LevelSaveInfo* info =
+				&levelList
+					 ->try_emplace(
+						 levelID, LevelSaveInfo{levelID, save.first.levelName}
+					 )
+					 .first->second;
+
+			std::vector<SaveLayerInfo>* layers =
+				lowDetail ? &info->ldmLayers : &info->standardLayers;
+			layers->push_back(saveLayerInfo);
+
+			info->fullFileSize += save.second.file_size();
+		}
 	}
 
 	std::vector<LevelSaveInfo> levelList;
-	levelList.reserve(levels.size());
+	levelList.reserve(levels.size() + editorLevels.size());
+	for (std::pair<const int, LevelSaveInfo> level : editorLevels)
+		levelList.push_back(level.second);
 	for (std::pair<const int, LevelSaveInfo> level : levels)
 		levelList.push_back(level.second);
 
