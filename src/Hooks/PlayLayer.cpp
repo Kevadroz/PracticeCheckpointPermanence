@@ -273,7 +273,10 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down) {
+			if (
+				isPersistentSystemActive() && down &&
+				m_fields->m_persistentCheckpointArray->count() > 0
+			) {
 				previousCheckpoint();
 				return true;
 			}
@@ -284,7 +287,10 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down) {
+			if (
+				isPersistentSystemActive() && down &&
+				m_fields->m_persistentCheckpointArray->count() > 0
+			) {
 				nextCheckpoint();
 				return true;
 			}

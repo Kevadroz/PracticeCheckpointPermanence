@@ -1,5 +1,6 @@
 ## Unreleased
 - Readded editor level support \[[Issue #37](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/37)\]
+- Disable switcher keybinds when there are no checkpoints in the current save layer \[[Issue #40](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/40)\]
 
 ## 1.4.3 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.3) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.3) )
 - Changed the "Delete Saved Checkpoints with the level" setting to be off by default
