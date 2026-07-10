@@ -87,6 +87,7 @@ void ModPlayLayer::setupHasCompleted() {
 		m_fields->m_persistentCheckpointBatchNode =
 			// @geode-ignore(unknown-resource)
 			CCSpriteBatchNode::create("MainSheet.png"_spr);
+		m_fields->m_persistentCheckpointBatchNode->setID("permanent-checkpoints"_spr);
 		m_fields->m_persistentCheckpointBatchNode->setZOrder(219);
 		m_objectLayer->addChild(m_fields->m_persistentCheckpointBatchNode);
 
