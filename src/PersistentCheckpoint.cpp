@@ -77,7 +77,7 @@ void PersistentCheckpoint::storeData(
 		m_fallbackData.p2IsReverseGameplay = p2Checkpoint->m_isGoingLeft;
 	}
 
-	m_fallbackData.freeMode = m_checkpoint->m_gameState.m_unkBool8; // Free Mode
+	m_fallbackData.freeMode = m_checkpoint->m_gameState.m_isFreeMode; // Free Mode
 	m_fallbackData.cameraPosition = m_checkpoint->m_gameState.m_cameraPosition;
 	m_fallbackData.cameraOffset = m_checkpoint->m_gameState.m_cameraOffset;
 	m_fallbackData.cameraZoom = m_checkpoint->m_gameState.m_cameraZoom;
