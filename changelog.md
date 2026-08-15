@@ -1,4 +1,5 @@
 ## ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.4) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.4) )
+- Disabled iOS Support.
 - Readded editor level support \[[Issue #37](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/37)\]
 - Disable switcher keybinds when there are no checkpoints in the current save layer \[[Issue #40](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/40)\]
 - Updated BPUI Integration \[[PR #48](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/48), by [Naxrin](https://github.com/Naxrin)\]
