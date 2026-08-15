@@ -20,7 +20,7 @@ bool ModUIPOptionsLayer::init() {
 	m_fields->m_switcherMenu = SwitcherMenu::createWithTouch(
 		nullptr,
 		[this, pui](CCTouch* touch, CCEvent* event) {
-			log::info("{}", m_fields->m_switcherMenu->getParent()->getScale());
+			log::debug("Menu Scale: {}", m_fields->m_switcherMenu->getParent()->getScale());
 			if (pui && !pui->getSettingValue<bool>("preview-drag") && m_fields->m_switcherMenu->getParent()->getScale() > 0.75f)
 				return false;
 			CCPoint touchPos =
@@ -31,10 +31,10 @@ bool ModUIPOptionsLayer::init() {
 				 touchPos.y < h) {
 				m_fields->m_movingSwitcher = true;
 				m_fields->m_lastPos = touch->getLocation();
-				log::info("true");
+				log::debug("InBounds: true");
 				return true;
 			}
-			log::info("false");
+			log::debug("InBounds: false");
 			return false;
 		},
 		[this](CCTouch* touch, CCEvent* event) {
