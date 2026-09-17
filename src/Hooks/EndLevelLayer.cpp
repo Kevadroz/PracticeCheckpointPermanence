@@ -2,10 +2,15 @@
 #include "PlayLayer.hpp"
 
 void ModEndLevelLayer::onRestartCheckpoint(CCObject* sender) {
-	if (static_cast<ModPlayLayer*>(m_playLayer)->m_fields->m_activeCheckpoint >
-			 0 &&
-		 Mod::get()->getSettingValue<bool>("reset-attempts"))
+	if (
+		static_cast<ModPlayLayer*>(m_playLayer)->m_fields->m_activeCheckpoint >
+			0 &&
+		Mod::get()->getSettingValue<bool>("reset-attempts")
+	) {
 		m_playLayer->m_attempts = 0;
+		m_playLayer->m_clicks = 0;
+		m_playLayer->m_jumps = 0;
+	}
 
 	EndLevelLayer::onRestartCheckpoint(sender);
 }

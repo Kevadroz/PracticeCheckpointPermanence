@@ -73,9 +73,11 @@ void ModPlayLayer::switchCurrentCheckpoint(
 			return;
 	}
 
-	if (!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts"))
+	if (!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts")) {
 		m_attempts = 0;
-	else
+		m_clicks = 0;
+		m_jumps = 0;
+	} else
 		m_attempts--;
 
 	m_level->setAttempts(m_level->m_attempts - 1);
