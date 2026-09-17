@@ -464,7 +464,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 		nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
 
 	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(
-		checkpoint->m_checkpoint->m_physicalCheckpointObject->displayFrame()
+		checkpoint->m_physicalObject->displayFrame()
 	);
 	CCMenuItemSpriteExtra* selectBtn =
 		CCMenuItemExt::createSpriteExtra(checkpointSprite, selectCallback);

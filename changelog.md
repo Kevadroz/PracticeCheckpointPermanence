@@ -1,3 +1,6 @@
+## Unreleased
+- Fix Incompatibility with "Labeled Checkpoints" \[[Issue #54](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/54)\]
+
 ## ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.4) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.4) )
 - Disabled iOS Support.
 - Readded editor level support \[[Issue #37](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/37)\]

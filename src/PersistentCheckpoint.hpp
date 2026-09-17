@@ -41,6 +41,7 @@ public:
 	FallbackData m_fallbackData;
 
 	Ref<CheckpointObject> m_checkpoint = nullptr;
+	Ref<GameObject> m_physicalObject = nullptr;
 	CCPoint m_objectPos;
 	double m_time;
 	double m_percent;

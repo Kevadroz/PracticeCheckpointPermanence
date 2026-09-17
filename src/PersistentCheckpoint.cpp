@@ -77,7 +77,8 @@ void PersistentCheckpoint::storeData(
 		m_fallbackData.p2IsReverseGameplay = p2Checkpoint->m_isGoingLeft;
 	}
 
-	m_fallbackData.freeMode = m_checkpoint->m_gameState.m_isFreeMode; // Free Mode
+	m_fallbackData.freeMode =
+		m_checkpoint->m_gameState.m_isFreeMode; // Free Mode
 	m_fallbackData.cameraPosition = m_checkpoint->m_gameState.m_cameraPosition;
 	m_fallbackData.cameraOffset = m_checkpoint->m_gameState.m_cameraOffset;
 	m_fallbackData.cameraZoom = m_checkpoint->m_gameState.m_cameraZoom;
@@ -316,26 +317,17 @@ void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
 }
 
 void PersistentCheckpoint::setupPhysicalObject() {
-	if (m_checkpoint->m_physicalCheckpointObject == nullptr)
-		m_checkpoint->m_physicalCheckpointObject =
-			GameObject::createWithFrame("inactiveCheckpoint.png"_spr);
-	else
-		m_checkpoint->m_physicalCheckpointObject->setDisplayFrame(
-			CCSpriteFrameCache::get()->spriteFrameByName(
-				"inactiveCheckpoint.png"_spr
-			)
-		);
+	m_physicalObject = GameObject::createWithFrame("inactiveCheckpoint.png"_spr);
 
-	m_checkpoint->m_physicalCheckpointObject->setOpacity(
+	m_physicalObject->setOpacity(
 		Mod::get()->getSettingValue<double>("inactive-checkpoint-opacity") * 255
 	);
-	m_checkpoint->m_physicalCheckpointObject->m_objectID = 0x2c;
-	m_checkpoint->m_physicalCheckpointObject->m_objectType =
-		GameObjectType::Decoration;
-	m_checkpoint->m_physicalCheckpointObject->m_glowSprite = nullptr;
+	m_physicalObject->m_objectID = 0x2c;
+	m_physicalObject->m_objectType = GameObjectType::Decoration;
+	m_physicalObject->m_glowSprite = nullptr;
 
-	m_checkpoint->m_physicalCheckpointObject->setStartPos(m_objectPos);
-	// m_checkpoint->m_physicalCheckpointObject->setStartPos(m_fallbackData.startPos->m_startPosition);
+	m_physicalObject->setStartPos(m_objectPos);
+	// m_physicalObject->setStartPos(m_fallbackData.startPos->m_startPosition);
 }
 
 void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {
@@ -350,10 +342,10 @@ void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {
 		opacity = Mod::get()->getSettingValue<double>(settingKey);
 	}
 
-	m_checkpoint->m_physicalCheckpointObject->setDisplayFrame(
+	m_physicalObject->setDisplayFrame(
 		CCSpriteFrameCache::get()->spriteFrameByName(frameName)
 	);
-	m_checkpoint->m_physicalCheckpointObject->setOpacity(opacity * 255);
+	m_physicalObject->setOpacity(opacity * 255);
 }
 
 #if defined(PA_DEBUG) && defined(PA_DESCRIBE)

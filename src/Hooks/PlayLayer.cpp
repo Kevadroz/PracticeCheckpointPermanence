@@ -87,7 +87,9 @@ void ModPlayLayer::setupHasCompleted() {
 		m_fields->m_persistentCheckpointBatchNode =
 			// @geode-ignore(unknown-resource)
 			CCSpriteBatchNode::create("MainSheet.png"_spr);
-		m_fields->m_persistentCheckpointBatchNode->setID("permanent-checkpoints"_spr);
+		m_fields->m_persistentCheckpointBatchNode->setID(
+			"permanent-checkpoints"_spr
+		);
 		m_fields->m_persistentCheckpointBatchNode->setZOrder(219);
 		m_objectLayer->addChild(m_fields->m_persistentCheckpointBatchNode);
 
@@ -344,8 +346,7 @@ void ModPlayLayer::updateModUI() {
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
 		  )) {
-		GameObject* physicalObject =
-			checkpoint->m_checkpoint->m_physicalCheckpointObject;
+		GameObject* physicalObject = checkpoint->m_physicalObject;
 		CCSpriteFrame* frame = physicalObject->displayFrame();
 
 		CCSprite* sprite = CCSprite::createWithSpriteFrame(frame);
