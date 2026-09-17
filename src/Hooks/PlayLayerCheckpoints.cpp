@@ -1,9 +1,6 @@
 #include "PlayLayer.hpp"
 
 void ModPlayLayer::nextCheckpoint() {
-	if (!isPersistentSystemActive() || m_levelEndAnimationStarted)
-		return;
-
 	unsigned int nextCheckpoint = m_fields->m_activeCheckpoint + 1;
 	if (nextCheckpoint > m_fields->m_persistentCheckpointArray->count())
 		nextCheckpoint = 0;
@@ -11,9 +8,6 @@ void ModPlayLayer::nextCheckpoint() {
 }
 
 void ModPlayLayer::previousCheckpoint() {
-	if (!isPersistentSystemActive() || m_levelEndAnimationStarted)
-		return;
-
 	unsigned int nextCheckpoint = m_fields->m_activeCheckpoint - 1;
 	if (m_fields->m_activeCheckpoint == 0)
 		nextCheckpoint = m_fields->m_persistentCheckpointArray->count();
@@ -24,6 +18,18 @@ void ModPlayLayer::previousCheckpoint() {
 void ModPlayLayer::switchCurrentCheckpoint(
 	unsigned int nextCheckpoint, bool ignoreLastCheckpoint, bool noVisualUpdates
 ) {
+	if (!isPersistentSystemActive())
+		return;
+
+	if (m_levelEndAnimationStarted) {
+		CCNode* endLayer = getChildByID("EndLevelLayer");
+		if (endLayer == nullptr)
+			return;
+		endLayer->removeFromParentAndCleanup(true);
+		if (!GameManager::get()->getGameVariable("0024"))
+			PlatformToolbox::hideCursor();
+	}
+
 	bool isFallback = isInFallbackMode();
 
 	removeAllCheckpoints();
@@ -66,14 +72,18 @@ void ModPlayLayer::switchCurrentCheckpoint(
 		setStartPosObject(startPos);
 	}
 
-	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
-		 (nextCheckpoint != 0) != m_isPracticeMode) {
+	if (
+		Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
+		(nextCheckpoint != 0) != m_isPracticeMode
+	) {
 		PlayLayer::togglePracticeMode(!m_isPracticeMode);
 		if (!m_isPracticeMode)
 			return;
 	}
 
-	if (!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts")) {
+	if (
+		!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts")
+	) {
 		m_attempts = 0;
 		m_clicks = 0;
 		m_jumps = 0;
@@ -128,9 +138,11 @@ void ModPlayLayer::markPersistentCheckpoint() {
 
 	if (m_isPracticeMode) {
 		switchGhostCheckpoint(newCheckpointIndex);
-		if (Mod::get()->getSettingValue<double>(
-				 "ghost-auto-checkpoint-inactive-time"
-			 ) > 0.0)
+		if (
+			Mod::get()->getSettingValue<double>(
+				"ghost-auto-checkpoint-inactive-time"
+			) > 0.0
+		)
 			m_fields->m_ghostCheckpointUsedTime = m_attemptTime;
 	}
 
@@ -149,9 +161,10 @@ unsigned int ModPlayLayer::storePersistentCheckpoint(
 	if (reorder && array->count() > 0)
 		for (PersistentCheckpoint* arrayCheckpoint :
 			  CCArrayExt<PersistentCheckpoint*>(array)) {
-			if (m_isPlatformer
-					 ? arrayCheckpoint->m_time > checkpoint->m_time
-					 : arrayCheckpoint->m_percent > checkpoint->m_percent)
+			if (
+				m_isPlatformer ? arrayCheckpoint->m_time > checkpoint->m_time
+									: arrayCheckpoint->m_percent > checkpoint->m_percent
+			)
 				break;
 			index++;
 		}
