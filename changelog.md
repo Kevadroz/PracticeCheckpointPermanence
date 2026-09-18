@@ -1,9 +1,9 @@
-## ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.5) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.5) )
+## 1.4.5 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.5) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.5) )
 - Fix Incompatibility with "Labeled Checkpoints" \[[Issue #54](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/54)\]
 - Added the ability to switch checkpoints on the Level End Screen \[[Issue #41](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/41)\]
 - The "Reset Attempts" option now also resets jumps \[[Issue #49](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/49)\]
 
-## ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.4) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.4) )
+## 1.4.4 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.4) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.4) )
 - Disabled iOS Support.
 - Readded editor level support \[[Issue #37](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/37)\]
 - Disable switcher keybinds when there are no checkpoints in the current save layer \[[Issue #40](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/40)\]
