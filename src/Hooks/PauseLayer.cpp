@@ -62,14 +62,17 @@ void ModPauseLayer::customSetup() {
 		}
 	);
 
-	CCMenu* menu = static_cast<CCMenu*>(m_mainLayer->getChildByID("right-button-menu"));
+	CCMenu* menu =
+		static_cast<CCMenu*>(m_mainLayer->getChildByID("right-button-menu"));
 	if (menu) {
 		menu->addChild(button);
 		menu->updateLayout();
 	}
 }
 
+#ifdef GEODE_WINDOWS
 void ModPauseLayer::onPracticeMode(CCObject* sender) {
 	PauseLayer::onPracticeMode(sender);
 	static_cast<ModPlayLayer*>(PlayLayer::get())->handleTogglePracticeMode(true);
 }
+#endif

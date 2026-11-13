@@ -11,5 +11,8 @@ class $modify(ModPauseLayer, PauseLayer) {
 	}
 
 	void customSetup();
+
+#ifdef GEODE_WINDOWS
 	void onPracticeMode(CCObject* sender);
+#endif
 };
