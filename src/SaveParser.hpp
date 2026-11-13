@@ -1,4 +1,4 @@
-#include <sabe.persistenceapi/include/util/Stream.hpp>
+#include "SerialStream.hpp"
 
 #if defined(GEODE_IS_WINDOWS)
 #define PLATFORM 0
@@ -15,7 +15,7 @@
 #endif
 
 #define SAVE_HEADER "PCP SAVE FILE"
-#define CURRENT_VERSION 3
+#define CURRENT_VERSION 4
 
 enum class LoadError : char {
 	None,
@@ -34,18 +34,17 @@ struct SaveHeader {
 	LoadError loadError;
 
 	unsigned int saveVersion;
-	gd::string gameVersion;
+	std::string gameVersion;
 	char savedPlatform;
 	unsigned int levelVersion;
 	unsigned int checkpointCount;
 
-	gd::string levelName;
+	std::string levelName;
 };
 
 namespace SaveParser {
 SaveHeader fromStream(
-	persistenceAPI::Stream& stream, GJGameLevel* level = nullptr,
-	bool isEditor = false
+	InStream& stream, GJGameLevel* level = nullptr, bool isEditor = false
 );
 std::optional<SaveHeader> fromPath(
 	std::filesystem::path path, GJGameLevel* level = nullptr,

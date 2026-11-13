@@ -431,7 +431,7 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 		for (std::filesystem::directory_entry entry :
 			  std::filesystem::directory_iterator(
 				  fmt::format(
-					  "{}/saves/{}", string::pathToString(Mod::get()->getSaveDir()),
+					  "{}/saves/{}", Mod::get()->getSaveDir().string(),
 					  subPath
 				  )
 			  )) {
@@ -452,7 +452,7 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 				continue;
 
 			std::filesystem::path path = save.second.path();
-			std::string filename = string::pathToString(path.filename());
+			std::string filename = path.filename().string();
 			std::string filenameNoExtension = string::split(filename, ".").front();
 
 			std::vector<std::string> layerSplit =

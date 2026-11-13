@@ -3,5 +3,5 @@
 using namespace geode::prelude;
 
 class $modify(ModGJBaseGameLayer, GJBaseGameLayer) {
-	void loadStartPosObject();
+	void loadStartPosObject(StartPosObject* spObject);
 };

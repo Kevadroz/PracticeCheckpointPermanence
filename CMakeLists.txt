@@ -16,17 +16,10 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 # Set up the mod binary
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-option(PERSISTENCEAPI_EXTERNAL "Use PersistenceAPI provided in build/geode-deps" OFF)
-
 option(PCP_DEBUG "Debug Mode" OFF)
 
 if(PCP_DEBUG)
 	add_definitions(-DPCP_DEBUG)
-endif()
-
-if(PERSISTENCEAPI_EXTERNAL AND PCP_DEBUG)
-	add_definitions(-DPA_DESCRIBE)
-	add_definitions(-DPA_DEBUG)
 endif()
 
 if (NOT DEFINED ENV{GEODE_SDK})
@@ -37,8 +30,4 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
-if(PERSISTENCEAPI_EXTERNAL)
-    setup_geode_mod(${PROJECT_NAME} EXTERNALS sabe.persistenceapi)
-else()
-    setup_geode_mod(${PROJECT_NAME})
-endif()
+setup_geode_mod(${PROJECT_NAME})

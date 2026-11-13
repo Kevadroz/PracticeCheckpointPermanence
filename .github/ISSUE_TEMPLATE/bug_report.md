@@ -28,7 +28,6 @@ If applicable, add screenshots to help explain your problem.
 - Mod Version: [1.0.0 - current]
 - Geode version: [supported to latest]
 - Dependencies:
-    - PersistenceAPI: [supported to latest]
     - NodeIDs: [supported to latest]
 
 **Additional context**

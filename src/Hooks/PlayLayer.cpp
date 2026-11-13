@@ -57,10 +57,8 @@ $execute {
 		.leak();
 }
 
-bool ModPlayLayer::init(
-	GJGameLevel* level, bool useReplay, bool dontCreateObjects
-) {
-	if (!PlayLayer::init(level, useReplay, dontCreateObjects))
+bool ModPlayLayer::init(GJGameLevel* level, bool dontCreateObjects) {
+	if (!PlayLayer::init(level, dontCreateObjects))
 		return false;
 
 	if (
@@ -131,13 +129,13 @@ void ModPlayLayer::destructor() {
 
 // Copied from PlatformerSaves
 void ModPlayLayer::processCreateObjectsFromSetup() {
-	if (!m_fields->m_startedLoadingObjects) {
+	/*if (!m_fields->m_startedLoadingObjects) {
 		m_fields->m_startedLoadingObjects = true;
 		*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET) = 12;
 		reinterpret_cast<persistenceAPI::PAPlayLayer*>(this)
 			->m_fields->m_uniqueIDBase =
 			*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET);
-	}
+	}*/
 	PlayLayer::processCreateObjectsFromSetup();
 }
 
@@ -198,9 +196,14 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 
 // Can't call switchCurrentCheckpoint here because it would cause infinite
 // recursion in integrated normal mode.
+//
+// (2.2091) Windows: inlined on PauseLayer::onPracticeMode
 void ModPlayLayer::togglePracticeMode(bool enabled) {
 	PlayLayer::togglePracticeMode(enabled);
+	handleTogglePracticeMode(enabled);
+}
 
+void ModPlayLayer::handleTogglePracticeMode(bool enabled) {
 	if (m_fields->m_persistentCheckpointArray == nullptr)
 		return;
 
@@ -214,8 +217,8 @@ void ModPlayLayer::togglePracticeMode(bool enabled) {
 				);
 			if (checkpoint != nullptr) {
 				checkpoint->toggleActive(false);
-				m_currentCheckpoint = nullptr;
-				setStartPosObject(nullptr);
+				// m_currentCheckpoint = nullptr;
+				setActiveStartPosObject(nullptr);
 				m_fields->m_activeCheckpoint = 0;
 			}
 			resetLevelFromStart();

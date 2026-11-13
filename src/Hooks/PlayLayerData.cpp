@@ -1,6 +1,5 @@
 #include "PlayLayer.hpp"
-#include "sabe.persistenceapi/include/util/Stream.hpp"
-#include <cvolton.level-id-api/include/EditorIDs.hpp>
+// #include <cvolton.level-id-api/include/EditorIDs.hpp>
 
 const std::hash<std::string> c_stringHasher;
 
@@ -18,13 +17,12 @@ void ModPlayLayer::serializeCheckpoints() {
 
 	char platform = PLATFORM;
 	unsigned int saveVersion = CURRENT_VERSION;
-	gd::string gameVersion = geode::Loader::get()->getGameVersion();
+	std::string gameVersion = geode::Loader::get()->getGameVersion();
 
-	persistenceAPI::Stream stream;
-	stream.setFile(string::pathToString(getSavePath()), 2, true);
+	OutStream stream(getSavePath().string());
 
 	char header[] = SAVE_HEADER;
-	stream.write(header, sizeof(SAVE_HEADER));
+	stream.write(header, sizeof(header));
 	stream << saveVersion;
 	stream << gameVersion;
 	stream << platform;
@@ -48,20 +46,17 @@ void ModPlayLayer::serializeCheckpoints() {
 			  m_fields->m_persistentCheckpointArray
 		  ))
 		checkpoint->serialize(stream);
-
-	stream.end();
 }
 
 void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
-	std::string savePath = string::pathToString(getSavePath());
+	std::string savePath = getSavePath().string();
 	if (!std::filesystem::exists(savePath))
 		return;
 
-	persistenceAPI::Stream stream;
-	stream.setFile(savePath, 2);
+	InStream stream(savePath);
 
 	SaveHeader header = SaveParser::fromStream(stream, m_level);
 
@@ -86,14 +81,14 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 
 	if (!ignoreVerification) {
 		if (header.loadError != LoadError::None) {
-			stream.end();
+			if (SaveParser::isErrorFallbackCapable(header.loadError))
+				for (PersistentCheckpoint* checkpoint :
+					  CCArrayExt<PersistentCheckpoint*>(
+						  m_fields->m_persistentCheckpointArray
+					  ))
+					checkpoint->m_isFallback = true;
 
-			for (PersistentCheckpoint* checkpoint :
-				  CCArrayExt<PersistentCheckpoint*>(
-					  m_fields->m_persistentCheckpointArray
-				  ))
-
-				return;
+			return;
 		}
 	} else {
 		header.loadError = LoadError::None;
@@ -103,7 +98,7 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 			  m_fields->m_persistentCheckpointArray
 		  )) {
 		// try {
-		checkpoint->deserialize(stream, header);
+		checkpoint->deserialize(stream, header, this);
 		// } catch (...) { // TODO maybe implement exception logging
 		// 	unloadPersistentCheckpoints();
 		// 	log::error("Exception thrown while loading checkpoint");
@@ -114,13 +109,11 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 		// 	return;
 		// }
 	}
-
-	stream.end();
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {
 	switchGhostCheckpoint(0);
-	
+
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
 		  )) {
@@ -129,8 +122,8 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 	m_fields->m_activeCheckpoint = 0;
 
 	if (isInFallbackMode()) {
-		m_currentCheckpoint = nullptr;
-		setStartPosObject(nullptr);
+		m_activatedCheckpoint = nullptr;
+		setActiveStartPosObject(nullptr);
 	}
 
 	m_fields->m_persistentCheckpointArray->removeAllObjects();
@@ -144,8 +137,8 @@ void ModPlayLayer::resave() {
 				m_fields->m_persistentCheckpointArray->objectAtIndex(i)
 			);
 			switchCurrentCheckpoint(i + 1);
-			loadStartPosObject();
-			checkpoint->storeData(m_currentCheckpoint, this);
+			loadStartPosObject(checkpoint->m_fallbackData.startPos);
+			// checkpoint->storeData(m_activatedCheckpoint, this);
 		}
 		m_fields->m_loadError = LoadError::None;
 		serializeCheckpoints();
@@ -162,12 +155,13 @@ std::filesystem::path ModPlayLayer::getSavePath() {
 std::filesystem::path ModPlayLayer::getSavePath(
 	GJGameLevel* level, bool lowDetail, unsigned int saveLayer
 ) {
-	std::string savePath = fmt::format(
-		"{}/saves/", string::pathToString(Mod::get()->getSaveDir())
-	);
+	std::string savePath =
+		fmt::format("{}/saves/", Mod::get()->getSaveDir().string());
 
 	if (level->m_levelType == GJLevelType::Editor)
-		savePath.append(fmt::format("editor/{}", EditorIDs::getID(level)));
+		savePath.append(
+			fmt::format("editor/{}", 0)
+		); // EditorIDs::getID(level)));
 	else
 		savePath.append(fmt::to_string(level->m_levelID.value()));
 

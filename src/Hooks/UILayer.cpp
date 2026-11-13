@@ -133,7 +133,7 @@ void ModUILayer::updateSwitcher() {
 	else
 		m_fields->m_switcherMenu->setColor(ccc3(224, 111, 111));
 
-	gd::string nameString = "";
+	std::string nameString = "";
 	if (checkpoint != nullptr) {
 		if (checkpoint->m_name.empty())
 			nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);

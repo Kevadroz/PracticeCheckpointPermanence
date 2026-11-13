@@ -57,7 +57,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	m_fields->m_activeCheckpoint = nextCheckpoint;
 
 	if (isFallback) {
-		m_currentCheckpoint = nullptr;
+		// m_currentCheckpoint = nullptr;
 		StartPosObject* startPos = nullptr;
 
 		if (nextCheckpoint != 0) {
@@ -69,7 +69,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 				);
 			startPos = checkpoint->m_fallbackData.startPos;
 		}
-		setStartPosObject(startPos);
+		setActiveStartPosObject(startPos);
 	}
 
 	if (

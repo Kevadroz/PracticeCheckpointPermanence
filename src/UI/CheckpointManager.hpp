@@ -50,7 +50,7 @@ public:
 	);
 
 private:
-	gd::string m_checkpointName;
+	std::string m_checkpointName;
 
 	bool
 	init(std::function<void()> updateCallback, PersistentCheckpoint* checkpoint);

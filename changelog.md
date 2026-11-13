@@ -1,3 +1,6 @@
+## Unreleased
+- Ported to GD 2.2091 and Geode 6
+
 ## 1.4.5 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.5) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.5) )
 - Fix Incompatibility with "Labeled Checkpoints" \[[Issue #54](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/54)\]
 - Added the ability to switch checkpoints on the Level End Screen \[[Issue #41](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/41)\]

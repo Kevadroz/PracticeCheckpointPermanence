@@ -1,8 +1,8 @@
 #include "GJBaseGameLayer.hpp"
 #include "PlayLayer.hpp"
 
-void ModGJBaseGameLayer::loadStartPosObject() {
-	GJBaseGameLayer::loadStartPosObject();
+void ModGJBaseGameLayer::loadStartPosObject(StartPosObject* spObject) {
+	GJBaseGameLayer::loadStartPosObject(spObject);
 
 	if (ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get()))
 		for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(

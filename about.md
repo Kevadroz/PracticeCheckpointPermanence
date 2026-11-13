@@ -40,5 +40,3 @@ If you use this mod a lot you may want to <co>delete old save files to **save sp
  - The save files <cr>aren't compatible across platforms</c> (Windows, Android, etc.), when the mod finds an incompatible save file it will refuse to do anything on that save layer until you remove it.
 
  - This mod does not work on editor levels, the save data is very volatile so Start Poses do a better job for this.
-
- - Serialization provided by [PersistenceAPI](https://github.com/0x5abe/PersistenceAPI)

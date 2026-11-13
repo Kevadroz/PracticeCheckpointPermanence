@@ -2,10 +2,8 @@
 #include "../PersistentCheckpoint.hpp"
 
 #include <Geode/modify/PlayLayer.hpp>
-#include <sabe.persistenceapi/include/PersistenceAPI.hpp>
 
 using namespace geode::prelude;
-using namespace persistenceAPI;
 
 class $modify(ModPlayLayer, PlayLayer) {
 	struct Fields {
@@ -32,7 +30,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	};
 
 	// Hooks
-	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects);
+	bool init(GJGameLevel* level, bool dontCreateObjects);
 	void setupHasCompleted();
 	void destructor();
 
@@ -42,6 +40,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void loadFromCheckpoint(CheckpointObject* p0);
 
 	void togglePracticeMode(bool enabled);
+	void handleTogglePracticeMode(bool enabled);
 
 	void storeCheckpoint(CheckpointObject* p0);
 

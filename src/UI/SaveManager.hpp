@@ -11,7 +11,7 @@ struct SaveLayerInfo {
 
 struct LevelSaveInfo {
 	int levelID;
-	gd::string levelName;
+	std::string levelName;
 	std::vector<SaveLayerInfo> standardLayers = std::vector<SaveLayerInfo>();
 	std::vector<SaveLayerInfo> ldmLayers = std::vector<SaveLayerInfo>();
 

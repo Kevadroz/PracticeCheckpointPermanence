@@ -2,20 +2,19 @@
 
 const std::hash<std::string> c_stringHasher;
 
-SaveHeader SaveParser::fromStream(
-	persistenceAPI::Stream& stream, GJGameLevel* level, bool isEditor
-) {
+SaveHeader
+SaveParser::fromStream(InStream& stream, GJGameLevel* level, bool isEditor) {
 	char loadedHeader[sizeof(SAVE_HEADER)];
 	LoadError loadError = LoadError::None;
 	unsigned int saveVersion;
-	gd::string gameVersion;
+	std::string gameVersion;
 	char platform;
 	unsigned int levelVersion;
 	size_t levelStringHash;
-	gd::string levelName;
+	std::string levelName;
 	unsigned int checkpointCount;
 
-	stream.read(loadedHeader, sizeof(SAVE_HEADER));
+	stream.read(loadedHeader, sizeof(loadedHeader));
 	if (strcmp(loadedHeader, SAVE_HEADER) != 0)
 		return SaveHeader{LoadError::BadFile, 0, "Unknown", PLATFORM, 0, 0,
 								"Unknown"};
@@ -43,8 +42,8 @@ SaveHeader SaveParser::fromStream(
 	stream >> levelName;
 	stream >> checkpointCount;
 
-	// if (gameVersion != geode::Loader::get()->getGameVersion())
-	// 	loadError = LoadError::GameVersionMismatch;
+	if (gameVersion != geode::Loader::get()->getGameVersion())
+		loadError = LoadError::GameVersionMismatch;
 
 	if (platform != PLATFORM)
 		loadError = LoadError::OtherPlatform;
@@ -70,19 +69,16 @@ std::optional<SaveHeader> SaveParser::fromPath(
 	if (!std::filesystem::exists(path))
 		return std::nullopt;
 
-	persistenceAPI::Stream stream;
-	stream.setFile(geode::utils::string::pathToString(path), 2);
+	InStream stream(path.string());
 
-	SaveHeader header = fromStream(stream, level, isEditor);
-	stream.end();
-
-	return header;
+	return fromStream(stream, level, isEditor);
 }
 
 bool SaveParser::isErrorFallbackCapable(LoadError error) {
 	switch (error) {
 	case LoadError::GameVersionMismatch:
 	case LoadError::LevelVersionMismatch:
+	case LoadError::OtherPlatform:
 	case LoadError::Crash:
 	case LoadError::ForcedFallback:
 		return true;

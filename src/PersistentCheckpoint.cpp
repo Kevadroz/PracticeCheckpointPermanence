@@ -5,9 +5,19 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/binding/PlayerCheckpoint.hpp>
 
-#include <sabe.persistenceapi/include/PersistenceAPI.hpp>
+void serializeCCPoint(std::ofstream& out, CCPoint p) {
+	out << p.x;
+	out << p.y;
+}
 
-using namespace persistenceAPI;
+CCPoint deserializeCCPoint(std::ifstream& in) {
+	CCPoint p;
+
+	in >> p.x;
+	in >> p.y;
+
+	return p;
+}
 
 PersistentCheckpoint* PersistentCheckpoint::create() {
 	PersistentCheckpoint* checkpoint = new PersistentCheckpoint();
@@ -96,121 +106,36 @@ void PersistentCheckpoint::storeData(
 	}
 }
 
-void PersistentCheckpoint::serialize(Stream& out) {
-	reinterpret_cast<PACCNode*>(m_checkpoint.data())->save(out);
+void PersistentCheckpoint::serialize(OutStream& out) {
+	std::string checkData;
+	// if (m_isFallback)
+	// 	checkData = "";
+	// else
+		checkData = serializeCheckpoint(m_checkpoint);
 
-	bool hasP2 = m_checkpoint->m_player2Checkpoint != nullptr;
-	bool hasGradients = m_checkpoint->m_gradientTriggerObjectArray != nullptr;
-
-	out << hasP2;
-	out << hasGradients;
-
-	reinterpret_cast<PAGJGameState*>(&m_checkpoint->m_gameState)->save(out);
-	reinterpret_cast<PAGJShaderState*>(&m_checkpoint->m_shaderState)->save(out);
-	reinterpret_cast<PAFMODAudioState*>(&m_checkpoint->m_audioState)->save(out);
-
-	reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player1Checkpoint)
-		->save(out);
-	if (hasP2)
-		reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player2Checkpoint)
-			->save(out);
-
-	out << m_checkpoint->m_unke78;
-	out << m_checkpoint->m_unke7c;
-	out << m_checkpoint->m_unke80;
-	out << m_checkpoint->m_ground2Invisible;
-	out << m_checkpoint->m_streakBlend;
-	out << m_checkpoint->m_uniqueID;
-	out << m_checkpoint->m_respawnID;
-	out << m_checkpoint->m_vectorSavedObjectStateRef;
-	out << m_checkpoint->m_vectorActiveSaveObjectState;
-	out << m_checkpoint->m_vectorSpecialSaveObjectState;
-
-	reinterpret_cast<PAEffectManagerState*>(&m_checkpoint->m_effectManagerState)
-		->save(out);
-	if (hasGradients)
-		static_cast<PACCArray*>(m_checkpoint->m_gradientTriggerObjectArray)
-			->save<GradientTriggerObject>(out);
-
-	out << m_checkpoint->m_unk11e8;
-	out << m_checkpoint->m_sequenceTriggerStateUnorderedMap;
-	out << m_checkpoint->m_commandIndex;
+	out << checkData;
 
 	// Custom data
 	out << m_persistentItemCountMap;
 	out << m_persistentTimerItemSet;
 }
 
-void PersistentCheckpoint::deserialize(Stream& in, SaveHeader header) {
-	reinterpret_cast<PACCNode*>(m_checkpoint.data())->load(in);
-
-	bool hasP2;
-	bool hasGradients;
-
-	in >> hasP2;
-	in >> hasGradients;
-
-	// geode::log::debug("p2 {}", hasP2);
-
-	reinterpret_cast<PAGJGameState*>(&m_checkpoint->m_gameState)->load(in);
-	// geode::log::debug("gs");
-	reinterpret_cast<PAGJShaderState*>(&m_checkpoint->m_shaderState)->load(in);
-	// geode::log::debug("ss");
-	reinterpret_cast<PAFMODAudioState*>(&m_checkpoint->m_audioState)->load(in);
-	// geode::log::debug("as");
-
-	m_checkpoint->m_player1Checkpoint = PlayerCheckpoint::create();
-	// Realeased by m_checkpoint's destructor
-	CC_SAFE_RETAIN(m_checkpoint->m_player1Checkpoint);
-	reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player1Checkpoint)
-		->load(in);
-	if (hasP2) {
-		m_checkpoint->m_player2Checkpoint = PlayerCheckpoint::create();
-		// Realeased by m_checkpoint's destructor
-		CC_SAFE_RETAIN(m_checkpoint->m_player2Checkpoint);
-		reinterpret_cast<PAPlayerCheckpoint*>(m_checkpoint->m_player2Checkpoint)
-			->load(in);
-	}
-
-	// geode::log::debug("checkpoints");
-
-	in >> m_checkpoint->m_unke78;
-	in >> m_checkpoint->m_unke7c;
-	in >> m_checkpoint->m_unke80;
-	in >> m_checkpoint->m_ground2Invisible;
-	in >> m_checkpoint->m_streakBlend;
-	in >> m_checkpoint->m_uniqueID;
-	in >> m_checkpoint->m_respawnID;
-	in >> m_checkpoint->m_vectorSavedObjectStateRef;
-	in >> m_checkpoint->m_vectorActiveSaveObjectState;
-	in >> m_checkpoint->m_vectorSpecialSaveObjectState;
-
-	// geode::log::debug("vars");
-
-	reinterpret_cast<PAEffectManagerState*>(&m_checkpoint->m_effectManagerState)
-		->load(in);
-	if (hasGradients) {
-		m_checkpoint->m_gradientTriggerObjectArray = CCArray::create();
-		// Realeased by m_checkpoint's destructor
-		CC_SAFE_RETAIN(m_checkpoint->m_gradientTriggerObjectArray);
-		static_cast<PACCArray*>(m_checkpoint->m_gradientTriggerObjectArray)
-			->load<GradientTriggerObject>(in);
-	}
-
-	// geode::log::debug("gradients {}", hasGradients);
-
-	in >> m_checkpoint->m_unk11e8;
-	in >> m_checkpoint->m_sequenceTriggerStateUnorderedMap;
-	in >> m_checkpoint->m_commandIndex;
-
-	// geode::log::debug("eof {}", m_commandIndex);
+void PersistentCheckpoint::deserialize(
+	InStream& in, SaveHeader header, GJBaseGameLayer* layer
+) {
+	std::string checkData;
+	in >> checkData;
+	// if (checkData.empty())
+	// 	m_isFallback = true;
+	// else
+		deserializeCheckpoint(m_checkpoint, checkData, layer);
 
 	// Custom data
 	in >> m_persistentItemCountMap;
 	in >> m_persistentTimerItemSet;
 }
 
-void PersistentCheckpoint::serializeExternal(Stream& out) {
+void PersistentCheckpoint::serializeExternal(OutStream& out) {
 	out << m_objectPos;
 	out << m_time;
 	out << m_percent;
@@ -257,7 +182,9 @@ void PersistentCheckpoint::serializeExternal(Stream& out) {
 	out << m_fallbackData.cameraZoom;
 }
 
-void PersistentCheckpoint::deserializeExternal(Stream& in, SaveHeader header) {
+void PersistentCheckpoint::deserializeExternal(
+	InStream& in, SaveHeader header
+) {
 	in >> m_objectPos;
 	in >> m_time;
 	in >> m_percent;
@@ -457,7 +384,7 @@ void PersistentCheckpoint::describe() {
 		l_size
 	);
 	int i = 0;
-	for (gd::pair<int, SequenceTriggerState> l_pair :
+	for (std::pair<int, SequenceTriggerState> l_pair :
 		  m_checkpoint->m_sequenceTriggerStateUnorderedMap) {
 		log::info(
 			"[PersistentCheckpoint - describe] m_sequenceTriggerStateUnorderedMap "
@@ -482,7 +409,7 @@ void PersistentCheckpoint::describe() {
 	log::info("[PersistentCheckpoint - describe] m_objectPos: {}", m_objectPos);
 	log::info("[PersistentCheckpoint - describe] m_time: {}", m_time);
 	log::info("[PersistentCheckpoint - describe] m_percent: {}", m_percent);
-	for (gd::pair<int, int> l_pair : m_persistentItemCountMap) {
+	for (std::pair<int, int> l_pair : m_persistentItemCountMap) {
 		log::info(
 			"[PersistentCheckpoint - describe] m_persistentItemCountMap element "
 			"{} key: {}",
@@ -506,7 +433,7 @@ void PersistentCheckpoint::describe() {
 }
 #endif
 
-gd::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
+std::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
 	std::string label;
 	if (isPlatformer) {
 		int time = m_time;

@@ -4,8 +4,6 @@
 #include <Geode/binding/CheckpointObject.hpp>
 #include <Geode/modify/CheckpointObject.hpp>
 
-#include <sabe.persistenceapi/include/util/Stream.hpp>
-
 using namespace geode::prelude;
 
 enum class StartPosGameModes : int {
@@ -39,24 +37,25 @@ struct FallbackData {
 class PersistentCheckpoint : public CCObject {
 public:
 	FallbackData m_fallbackData;
+	bool m_isFallback = false;
 
 	Ref<CheckpointObject> m_checkpoint = nullptr;
 	Ref<GameObject> m_physicalObject = nullptr;
 	CCPoint m_objectPos;
 	double m_time;
 	double m_percent;
-	gd::unordered_map<int, int> m_persistentItemCountMap;
-	gd::unordered_set<int> m_persistentTimerItemSet;
+	std::unordered_map<int, int> m_persistentItemCountMap;
+	std::unordered_set<int> m_persistentTimerItemSet;
 
-	gd::string m_name = "";
+	std::string m_name = "";
 
 	static PersistentCheckpoint* create();
 	void storeData(CheckpointObject* checkpoint, PlayLayer* playLayer);
 
-	void serialize(persistenceAPI::Stream& out);
-	void deserialize(persistenceAPI::Stream& in, SaveHeader);
-	void serializeExternal(persistenceAPI::Stream& out);
-	void deserializeExternal(persistenceAPI::Stream& in, SaveHeader);
+	void serialize(OutStream& out);
+	void deserialize(InStream& in, SaveHeader, GJBaseGameLayer* layer);
+	void serializeExternal(OutStream& out);
+	void deserializeExternal(InStream& in, SaveHeader);
 	void setupPhysicalObject();
 	void toggleActive(bool active, bool isGhost = false);
 
@@ -64,7 +63,7 @@ public:
 	void describe();
 #endif
 
-	gd::string getDefaultLabel(bool isPlatformer);
+	std::string getDefaultLabel(bool isPlatformer);
 
 	static StartPosGameModes
 	getGamemodeFromCheckpoint(PlayerCheckpoint* checkpoint);

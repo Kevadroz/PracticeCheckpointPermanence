@@ -1,9 +1,9 @@
 {
-	"geode": "5.10.1",
+	"geode": "6.0.0-alpha.1",
 	"gd": {
-		"win": "2.2081",
-		"mac": "2.2081",
-		"android": "2.2081"
+		"win": "2.2091",
+		"mac": "2.2091",
+		"android": "2.2091"
 	},
 	"id": "kevadroz.practicecheckpointpermanence",
 	"name": "Practice Checkpoint Permanence",
@@ -19,9 +19,11 @@
 		"utility"
 	],
 	"dependencies": {
-		"geode.node-ids": ">=v1.22.0",
-		"sabe.persistenceapi": ">=v1.2.0",
-		"cvolton.level-id-api": ">=2.0.0"
+		"geode.node-ids": ">=v1.23.3",
+		"cvolton.level-id-api": {
+			"version": ">=2.0.0",
+			"required": false
+		}
 	},
 	"incompatibilities": {
 		"hiimjasmine00.checkpoint-switcher": ">=v0.0.0"

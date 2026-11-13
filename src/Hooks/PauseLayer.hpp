@@ -11,4 +11,5 @@ class $modify(ModPauseLayer, PauseLayer) {
 	}
 
 	void customSetup();
+	void onPracticeMode(CCObject* sender);
 };

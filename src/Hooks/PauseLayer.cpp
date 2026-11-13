@@ -62,7 +62,14 @@ void ModPauseLayer::customSetup() {
 		}
 	);
 
-	CCMenu* menu = static_cast<CCMenu*>(getChildByID("right-button-menu"));
-	menu->addChild(button);
-	menu->updateLayout();
+	CCMenu* menu = static_cast<CCMenu*>(m_mainLayer->getChildByID("right-button-menu"));
+	if (menu) {
+		menu->addChild(button);
+		menu->updateLayout();
+	}
+}
+
+void ModPauseLayer::onPracticeMode(CCObject* sender) {
+	PauseLayer::onPracticeMode(sender);
+	static_cast<ModPlayLayer*>(PlayLayer::get())->handleTogglePracticeMode(true);
 }
