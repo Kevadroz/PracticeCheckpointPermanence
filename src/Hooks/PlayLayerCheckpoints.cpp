@@ -16,10 +16,28 @@ void ModPlayLayer::previousCheckpoint() {
 
 // This may need a rewrite.
 void ModPlayLayer::switchCurrentCheckpoint(
-	unsigned int nextCheckpoint, bool ignoreLastCheckpoint, bool noVisualUpdates
+	unsigned int nextIndex, bool ignoreLastCheckpoint, bool noVisualUpdates
 ) {
 	if (!isPersistentSystemActive())
 		return;
+
+	unsigned int checkpointCount =
+		m_fields->m_persistentCheckpointArray->count();
+
+	bool lastExists = 0 < m_fields->m_activeCheckpoint &&
+							m_fields->m_activeCheckpoint <= checkpointCount;
+	bool nextExists = 0 < nextIndex && nextIndex <= checkpointCount;
+	PersistentCheckpoint* lastCheckpoint;
+	if (lastExists)
+		lastCheckpoint = reinterpret_cast<PersistentCheckpoint*>(
+			(m_fields->m_persistentCheckpointArray)
+				->objectAtIndex(m_fields->m_activeCheckpoint - 1)
+		);
+	PersistentCheckpoint* nextCheckpoint;
+	if (nextExists)
+		nextCheckpoint = reinterpret_cast<PersistentCheckpoint*>(
+			(m_fields->m_persistentCheckpointArray)->objectAtIndex(nextIndex - 1)
+		);
 
 	if (m_levelEndAnimationStarted) {
 		CCNode* endLayer = getChildByID("EndLevelLayer");
@@ -30,51 +48,30 @@ void ModPlayLayer::switchCurrentCheckpoint(
 			PlatformToolbox::hideCursor();
 	}
 
-	bool isFallback = isInFallbackMode();
-
 	removeAllCheckpoints();
 
-	if (m_fields->m_activeCheckpoint == nextCheckpoint)
+	if (m_fields->m_activeCheckpoint == nextIndex)
 		return;
 
-	if (!ignoreLastCheckpoint && m_fields->m_activeCheckpoint != 0)
-		reinterpret_cast<PersistentCheckpoint*>(
-			m_fields->m_persistentCheckpointArray->objectAtIndex(
-				m_fields->m_activeCheckpoint - 1
-			)
-		)
-			->toggleActive(false);
+	if (!ignoreLastCheckpoint && lastExists)
+		lastCheckpoint->toggleActive(false);
 
-	if (!noVisualUpdates && nextCheckpoint != 0) {
-		reinterpret_cast<PersistentCheckpoint*>(
-			(m_fields->m_persistentCheckpointArray)
-				->objectAtIndex(nextCheckpoint - 1)
-		)
-			->toggleActive(true);
+	if (!noVisualUpdates && nextExists) {
+		nextCheckpoint->toggleActive(true);
 	}
 
 	switchGhostCheckpoint(0);
-	m_fields->m_activeCheckpoint = nextCheckpoint;
+	m_fields->m_activeCheckpoint = nextIndex;
 
-	if (isFallback) {
-		// m_currentCheckpoint = nullptr;
-		StartPosObject* startPos = nullptr;
+	if (lastExists && lastCheckpoint->m_isFallback)
+		setActiveStartPosObject(nullptr);
 
-		if (nextCheckpoint != 0) {
-			PersistentCheckpoint* checkpoint =
-				reinterpret_cast<PersistentCheckpoint*>(
-					m_fields->m_persistentCheckpointArray->objectAtIndex(
-						nextCheckpoint - 1
-					)
-				);
-			startPos = checkpoint->m_fallbackData.startPos;
-		}
-		setActiveStartPosObject(startPos);
-	}
+	if (nextExists && nextCheckpoint->m_isFallback)
+		setActiveStartPosObject(nextCheckpoint->m_fallbackData.startPos);
 
 	if (
 		Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
-		(nextCheckpoint != 0) != m_isPracticeMode
+		(nextIndex != 0) != m_isPracticeMode
 	) {
 		PlayLayer::togglePracticeMode(!m_isPracticeMode);
 		if (!m_isPracticeMode)
@@ -96,7 +93,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 		updateModUI();
 
 	PlayLayer::resetLevel();
-	if (!noVisualUpdates && isFallback)
+	if (!noVisualUpdates && nextExists && nextCheckpoint->m_isFallback)
 		startMusic();
 }
 
@@ -125,9 +122,11 @@ void ModPlayLayer::markPersistentCheckpoint() {
 	if (m_playerDied || m_levelEndAnimationStarted || !m_isPracticeMode)
 		return;
 
-	if (m_fields->m_loadError != LoadError::None) {
+	if (isUnloadableError()) {
 		updateModUI();
 		return;
+	} else if (isFallbackMode()) {
+		m_fields->m_loadError = LoadError::None;
 	}
 
 	PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
@@ -183,7 +182,7 @@ unsigned int ModPlayLayer::storePersistentCheckpoint(
 void ModPlayLayer::removePersistentCheckpoint(
 	PersistentCheckpoint* checkpoint
 ) {
-	if (m_fields->m_loadError != LoadError::None) {
+	if (isUnloadableError()) {
 		updateModUI();
 		return;
 	}
@@ -220,7 +219,7 @@ void ModPlayLayer::removePersistentCheckpoint(
 }
 
 void ModPlayLayer::removeCurrentPersistentCheckpoint() {
-	if (m_fields->m_loadError != LoadError::None) {
+	if (isUnloadableError()) {
 		updateModUI();
 		return;
 	}
@@ -237,7 +236,7 @@ void ModPlayLayer::removeCurrentPersistentCheckpoint() {
 }
 
 void ModPlayLayer::removeGhostPersistentCheckpoint() {
-	if (m_fields->m_loadError != LoadError::None)
+	if (isUnloadableError())
 		return;
 
 	if (m_fields->m_ghostActiveCheckpoint > 0) {

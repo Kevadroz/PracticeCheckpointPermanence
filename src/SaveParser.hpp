@@ -44,7 +44,7 @@ struct SaveHeader {
 
 namespace SaveParser {
 SaveHeader fromStream(
-	InStream& stream, GJGameLevel* level = nullptr, bool isEditor = false
+	InStream& stream, GJGameLevel* level = nullptr, bool isEditor = false, bool ignoreVerification = false
 );
 std::optional<SaveHeader> fromPath(
 	std::filesystem::path path, GJGameLevel* level = nullptr,

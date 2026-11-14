@@ -128,7 +128,7 @@ void ModUILayer::updateSwitcher() {
 
 	if (loadError == LoadError::None)
 		m_fields->m_switcherMenu->setColor(ccWHITE);
-	else if (playLayer->isInFallbackMode())
+	else if (SaveParser::isErrorFallbackCapable(loadError))
 		m_fields->m_switcherMenu->setColor(ccc3(224, 166, 111));
 	else
 		m_fields->m_switcherMenu->setColor(ccc3(224, 111, 111));
@@ -175,11 +175,8 @@ void ModUILayer::updateSwitcher() {
 	case LoadError::BadFile:
 		errorString = "BAD FILE";
 		break;
-	case LoadError::ForcedFallback:
-		errorString = "FALLBACK";
-		break;
 	default:
-		errorString = "";
+		errorString = "FALLBACK";
 		break;
 	}
 
@@ -190,7 +187,8 @@ void ModUILayer::updateSwitcher() {
 	);
 	m_fields->m_switcherMenu->m_layerLabel->setString(layerString.c_str());
 	m_fields->m_switcherMenu->m_errorLabel->setVisible(
-		playLayer->m_fields->m_loadError != LoadError::None
+		playLayer->m_fields->m_loadError != LoadError::None ||
+		playLayer->isFallbackCheckpoint()
 	);
 	m_fields->m_switcherMenu->m_errorLabel->setString(errorString);
 

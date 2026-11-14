@@ -22,6 +22,7 @@ bool CheckpointManager::init() {
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 	bool hasCheckpoints =
 		playLayer->m_fields->m_persistentCheckpointArray->count() > 0;
+	LoadError loadError = playLayer->m_fields->m_loadError;
 
 	m_noElasticity = true;
 
@@ -40,8 +41,10 @@ bool CheckpointManager::init() {
 		CCSprite::createWithSpriteFrameName("GJ_deleteBtn_001.png");
 	m_deleteButton = CCMenuItemExt::createSpriteExtra(
 		deleteSprite, [this, playLayer](CCMenuItemSpriteExtra* deleteButton) {
-			if (playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
-				 playLayer->m_fields->m_loadError != LoadError::None)
+			if (
+				playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
+				playLayer->m_fields->m_loadError != LoadError::None
+			)
 				geode::createQuickPopup(
 					"Delete All",
 					"Delete all saved checkpoints for this layer?\n"
@@ -104,8 +107,9 @@ bool CheckpointManager::init() {
 		moveLayerBackSpr, [this, playLayer](CCMenuItemSpriteExtra* sender) {
 			playLayer->updateSaveLayerCount();
 			unsigned int saveLayer = playLayer->m_fields->m_activeSaveLayer;
-			if (saveLayer > 0 &&
-				 saveLayer < playLayer->m_fields->m_saveLayerCount) {
+			if (
+				saveLayer > 0 && saveLayer < playLayer->m_fields->m_saveLayerCount
+			) {
 				playLayer->swapSaveLayers(saveLayer, saveLayer - 1);
 				playLayer->m_fields->m_activeSaveLayer--;
 
@@ -179,22 +183,14 @@ bool CheckpointManager::init() {
 	);
 	m_errorButton->m_baseScale = .6;
 	m_errorButton->setScale(.6);
-	m_errorButton->setVisible(
-		playLayer->m_fields->m_loadError != LoadError::None
-	);
+	m_errorButton->setVisible(loadError != LoadError::None);
 
 	ButtonSprite* saveMenuButtonSprite = ButtonSprite::create("");
 	m_forceLoadButton = CCMenuItemExt::createSpriteExtra(
 		saveMenuButtonSprite,
-		[this, playLayer](CCMenuItemSpriteExtra* forceButton) {
-			if (playLayer->m_fields->m_loadError != LoadError::None &&
-				 !playLayer->isInFallbackMode())
-				forceLoadPopup();
-			else
-				saveLoadMenu();
-		}
+		[this](CCMenuItemSpriteExtra* forceButton) { forceLoadPopup(); }
 	);
-	bool forceLoadButtonActive = playLayer->isInFallbackMode();
+	bool forceLoadButtonActive = playLayer->isUnloadableError();
 	m_forceLoadButton->setVisible(forceLoadButtonActive);
 	m_forceLoadButton->setEnabled(forceLoadButtonActive);
 	m_forceLoadButton->m_baseScale = 0.7;
@@ -356,25 +352,30 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	);
 
 	const char* saveMenuString = "Save / Load";
-	if (playLayer->m_fields->m_loadError != LoadError::None &&
-		 !playLayer->isInFallbackMode())
+	if (
+		playLayer->m_fields->m_loadError != LoadError::None &&
+		!playLayer->isFallbackCheckpoint()
+	)
 		saveMenuString = "Force Load";
 	typeinfo_cast<ButtonSprite*>(m_forceLoadButton->getChildByIndex(0))
 		->setString(saveMenuString);
+	bool forceLoadButtonActive = playLayer->isUnloadableError();
 	m_forceLoadButton->updateSprite();
-	m_forceLoadButton->setVisible(
-		playLayer->m_fields->m_loadError != LoadError::None
-	);
+	m_forceLoadButton->setVisible(forceLoadButtonActive);
+	m_forceLoadButton->setEnabled(forceLoadButtonActive);
 
 	float layerSwitchOffset =
 		m_saveLayerLabel->getScaledContentWidth() / 2.f + 15.f;
-	if (AnchorLayoutOptions* options = typeinfo_cast<AnchorLayoutOptions*>(
-			 m_previousLayerBtn->getLayoutOptions()
-		 ))
+	if (
+		AnchorLayoutOptions* options = typeinfo_cast<AnchorLayoutOptions*>(
+			m_previousLayerBtn->getLayoutOptions()
+		)
+	)
 		options->setOffset(ccp(-layerSwitchOffset, options->getOffset().y));
-	if (AnchorLayoutOptions* options = typeinfo_cast<AnchorLayoutOptions*>(
-			 m_nextLayerBtn->getLayoutOptions()
-		 ))
+	if (
+		AnchorLayoutOptions* options =
+			typeinfo_cast<AnchorLayoutOptions*>(m_nextLayerBtn->getLayoutOptions())
+	)
 		options->setOffset(ccp(layerSwitchOffset, options->getOffset().y));
 
 	if (playLayer->m_fields->m_saveLayerCount > 0) {
@@ -524,66 +525,28 @@ CCNode* CheckpointManager::createCheckpointCell(
 
 	return menu;
 }
-
-void CheckpointManager::saveLoadMenu() {
-	geode::createQuickPopup(
-		"Save / Load",
-		"<cy>Resave</c> allows you to manually save the current checkpoint layer "
-		"or "
-		"regenerate checkpoints in <co>Fallback Mode</c>.\n"
-		"<cr>Force Load</c> allows you to load a checkpoint layer even if there "
-		"are errors, this will likely result in a crash.",
-		"Resave", "Force Load",
-		[this](auto, bool option) {
-			if (option)
-				forceLoadPopup();
-			else
-				resavePopup();
-		},
-		true, true
-	);
-}
-void CheckpointManager::resavePopup() {
-	geode::createQuickPopup(
-		"Resave",
-		"Manually save the current checkpoint layer.\n"
-		"There is usually no reason to do this as saving is automatic.\n"
-		"However, in <co>Fallback Mode</c> this will turn the fallback data into "
-		"usable checkpoints.\n"
-		"Fallback data isn't very accurate, but it should be good enough for "
-		"most classic mode levels.\n"
-		"This will also restart the level, so don't do it on the middle of a "
-		"run.",
-		"Cancel", "Confirm", [this](auto, bool confirmed) {
-			if (confirmed) {
-				static_cast<ModPlayLayer*>(PlayLayer::get())->resave();
-
-				updateUIElements();
-			}
-		}
-	);
-}
 void CheckpointManager::forceLoadPopup() {
 	geode::createQuickPopup(
 		"Force Load",
 		"This will force load and resave this layer.\n"
 		"When switching to a checkpoint <cr>the game will likely crash or the "
-		"level will break</c>.\n"
+		"level will break</c>."
+		"The game may also crash in the middle of this process.\n"
 		"If things go very wrong you can try opening the checkpoint "
 		"manager outside of practice mode to remove all checkpoints or using the "
 		"save manager in the GD saved levels menu.\n"
 		"Are you sure about this?",
 		"No", "YOLO", [this](auto, bool confirmed) {
-			if (confirmed) {
-				ModPlayLayer* playLayer =
-					static_cast<ModPlayLayer*>(PlayLayer::get());
+			if (!confirmed)
+				return;
 
-				playLayer->deserializeCheckpoints(true);
-				playLayer->serializeCheckpoints();
+			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 
-				updateUIElements();
-				playLayer->updateModUI();
-			}
+			playLayer->deserializeCheckpoints(true);
+			playLayer->serializeCheckpoints();
+
+			updateUIElements();
+			playLayer->updateModUI();
 		}
 	);
 }
@@ -663,6 +626,7 @@ const char* CheckpointManager::getErrorMessage(LoadError error) {
 	case LoadError::BadFile:
 		return "The save file is corrupt or is not a save file.";
 	case LoadError::ForcedFallback:
-		return "Fallback mode is forcibly enabled. You can disable it in the mod settings";
+		return "Fallback mode is forcibly enabled. You can disable it in the mod "
+				 "settings";
 	}
 }

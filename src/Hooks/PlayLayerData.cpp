@@ -4,7 +4,7 @@
 const std::hash<std::string> c_stringHasher;
 
 void ModPlayLayer::serializeCheckpoints() {
-	if (m_fields->m_loadError != LoadError::None)
+	if (isUnloadableError())
 		return;
 
 	unsigned int checkpointCount =
@@ -24,8 +24,8 @@ void ModPlayLayer::serializeCheckpoints() {
 	char header[] = SAVE_HEADER;
 	stream.write(header, sizeof(header));
 	stream << saveVersion;
-	stream << gameVersion;
 	stream << platform;
+	stream << gameVersion;
 	if (m_level->m_levelType != GJLevelType::Editor)
 		stream << m_level->m_levelVersion;
 	else {
@@ -52,22 +52,33 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
+	geode::log::debug("0");
+
 	std::string savePath = getSavePath().string();
 	if (!std::filesystem::exists(savePath))
 		return;
 
+	removeAllCheckpoints();
+
 	InStream stream(savePath);
 
-	SaveHeader header = SaveParser::fromStream(stream, m_level);
+	SaveHeader header =
+		SaveParser::fromStream(stream, m_level, false, ignoreVerification);
 
-	if (Mod::get()->getSettingValue<bool>("debug-force-fallback"))
+	if (
+		Mod::get()->getSettingValue<bool>("debug-force-fallback") &&
+		!ignoreVerification
+	)
 		header.loadError = LoadError::ForcedFallback;
-
-	removeAllCheckpoints();
 
 	m_fields->m_loadError = header.loadError;
 
-	if (header.loadError != LoadError::None && !isInFallbackMode())
+	geode::log::debug("1");
+
+	if (
+		header.loadError != LoadError::None &&
+		!SaveParser::isErrorFallbackCapable(header.loadError)
+	)
 		return;
 
 	for (unsigned int i = header.checkpointCount; i > 0; i--) {
@@ -79,19 +90,19 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 		storePersistentCheckpoint(checkpoint, false);
 	}
 
-	if (!ignoreVerification) {
-		if (header.loadError != LoadError::None) {
-			if (SaveParser::isErrorFallbackCapable(header.loadError))
-				for (PersistentCheckpoint* checkpoint :
-					  CCArrayExt<PersistentCheckpoint*>(
-						  m_fields->m_persistentCheckpointArray
-					  ))
-					checkpoint->m_isFallback = true;
+	log::debug("C: {}", m_fields->m_persistentCheckpointArray->count());
 
-			return;
-		}
-	} else {
-		header.loadError = LoadError::None;
+	geode::log::debug("2");
+
+	if (header.loadError != LoadError::None) {
+		if (SaveParser::isErrorFallbackCapable(header.loadError))
+			for (PersistentCheckpoint* checkpoint :
+				  CCArrayExt<PersistentCheckpoint*>(
+					  m_fields->m_persistentCheckpointArray
+				  ))
+				checkpoint->m_isFallback = true;
+
+		return;
 	}
 
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
@@ -109,10 +120,14 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 		// 	return;
 		// }
 	}
+
+	geode::log::debug("3");
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {
 	switchGhostCheckpoint(0);
+
+	bool isFallback = isFallbackCheckpoint();
 
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
@@ -121,31 +136,10 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 	}
 	m_fields->m_activeCheckpoint = 0;
 
-	if (isInFallbackMode()) {
-		m_activatedCheckpoint = nullptr;
+	if (isFallback)
 		setActiveStartPosObject(nullptr);
-	}
 
 	m_fields->m_persistentCheckpointArray->removeAllObjects();
-}
-
-void ModPlayLayer::resave() {
-	if (isInFallbackMode()) {
-		for (unsigned int i = 0;
-			  i < m_fields->m_persistentCheckpointArray->count(); ++i) {
-			PersistentCheckpoint* checkpoint = static_cast<PersistentCheckpoint*>(
-				m_fields->m_persistentCheckpointArray->objectAtIndex(i)
-			);
-			switchCurrentCheckpoint(i + 1);
-			loadStartPosObject(checkpoint->m_fallbackData.startPos);
-			// checkpoint->storeData(m_activatedCheckpoint, this);
-		}
-		m_fields->m_loadError = LoadError::None;
-		serializeCheckpoints();
-
-		switchCurrentCheckpoint(0);
-	} else
-		serializeCheckpoints();
 }
 
 std::filesystem::path ModPlayLayer::getSavePath() {

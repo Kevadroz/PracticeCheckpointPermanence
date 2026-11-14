@@ -36,8 +36,6 @@ private:
 
 	void updateUIElements(bool resetListPosition = false);
 
-	void saveLoadMenu();
-	void resavePopup();
 	void forceLoadPopup();
 
 	static const char* getErrorMessage(LoadError error);

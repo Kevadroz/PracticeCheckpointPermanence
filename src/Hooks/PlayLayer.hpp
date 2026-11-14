@@ -49,13 +49,14 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void updateModUI();
 	bool isPersistentSystemActive();
 	bool isModUIVisible();
-	bool isInFallbackMode();
+	bool isFallbackCheckpoint();
+	bool isFallbackMode();
+	bool isUnloadableError();
 
 	// Data
 	void serializeCheckpoints();
 	void deserializeCheckpoints(bool ignoreVerification = false);
 	void unloadPersistentCheckpoints();
-	void resave();
 
 	std::filesystem::path getSavePath();
 	static std::filesystem::path

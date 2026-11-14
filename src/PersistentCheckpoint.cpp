@@ -108,9 +108,9 @@ void PersistentCheckpoint::storeData(
 
 void PersistentCheckpoint::serialize(OutStream& out) {
 	std::string checkData;
-	// if (m_isFallback)
-	// 	checkData = "";
-	// else
+	if (m_isFallback)
+		checkData = "";
+	else
 		checkData = serializeCheckpoint(m_checkpoint);
 
 	out << checkData;
@@ -125,9 +125,9 @@ void PersistentCheckpoint::deserialize(
 ) {
 	std::string checkData;
 	in >> checkData;
-	// if (checkData.empty())
-	// 	m_isFallback = true;
-	// else
+	if (checkData.empty())
+		m_isFallback = true;
+	else
 		deserializeCheckpoint(m_checkpoint, checkData, layer);
 
 	// Custom data

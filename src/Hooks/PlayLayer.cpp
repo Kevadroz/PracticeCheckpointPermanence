@@ -141,7 +141,7 @@ void ModPlayLayer::processCreateObjectsFromSetup() {
 
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (m_fields->m_loadError == LoadError::None) {
+	if (m_fields->m_loadError == LoadError::None && !isFallbackCheckpoint()) {
 		if (isPersistentSystemActive() && m_isPracticeMode) {
 			unsigned int loadIndex = 0;
 			if (m_fields->m_ghostActiveCheckpoint > 0) {
@@ -217,7 +217,6 @@ void ModPlayLayer::handleTogglePracticeMode(bool enabled) {
 				);
 			if (checkpoint != nullptr) {
 				checkpoint->toggleActive(false);
-				// m_currentCheckpoint = nullptr;
 				setActiveStartPosObject(nullptr);
 				m_fields->m_activeCheckpoint = 0;
 			}
@@ -394,6 +393,26 @@ bool ModPlayLayer::isModUIVisible() {
 	return false;
 }
 
-bool ModPlayLayer::isInFallbackMode() {
-	return SaveParser::isErrorFallbackCapable(m_fields->m_loadError);
+bool ModPlayLayer::isFallbackCheckpoint() {
+	if (m_fields->m_activeCheckpoint > 0) {
+		PersistentCheckpoint* checkpoint =
+			reinterpret_cast<PersistentCheckpoint*>(
+				m_fields->m_persistentCheckpointArray->objectAtIndex(
+					m_fields->m_activeCheckpoint - 1
+				)
+			);
+		return checkpoint->m_isFallback;
+	}
+
+	return false;
+}
+
+bool ModPlayLayer::isFallbackMode() {
+	return m_fields->m_loadError != LoadError::None &&
+			 SaveParser::isErrorFallbackCapable(m_fields->m_loadError);
+}
+
+bool ModPlayLayer::isUnloadableError() {
+	return m_fields->m_loadError != LoadError::None &&
+			 !SaveParser::isErrorFallbackCapable(m_fields->m_loadError);
 }
