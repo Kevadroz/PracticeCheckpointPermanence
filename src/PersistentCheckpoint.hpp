@@ -37,7 +37,7 @@ struct FallbackData {
 class PersistentCheckpoint : public CCObject {
 public:
 	FallbackData m_fallbackData;
-	bool m_isFallback = false;
+	bool m_isDegraded = false;
 
 	Ref<CheckpointObject> m_checkpoint = nullptr;
 	Ref<GameObject> m_physicalObject = nullptr;
@@ -58,10 +58,6 @@ public:
 	void deserializeExternal(InStream& in, SaveHeader);
 	void setupPhysicalObject();
 	void toggleActive(bool active, bool isGhost = false);
-
-#if defined(PA_DEBUG) && defined(PA_DESCRIBE)
-	void describe();
-#endif
 
 	std::string getDefaultLabel(bool isPlatformer);
 

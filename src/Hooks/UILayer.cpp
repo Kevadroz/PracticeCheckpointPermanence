@@ -152,7 +152,9 @@ void ModUILayer::updateSwitcher() {
 		"Lay {}/{}", playLayer->m_fields->m_activeSaveLayer + 1,
 		playLayer->m_fields->m_saveLayerCount
 	);
-	const char* errorString;
+	const char* errorString = "";
+	if (checkpoint != nullptr && checkpoint->m_isDegraded)
+		errorString = "DEGRADED";
 	switch (loadError) {
 	case LoadError::Crash:
 		errorString = "BAD DATA";
@@ -175,8 +177,10 @@ void ModUILayer::updateSwitcher() {
 	case LoadError::BadFile:
 		errorString = "BAD FILE";
 		break;
-	default:
+	case LoadError::ForcedFallback:
 		errorString = "FALLBACK";
+		break;
+	default:
 		break;
 	}
 
@@ -188,23 +192,27 @@ void ModUILayer::updateSwitcher() {
 	m_fields->m_switcherMenu->m_layerLabel->setString(layerString.c_str());
 	m_fields->m_switcherMenu->m_errorLabel->setVisible(
 		playLayer->m_fields->m_loadError != LoadError::None ||
-		playLayer->isFallbackCheckpoint()
+		playLayer->isDegradedCheckpoint()
 	);
 	m_fields->m_switcherMenu->m_errorLabel->setString(errorString);
 
-	const char* checkpointFrameName;
+	CCSpriteFrame* checkpointSprite;
 	GLubyte checkpointSpriteOpacity;
 
 	if (playLayer->m_fields->m_activeCheckpoint > 0) {
-		checkpointFrameName = "activeCheckpoint.png"_spr;
+		checkpointSprite = checkpoint->m_physicalObject->displayFrame();
 		checkpointSpriteOpacity = 255;
 	} else {
-		checkpointFrameName = "inactiveCheckpoint.png"_spr;
+		checkpointSprite = CCSpriteFrameCache::get()->spriteFrameByName(
+			playLayer->m_fields->m_loadError == LoadError::None
+				? "inactiveCheckpoint.png"_spr
+				: "inactiveDegradedCheckpoint.png"_spr
+		);
 		checkpointSpriteOpacity = 192;
 	}
 
 	m_fields->m_switcherMenu->m_checkpointSprite->setDisplayFrame(
-		CCSpriteFrameCache::get()->spriteFrameByName(checkpointFrameName)
+		checkpointSprite
 	);
 
 	double labelActiveOpacity =

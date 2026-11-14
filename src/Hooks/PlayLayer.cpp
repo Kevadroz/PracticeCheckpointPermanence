@@ -127,21 +127,9 @@ void ModPlayLayer::destructor() {
 	PlayLayer::~PlayLayer();
 }
 
-// Copied from PlatformerSaves
-void ModPlayLayer::processCreateObjectsFromSetup() {
-	/*if (!m_fields->m_startedLoadingObjects) {
-		m_fields->m_startedLoadingObjects = true;
-		*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET) = 12;
-		reinterpret_cast<persistenceAPI::PAPlayLayer*>(this)
-			->m_fields->m_uniqueIDBase =
-			*reinterpret_cast<int*>(geode::base::get() + UNIQUE_ID_OFFSET);
-	}*/
-	PlayLayer::processCreateObjectsFromSetup();
-}
-
 void ModPlayLayer::resetLevel() {
 	PersistentCheckpoint* checkpoint = nullptr;
-	if (m_fields->m_loadError == LoadError::None && !isFallbackCheckpoint()) {
+	if (m_fields->m_loadError == LoadError::None && !isDegradedCheckpoint()) {
 		if (isPersistentSystemActive() && m_isPracticeMode) {
 			unsigned int loadIndex = 0;
 			if (m_fields->m_ghostActiveCheckpoint > 0) {
@@ -180,13 +168,15 @@ void ModPlayLayer::loadFromCheckpoint(CheckpointObject* checkpoint) {
 	if (persistentCheckpoint != nullptr) {
 		m_timePlayed = persistentCheckpoint->m_time;
 
-		m_effectManager->m_persistentItemCountMap = {};
-		m_effectManager->m_persistentTimerItemSet = {};
+		if (!persistentCheckpoint->m_isDegraded) {
+			m_effectManager->m_persistentItemCountMap = {};
+			m_effectManager->m_persistentTimerItemSet = {};
+		}
 	}
 
 	PlayLayer::loadFromCheckpoint(checkpoint);
 
-	if (persistentCheckpoint != nullptr) {
+	if (persistentCheckpoint != nullptr && !persistentCheckpoint->m_isDegraded) {
 		m_effectManager->m_persistentItemCountMap =
 			persistentCheckpoint->m_persistentItemCountMap;
 		m_effectManager->m_persistentTimerItemSet =
@@ -393,7 +383,7 @@ bool ModPlayLayer::isModUIVisible() {
 	return false;
 }
 
-bool ModPlayLayer::isFallbackCheckpoint() {
+bool ModPlayLayer::isDegradedCheckpoint() {
 	if (m_fields->m_activeCheckpoint > 0) {
 		PersistentCheckpoint* checkpoint =
 			reinterpret_cast<PersistentCheckpoint*>(
@@ -401,7 +391,7 @@ bool ModPlayLayer::isFallbackCheckpoint() {
 					m_fields->m_activeCheckpoint - 1
 				)
 			);
-		return checkpoint->m_isFallback;
+		return checkpoint->m_isDegraded;
 	}
 
 	return false;

@@ -354,7 +354,7 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	const char* saveMenuString = "Save / Load";
 	if (
 		playLayer->m_fields->m_loadError != LoadError::None &&
-		!playLayer->isFallbackCheckpoint()
+		!playLayer->isDegradedCheckpoint()
 	)
 		saveMenuString = "Force Load";
 	typeinfo_cast<ButtonSprite*>(m_forceLoadButton->getChildByIndex(0))
@@ -508,20 +508,6 @@ CCNode* CheckpointManager::createCheckpointCell(
 	menu->addChildAtPosition(label, geode::Anchor::Left, ccp(50, 0));
 	menu->addChildAtPosition(renameBtn, geode::Anchor::Right, ccp(-55, 0));
 	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-20, 0));
-
-#if defined(PA_DEBUG) && defined(PA_DESCRIBE)
-	CCSprite* describeSprite =
-		CCSprite::createWithSpriteFrameName("GJ_pasteBtn_001.png");
-	CCMenuItemSpriteExtra* describeBtn = CCMenuItemExt::createSpriteExtra(
-		describeSprite, [checkpoint, selectBtn](CCMenuItemSpriteExtra* sender) {
-			selectBtn->activate();
-			checkpoint->describe();
-		}
-	);
-	describeBtn->m_baseScale = .75;
-	describeBtn->setScale(.75);
-	menu->addChildAtPosition(describeBtn, geode::Anchor::Right, ccp(-90, 0));
-#endif
 
 	return menu;
 }

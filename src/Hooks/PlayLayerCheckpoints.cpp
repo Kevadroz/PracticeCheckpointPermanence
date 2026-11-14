@@ -63,10 +63,10 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	switchGhostCheckpoint(0);
 	m_fields->m_activeCheckpoint = nextIndex;
 
-	if (lastExists && lastCheckpoint->m_isFallback)
+	if (lastExists && lastCheckpoint->m_isDegraded)
 		setActiveStartPosObject(nullptr);
 
-	if (nextExists && nextCheckpoint->m_isFallback)
+	if (nextExists && nextCheckpoint->m_isDegraded)
 		setActiveStartPosObject(nextCheckpoint->m_fallbackData.startPos);
 
 	if (
@@ -93,7 +93,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 		updateModUI();
 
 	PlayLayer::resetLevel();
-	if (!noVisualUpdates && nextExists && nextCheckpoint->m_isFallback)
+	if (!noVisualUpdates && nextExists && nextCheckpoint->m_isDegraded)
 		startMusic();
 }
 

@@ -167,8 +167,6 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	CCMenu* menu = ListMenu::create(m_listContainer);
 	menu->setContentSize(ccp(400, 50));
 
-	log::debug("lID: {}", info.levelID);
-
 	CCLabelBMFont* nameLabel =
 		CCLabelBMFont::create(info.levelName.c_str(), "bigFont.fnt");
 	nameLabel->setAnchorPoint(ccp(0, .5));

@@ -34,8 +34,6 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void setupHasCompleted();
 	void destructor();
 
-	void processCreateObjectsFromSetup();
-
 	void resetLevel();
 	void loadFromCheckpoint(CheckpointObject* p0);
 
@@ -49,7 +47,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void updateModUI();
 	bool isPersistentSystemActive();
 	bool isModUIVisible();
-	bool isFallbackCheckpoint();
+	bool isDegradedCheckpoint();
 	bool isFallbackMode();
 	bool isUnloadableError();
 

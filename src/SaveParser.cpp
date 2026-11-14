@@ -34,17 +34,8 @@ SaveHeader SaveParser::fromStream(
 	bool isEditorLevel =
 		level ? level->m_levelType == GJLevelType::Editor : isEditor;
 
-	if (saveVersion < 4)
-		stream >> gameVersion;
-
+	stream >> gameVersion;
 	stream >> platform;
-	if (platform != PLATFORM && !ignoreVerification)
-		return SaveHeader{loadError, saveVersion, "Unknown", platform,
-								0,			  0,				"Unknown"};
-
-	if (saveVersion >= 4)
-		stream >> gameVersion;
-
 	if (!isEditorLevel)
 		stream >> levelVersion;
 	else

@@ -63,5 +63,5 @@ build-*/
 .idea/
 /cmake-build-*/
 
-#Custom
-devBox/secret
+# Custom
+devBox/secret/

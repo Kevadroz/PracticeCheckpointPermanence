@@ -24,8 +24,8 @@ void ModPlayLayer::serializeCheckpoints() {
 	char header[] = SAVE_HEADER;
 	stream.write(header, sizeof(header));
 	stream << saveVersion;
-	stream << platform;
 	stream << gameVersion;
+	stream << platform;
 	if (m_level->m_levelType != GJLevelType::Editor)
 		stream << m_level->m_levelVersion;
 	else {
@@ -52,8 +52,6 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
-	geode::log::debug("0");
-
 	std::string savePath = getSavePath().string();
 	if (!std::filesystem::exists(savePath))
 		return;
@@ -73,41 +71,34 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 
 	m_fields->m_loadError = header.loadError;
 
-	geode::log::debug("1");
-
 	if (
 		header.loadError != LoadError::None &&
 		!SaveParser::isErrorFallbackCapable(header.loadError)
 	)
 		return;
 
+	std::vector<PersistentCheckpoint*> checkpoints;
+
 	for (unsigned int i = header.checkpointCount; i > 0; i--) {
 		PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
 
 		checkpoint->deserializeExternal(stream, header);
 
-		checkpoint->setupPhysicalObject();
-		storePersistentCheckpoint(checkpoint, false);
+		checkpoints.push_back(checkpoint);
 	}
-
-	log::debug("C: {}", m_fields->m_persistentCheckpointArray->count());
-
-	geode::log::debug("2");
 
 	if (header.loadError != LoadError::None) {
 		if (SaveParser::isErrorFallbackCapable(header.loadError))
-			for (PersistentCheckpoint* checkpoint :
-				  CCArrayExt<PersistentCheckpoint*>(
-					  m_fields->m_persistentCheckpointArray
-				  ))
-				checkpoint->m_isFallback = true;
+			for (PersistentCheckpoint* checkpoint : checkpoints) {
+				checkpoint->m_isDegraded = true;
+				checkpoint->setupPhysicalObject();
+				storePersistentCheckpoint(checkpoint, false);
+			}
 
 		return;
 	}
 
-	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
-			  m_fields->m_persistentCheckpointArray
-		  )) {
+	for (PersistentCheckpoint* checkpoint : checkpoints) {
 		// try {
 		checkpoint->deserialize(stream, header, this);
 		// } catch (...) { // TODO maybe implement exception logging
@@ -119,15 +110,16 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 		// 	m_fields->m_loadError = LoadError::Crash;
 		// 	return;
 		// }
-	}
 
-	geode::log::debug("3");
+		checkpoint->setupPhysicalObject();
+		storePersistentCheckpoint(checkpoint, false);
+	}
 }
 
 void ModPlayLayer::unloadPersistentCheckpoints() {
 	switchGhostCheckpoint(0);
 
-	bool isFallback = isFallbackCheckpoint();
+	bool isFallback = isDegradedCheckpoint();
 
 	for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 			  m_fields->m_persistentCheckpointArray
