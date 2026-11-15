@@ -3,6 +3,7 @@
 #include "ListMenu.hpp"
 
 #include <Geode/ui/GeodeUI.hpp>
+#include <Geode/ui/Toggler.hpp>
 
 CheckpointManager* CheckpointManager::create() {
 	auto ret = new CheckpointManager;
@@ -460,15 +461,23 @@ CCNode* CheckpointManager::createCheckpointCell(
 	moveUpBtn->setRotation(90);
 	moveDownBtn->setRotation(90);
 
-	std::string nameString = checkpoint->m_name;
+	std::string nameString = checkpoint->m_checkpointName;
 	if (nameString.empty())
 		nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
 
-	CCSprite* checkpointSprite = CCSprite::createWithSpriteFrame(
+	CCSprite* checkpointSpriteBase = CCSprite::createWithSpriteFrame(
 		checkpoint->m_physicalObject->displayFrame()
 	);
+	CCSprite* checkpointSpriteColor = CCSprite::createWithSpriteFrame(
+		checkpoint->m_physicalObjectColor->displayFrame()
+	);
+	checkpointSpriteColor->ignoreAnchorPointForPosition(true);
+	checkpointSpriteColor->setColor(
+		checkpoint->m_physicalObjectColor->getColor()
+	);
+	checkpointSpriteBase->addChild(checkpointSpriteColor);
 	CCMenuItemSpriteExtra* selectBtn =
-		CCMenuItemExt::createSpriteExtra(checkpointSprite, selectCallback);
+		CCMenuItemExt::createSpriteExtra(checkpointSpriteBase, selectCallback);
 
 	CCLabelBMFont* label = CCLabelBMFont::create(
 		nameString.c_str(), "goldFont.fnt", m_popupWidth - 155.0f
@@ -483,8 +492,16 @@ CCNode* CheckpointManager::createCheckpointCell(
 		renameSprite,
 		[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 			RenamePopup::create(
-				[this, playLayer]() -> void {
+				[this, playLayer, checkpoint]() -> void {
 					playLayer->serializeCheckpoints();
+					unsigned int activeCheckpoint =
+						playLayer->m_fields->m_activeCheckpoint;
+					checkpoint->refreshStyle(
+						activeCheckpoint > 0 &&
+						playLayer->m_fields->m_persistentCheckpointArray
+								->objectAtIndex(activeCheckpoint - 1) == checkpoint
+					);
+					playLayer->updateModUI();
 					updateUIElements();
 				},
 				checkpoint
@@ -554,12 +571,14 @@ bool RenamePopup::init(
 ) {
 	float width = 200.0f;
 
-	if (!Popup::init(width, 112.0f))
+	if (!Popup::init(width, 180.0f))
 		return false;
 
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
 
-	m_checkpointName = checkpoint->m_name;
+	m_name = checkpoint->m_checkpointName;
+	m_checkpointColorEnabled = !std::isnan(checkpoint->m_color);
+	m_checkpointColor = m_checkpointColorEnabled ? checkpoint->m_color : 180.f;
 
 	CCLabelBMFont* nameLabel = CCLabelBMFont::create("Name", "goldFont.fnt");
 	nameLabel->setAnchorPoint(ccp(0.0f, 0.5f));
@@ -567,17 +586,60 @@ bool RenamePopup::init(
 	TextInput* nameInput = TextInput::create(
 		width - 36.0f, checkpoint->getDefaultLabel(playLayer->m_isPlatformer)
 	);
-	nameInput->setString(m_checkpointName);
+	nameInput->setString(m_name);
 	nameInput->setCommonFilter(CommonFilter::Any);
 	nameInput->setMaxCharCount(22);
-	nameInput->setCallback([this](const std::string name) {
-		m_checkpointName = name;
-	});
+	nameInput->setCallback([this](const std::string name) { m_name = name; });
+
+	CCLabelBMFont* colorLabel = CCLabelBMFont::create("Color", "goldFont.fnt");
+	colorLabel->setAnchorPoint(ccp(0.0f, 0.5f));
+
+	SliderNode* colorSlider = SliderNode::createCustom(
+		CCSprite::createWithSpriteFrameName("colorThumb.png"_spr),
+		CCSprite::createWithSpriteFrameName("colorThumbSel.png"_spr),
+		NineSlice::create("slidergroove.png"), "",
+		[this](SliderNode* slider, float value) {
+			m_checkpointColor = value;
+
+			RGBA rgba = CCControlUtils::RGBfromHSV(HSV(value, 1, 1));
+			slider->getThumb()->setColor(
+				ccColor3B(rgba.r * 255, rgba.g * 255, rgba.b * 255)
+			);
+		}
+	);
+	colorSlider->applyScale(.5f);
+	colorSlider->setContentHeight(16.f);
+	colorSlider->getBar()->setVisible(false);
+	colorSlider->setMin(0.f);
+	colorSlider->setMax(360.f);
+	colorSlider->setReadOnly(!m_checkpointColorEnabled);
+	colorSlider->setValue(m_checkpointColor);
+
+	CCSprite* colorBackground = CCSprite::create("rgbBar.png"_spr);
+	colorBackground->setZOrder(-1);
+	colorBackground->setPosition(CCPoint(3, 7.9f));
+	colorBackground->setScaleY(4);
+	colorBackground->setAnchorPoint(CCPoint(0, .5f));
+	colorBackground->setContentSize(CCSize(195, 1.5f));
+	colorBackground->setTextureRect(CCRect(0, 0, 195, 1.5f));
+
+	colorSlider->addChild(colorBackground);
+
+	Toggler* colorToggler = Toggler::createWithStandardSprites(
+		[this, colorSlider](Toggler* sender, bool enabled) {
+			m_checkpointColorEnabled = enabled;
+			colorSlider->setReadOnly(!enabled);
+		}
+	);
+	colorToggler->applyScale(.8f);
+	colorToggler->setToggled(m_checkpointColorEnabled);
 
 	CCSprite* confirmBtnSprite = ButtonSprite::create("Confirm");
 	CCMenuItemSpriteExtra* confirmBtn = CCMenuItemExt::createSpriteExtra(
 		confirmBtnSprite, [this, checkpoint, updateCallback](CCObject* sender) {
-			checkpoint->m_name = m_checkpointName;
+			checkpoint->m_checkpointName = m_name;
+			checkpoint->m_color =
+				m_checkpointColorEnabled ? m_checkpointColor : NAN;
 			onClose(sender);
 			updateCallback();
 		}
@@ -587,7 +649,18 @@ bool RenamePopup::init(
 		nameLabel, Anchor::TopLeft, ccp(20.0f, -20.0f)
 	);
 	m_mainLayer->addChildAtPosition(nameInput, Anchor::Top, ccp(0.0f, -50.0f));
-	m_buttonMenu->addChildAtPosition(confirmBtn, Anchor::Top, ccp(0.0f, -85.0f));
+	m_mainLayer->addChildAtPosition(
+		colorLabel, Anchor::TopLeft, ccp(20.0f, -85.0f)
+	);
+	m_mainLayer->addChildAtPosition(
+		colorToggler, Anchor::Top, ccp(-55.0f, -117.0f)
+	);
+	m_mainLayer->addChildAtPosition(
+		colorSlider, Anchor::Top, ccp(25.0f, -117.0f)
+	);
+	m_buttonMenu->addChildAtPosition(
+		confirmBtn, Anchor::Bottom, ccp(0.0f, 25.0f)
+	);
 
 	return true;
 }

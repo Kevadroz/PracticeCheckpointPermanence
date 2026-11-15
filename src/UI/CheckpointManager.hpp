@@ -48,7 +48,9 @@ public:
 	);
 
 private:
-	std::string m_checkpointName;
+	std::string m_name;
+	bool m_checkpointColorEnabled;
+	float m_checkpointColor;
 
 	bool
 	init(std::function<void()> updateCallback, PersistentCheckpoint* checkpoint);

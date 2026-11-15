@@ -34,6 +34,12 @@ struct FallbackData {
 	float cameraZoom;
 };
 
+struct CheckpointStyle {
+	const char* baseFrame;
+	const char* colorFrame;
+	ccColor3B color;
+};
+
 class PersistentCheckpoint : public CCObject {
 public:
 	FallbackData m_fallbackData;
@@ -41,13 +47,15 @@ public:
 
 	Ref<CheckpointObject> m_checkpoint = nullptr;
 	Ref<GameObject> m_physicalObject = nullptr;
+	Ref<CCSprite> m_physicalObjectColor = nullptr;
 	CCPoint m_objectPos;
 	double m_time;
 	double m_percent;
 	std::unordered_map<int, int> m_persistentItemCountMap;
 	std::unordered_set<int> m_persistentTimerItemSet;
 
-	std::string m_name = "";
+	std::string m_checkpointName = "";
+	float m_color = NAN;
 
 	static PersistentCheckpoint* create();
 	void storeData(CheckpointObject* checkpoint, PlayLayer* playLayer);
@@ -58,8 +66,11 @@ public:
 	void deserializeExternal(InStream& in, SaveHeader);
 	void setupPhysicalObject();
 	void toggleActive(bool active, bool isGhost = false);
+	void refreshStyle(bool active);
 
 	std::string getDefaultLabel(bool isPlatformer);
+
+	CheckpointStyle getStyle(bool active);
 
 	static StartPosGameModes
 	getGamemodeFromCheckpoint(PlayerCheckpoint* checkpoint);

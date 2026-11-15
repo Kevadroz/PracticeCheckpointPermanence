@@ -135,10 +135,10 @@ void ModUILayer::updateSwitcher() {
 
 	std::string nameString = "";
 	if (checkpoint != nullptr) {
-		if (checkpoint->m_name.empty())
+		if (checkpoint->m_checkpointName.empty())
 			nameString = checkpoint->getDefaultLabel(playLayer->m_isPlatformer);
 		else
-			nameString = checkpoint->m_name;
+			nameString = checkpoint->m_checkpointName;
 	}
 	std::string ghostCheckpointString =
 		playLayer->m_fields->m_ghostActiveCheckpoint == 0
@@ -196,24 +196,38 @@ void ModUILayer::updateSwitcher() {
 	);
 	m_fields->m_switcherMenu->m_errorLabel->setString(errorString);
 
-	CCSpriteFrame* checkpointSprite;
+	CCSpriteFrame* checkpointSpriteBase;
+	CCSpriteFrame* checkpointSpriteColor = nullptr;
+	ccColor3B checkpointColor;
 	GLubyte checkpointSpriteOpacity;
 
 	if (playLayer->m_fields->m_activeCheckpoint > 0) {
-		checkpointSprite = checkpoint->m_physicalObject->displayFrame();
+		checkpointSpriteBase = checkpoint->m_physicalObject->displayFrame();
+		checkpointSpriteColor = checkpoint->m_physicalObjectColor->displayFrame();
+		checkpointColor = checkpoint->m_physicalObjectColor->getColor();
 		checkpointSpriteOpacity = 255;
 	} else {
-		checkpointSprite = CCSpriteFrameCache::get()->spriteFrameByName(
+		checkpointSpriteBase = CCSpriteFrameCache::get()->spriteFrameByName(
 			playLayer->m_fields->m_loadError == LoadError::None
-				? "inactiveCheckpoint.png"_spr
-				: "inactiveDegradedCheckpoint.png"_spr
+				? "inactiveCheckpoint_base.png"_spr
+				: "inactiveDegradedCheckpoint_base.png"_spr
 		);
+		checkpointSpriteColor = CCSpriteFrameCache::get()->spriteFrameByName(
+			playLayer->m_fields->m_loadError == LoadError::None
+				? "inactiveCheckpoint_default.png"_spr
+				: "inactiveDegradedCheckpoint_default.png"_spr
+		);
+		checkpointColor = ccWHITE;
 		checkpointSpriteOpacity = 192;
 	}
 
-	m_fields->m_switcherMenu->m_checkpointSprite->setDisplayFrame(
-		checkpointSprite
+	m_fields->m_switcherMenu->m_checkpointSpriteBase->setDisplayFrame(
+		checkpointSpriteBase
 	);
+	m_fields->m_switcherMenu->m_checkpointSpriteColor->setDisplayFrame(
+		checkpointSpriteColor
+	);
+	m_fields->m_switcherMenu->m_checkpointSpriteColor->setColor(checkpointColor);
 
 	double labelActiveOpacity =
 		255 * mod->getSettingValue<double>("switcher-label-active-opacity");
@@ -254,7 +268,7 @@ void ModUILayer::updateSwitcher() {
 	if (iconActiveOpacity != iconInactiveOpacity)
 		nodes.push_back(
 			std::make_tuple(
-				m_fields->m_switcherMenu->m_checkpointSprite, iconActiveOpacity,
+				m_fields->m_switcherMenu->m_checkpointSpriteBase, iconActiveOpacity,
 				iconInactiveOpacity
 			)
 		);
@@ -283,14 +297,14 @@ void ModUILayer::resetSwitcherOpacity() {
 
 	m_fields->m_switcherMenu->m_labelMenu->stopActionByTag(55);
 	m_fields->m_switcherMenu->m_buttonMenu->stopActionByTag(55);
-	m_fields->m_switcherMenu->m_checkpointSprite->stopActionByTag(55);
+	m_fields->m_switcherMenu->m_checkpointSpriteBase->stopActionByTag(55);
 	m_fields->m_switcherMenu->m_labelMenu->setOpacity(
 		255 * mod->getSettingValue<double>("switcher-label-active-opacity")
 	);
 	m_fields->m_switcherMenu->m_buttonMenu->setOpacity(
 		255 * mod->getSettingValue<double>("switcher-button-active-opacity")
 	);
-	m_fields->m_switcherMenu->m_checkpointSprite->setOpacity(
+	m_fields->m_switcherMenu->m_checkpointSpriteBase->setOpacity(
 		255 * mod->getSettingValue<double>("switcher-icon-active-opacity")
 	);
 

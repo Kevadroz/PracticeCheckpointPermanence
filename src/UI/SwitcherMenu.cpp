@@ -58,22 +58,29 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	const char* layerLabelString;
 	const char* errorLabelString;
 	if (playLayer != nullptr) {
-		menu->m_checkpointSprite =
-			CCSprite::createWithSpriteFrameName("inactiveCheckpoint.png"_spr);
-		menu->m_checkpointSprite->setOpacity(192);
+		menu->m_checkpointSpriteBase =
+			CCSprite::createWithSpriteFrameName("inactiveCheckpoint_base.png"_spr);
+		menu->m_checkpointSpriteBase->setCascadeOpacityEnabled(true);
+		menu->m_checkpointSpriteBase->setOpacity(192);
+
+		menu->m_checkpointSpriteColor = CCSprite::createWithSpriteFrameName(
+			"inactiveCheckpoint_default.png"_spr
+		);
+		menu->m_checkpointSpriteColor->ignoreAnchorPointForPosition(true);
 
 		nameLabelString = "0%";
 		checkpointLabelString = "0/0";
 		layerLabelString = "Lay 1/0";
 	} else {
-		menu->m_checkpointSprite =
+		menu->m_checkpointSpriteBase =
 			CCSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
 
 		nameLabelString = "First Ship Hard Part";
 		checkpointLabelString = "2 (4)/5";
 		layerLabelString = "Lay 12/26";
 	}
-	menu->m_checkpointSprite->setID("checkpoint");
+	menu->m_checkpointSpriteBase->setID("checkpoint");
+	menu->m_checkpointSpriteColor->setID("color");
 
 	menu->m_nameLabel =
 		CCLabelBMFont::create(nameLabelString, "bigFont.fnt", 125.0f);
@@ -96,9 +103,13 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->m_errorLabel->setID("error-label");
 	menu->m_errorLabel->setScale(.6f);
 
+	menu->m_checkpointSpriteBase->addChild(menu->m_checkpointSpriteColor);
+
 	menu->addChildAtPosition(menu->m_buttonMenu, geode::Anchor::Center);
 	menu->addChildAtPosition(menu->m_labelMenu, geode::Anchor::Center);
-	menu->addChildAtPosition(menu->m_checkpointSprite, geode::Anchor::Center);
+	menu->addChildAtPosition(
+		menu->m_checkpointSpriteBase, geode::Anchor::Center
+	);
 	menu->m_buttonMenu->addChildAtPosition(
 		menu->m_previousBtn, geode::Anchor::Center, ccp(-25, 0)
 	);

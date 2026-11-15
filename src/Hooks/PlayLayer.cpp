@@ -339,15 +339,19 @@ void ModPlayLayer::updateModUI() {
 			  m_fields->m_persistentCheckpointArray
 		  )) {
 		GameObject* physicalObject = checkpoint->m_physicalObject;
-		CCSpriteFrame* frame = physicalObject->displayFrame();
+		CCSprite* physicalObjectColor = checkpoint->m_physicalObjectColor;
+		CCSpriteFrame* baseFrame = physicalObject->displayFrame();
+		CCSpriteFrame* colorFrame = physicalObjectColor->displayFrame();
+		ccColor3B color = physicalObjectColor->getColor();
 
-		CCSprite* sprite = CCSprite::createWithSpriteFrame(frame);
-		sprite->setScale(
+		CCSprite* baseSprite = CCSprite::createWithSpriteFrame(baseFrame);
+		baseSprite->setScale(
 			m_fields->m_activeCheckpoint == currentCheckpoint + 1 ? .5f : .4f
 		);
-		sprite->setOpacity(physicalObject->getOpacity());
+		baseSprite->setCascadeOpacityEnabled(true);
+		baseSprite->setOpacity(physicalObject->getOpacity());
 
-		sprite->setPosition(
+		baseSprite->setPosition(
 			ccp(barWidth * (checkpoint->m_percent / 100.f) + 2, 0)
 		);
 		if (
@@ -356,8 +360,14 @@ void ModPlayLayer::updateModUI() {
 								  m_fields->m_activeCheckpoint - 1
 							  )
 		)
-			sprite->setZOrder(1);
-		container->addChild(sprite);
+			baseSprite->setZOrder(1);
+
+		CCSprite* colorSprite = CCSprite::createWithSpriteFrame(colorFrame);
+		colorSprite->ignoreAnchorPointForPosition(true);
+		colorSprite->setColor(color);
+
+		baseSprite->addChild(colorSprite);
+		container->addChild(baseSprite);
 
 		currentCheckpoint++;
 	}

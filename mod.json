@@ -29,6 +29,9 @@
 		"hiimjasmine00.checkpoint-switcher": ">=v0.0.0"
 	},
 	"resources": {
+		"sprites": [
+			"resources/*.png"
+		],
 		"spritesheets": {
 			"MainSheet": [
 				"resources/mainSheet/*.png"
@@ -47,12 +50,6 @@
 			"type": "bool",
 			"default": false,
 			"description": "Loads the Persistent Checkpoints in normal mode and lets you switch between normal mode and practice mode by switching checkpoints.\nNo checkpoint active is normal mode, any checkpoint active is practice mode"
-		},
-		"show-checkpoints-in-normal-mode": {
-			"name": "Show checkpoints in Integrated Normal Mode",
-			"type": "bool",
-			"default": false,
-			"enable-if": "switch-in-out-normal-mode"
 		},
 		"supress-auto-checkpoints": {
 			"name": "Supress Auto Checkpoints",
@@ -86,6 +83,10 @@
 			"default": false,
 			"description": "Deletes the checkpoints of a level when you manually delete that level from the saved levels"
 		},
+		"title-visual": {
+			"type": "title",
+			"name": "Visual"
+		},
 		"percentage-display-decimals": {
 			"name": "Displayed decimals for percentages",
 			"type": "int",
@@ -98,6 +99,17 @@
 				"arrows": true,
 				"arrow-step": 1
 			}
+		},
+		"show-checkpoints-in-normal-mode": {
+			"name": "Show checkpoints in Integrated Normal Mode",
+			"type": "bool",
+			"default": false,
+			"enable-if": "switch-in-out-normal-mode"
+		},
+		"color-placed-checkpoints": {
+			"name": "Color newly placed checkpoints",
+			"type": "bool",
+			"default": false
 		},
 		"active-checkpoint-opacity": {
 			"name": "Active Checkpoint Opacity",

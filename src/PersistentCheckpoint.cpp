@@ -146,7 +146,8 @@ void PersistentCheckpoint::serializeExternal(OutStream& out) {
 	out << m_time;
 	out << m_percent;
 
-	out << m_name;
+	out << m_checkpointName;
+	out << m_color;
 
 	// Fallback
 	LevelSettingsObject* settings = m_fallbackData.startPos->m_startSettings;
@@ -195,7 +196,8 @@ void PersistentCheckpoint::deserializeExternal(
 	in >> m_time;
 	in >> m_percent;
 
-	in >> m_name;
+	in >> m_checkpointName;
+	in >> m_color;
 
 	// Fallback
 	StartPosObject* startPos = StartPosObject::create();
@@ -250,10 +252,10 @@ void PersistentCheckpoint::deserializeExternal(
 }
 
 void PersistentCheckpoint::setupPhysicalObject() {
-	const char* frameName = m_isDegraded ? "inactiveDegradedCheckpoint.png"_spr
-													 : "inactiveCheckpoint.png"_spr;
-	m_physicalObject = GameObject::createWithFrame(frameName);
+	CheckpointStyle style = getStyle(false);
+	m_physicalObject = GameObject::createWithFrame(style.baseFrame);
 
+	m_physicalObject->setCascadeOpacityEnabled(true);
 	m_physicalObject->setOpacity(
 		Mod::get()->getSettingValue<double>("inactive-checkpoint-opacity") * 255
 	);
@@ -262,17 +264,17 @@ void PersistentCheckpoint::setupPhysicalObject() {
 	m_physicalObject->m_glowSprite = nullptr;
 
 	m_physicalObject->setStartPos(m_objectPos);
-	// m_physicalObject->setStartPos(m_fallbackData.startPos->m_startPosition);
+
+	m_physicalObjectColor =
+		CCSprite::createWithSpriteFrameName(style.colorFrame);
+	if (!std::isnan(m_color))
+		m_physicalObjectColor->setColor(style.color);
+	m_physicalObjectColor->ignoreAnchorPointForPosition(true);
+	m_physicalObject->addChild(m_physicalObjectColor);
 }
 
 void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {
-	const char* frameName;
-	if (active && !isGhost)
-		frameName = m_isDegraded ? "activeDegradedCheckpoint.png"_spr
-										 : "activeCheckpoint.png"_spr;
-	else
-		frameName = m_isDegraded ? "inactiveDegradedCheckpoint.png"_spr
-										 : "inactiveCheckpoint.png"_spr;
+	CheckpointStyle style = getStyle(active && !isGhost);
 	double opacity;
 	if (isGhost && active)
 		opacity = 1;
@@ -283,9 +285,21 @@ void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {
 	}
 
 	m_physicalObject->setDisplayFrame(
-		CCSpriteFrameCache::get()->spriteFrameByName(frameName)
+		CCSpriteFrameCache::get()->spriteFrameByName(style.baseFrame)
+	);
+	m_physicalObjectColor->setDisplayFrame(
+		CCSpriteFrameCache::get()->spriteFrameByName(style.colorFrame)
 	);
 	m_physicalObject->setOpacity(opacity * 255);
+}
+
+void PersistentCheckpoint::refreshStyle(bool active) {
+	CheckpointStyle style = getStyle(active);
+
+	m_physicalObjectColor->setDisplayFrame(
+		CCSpriteFrameCache::get()->spriteFrameByName(style.colorFrame)
+	);
+	m_physicalObjectColor->setColor(style.color);
 }
 
 std::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
@@ -308,6 +322,50 @@ std::string PersistentCheckpoint::getDefaultLabel(bool isPlatformer) {
 	}
 
 	return label;
+}
+
+CheckpointStyle PersistentCheckpoint::getStyle(bool active) {
+	bool hasColor = !std::isnan(m_color);
+
+	const char* baseFrame;
+	const char* colorFrame;
+	if (active)
+		if (m_isDegraded) {
+			baseFrame = "activeDegradedCheckpoint_base.png"_spr;
+			if (hasColor)
+				colorFrame = "activeDegradedCheckpoint_color.png"_spr;
+			else
+				colorFrame = "activeDegradedCheckpoint_default.png"_spr;
+		} else {
+			baseFrame = "activeCheckpoint_base.png"_spr;
+			if (hasColor)
+				colorFrame = "activeCheckpoint_color.png"_spr;
+			else
+				colorFrame = "activeCheckpoint_default.png"_spr;
+		}
+	else if (m_isDegraded) {
+		baseFrame = "inactiveDegradedCheckpoint_base.png"_spr;
+		if (hasColor)
+			colorFrame = "inactiveDegradedCheckpoint_color.png"_spr;
+		else
+			colorFrame = "inactiveDegradedCheckpoint_default.png"_spr;
+	} else {
+		baseFrame = "inactiveCheckpoint_base.png"_spr;
+		if (hasColor)
+			colorFrame = "inactiveCheckpoint_color.png"_spr;
+		else
+			colorFrame = "inactiveCheckpoint_default.png"_spr;
+	}
+
+	ccColor3B color;
+	if (!hasColor)
+		color = ccWHITE;
+	else {
+		RGBA rgba = CCControlUtils::RGBfromHSV(HSV(m_color, 1, 1));
+		color = ccColor3B(rgba.r * 255, rgba.g * 255, rgba.b * 255);
+	}
+
+	return CheckpointStyle{baseFrame, colorFrame, color};
 }
 
 StartPosGameModes

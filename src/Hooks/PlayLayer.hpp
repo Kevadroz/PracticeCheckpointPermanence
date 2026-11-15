@@ -68,7 +68,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 		bool noVisualUpdates = false
 	);
 	void switchGhostCheckpoint(
-		unsigned int nextCheckpoint, bool noVisualUpdates = false
+		unsigned int nextCheckpoint, bool noVisualUpdates = false,
+		bool updateUI = true
 	);
 	void markPersistentCheckpoint();
 	unsigned int

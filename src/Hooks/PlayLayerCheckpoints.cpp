@@ -60,8 +60,8 @@ void ModPlayLayer::switchCurrentCheckpoint(
 		nextCheckpoint->toggleActive(true);
 	}
 
-	switchGhostCheckpoint(0);
 	m_fields->m_activeCheckpoint = nextIndex;
+	switchGhostCheckpoint(0, false, false);
 
 	if (lastExists && lastCheckpoint->m_isDegraded)
 		setActiveStartPosObject(nullptr);
@@ -98,9 +98,12 @@ void ModPlayLayer::switchCurrentCheckpoint(
 }
 
 void ModPlayLayer::switchGhostCheckpoint(
-	unsigned int nextCheckpoint, bool noVisualUpdates
+	unsigned int nextCheckpoint, bool noVisualUpdates, bool updateUI
 ) {
-	if (!noVisualUpdates && m_fields->m_ghostActiveCheckpoint > 0)
+	if (
+		!noVisualUpdates && m_fields->m_ghostActiveCheckpoint > 0 &&
+		(m_fields->m_ghostActiveCheckpoint != m_fields->m_activeCheckpoint)
+	)
 		static_cast<PersistentCheckpoint*>(
 			m_fields->m_persistentCheckpointArray->objectAtIndex(
 				m_fields->m_ghostActiveCheckpoint - 1
@@ -115,7 +118,8 @@ void ModPlayLayer::switchGhostCheckpoint(
 														  ->objectAtIndex(nextCheckpoint - 1))
 			->toggleActive(true, true);
 
-	updateModUI();
+	if (updateUI)
+		updateModUI();
 }
 
 void ModPlayLayer::markPersistentCheckpoint() {
@@ -131,6 +135,47 @@ void ModPlayLayer::markPersistentCheckpoint() {
 
 	PersistentCheckpoint* checkpoint = PersistentCheckpoint::create();
 	checkpoint->storeData(createCheckpoint(), this);
+
+	if (Mod::get()->getSettingValue<bool>("color-placed-checkpoints")) {
+		std::vector<float> points;
+		for (unsigned int i = 0;
+			  i < m_fields->m_persistentCheckpointArray->count(); ++i) {
+			float color =
+				reinterpret_cast<PersistentCheckpoint*>(
+					m_fields->m_persistentCheckpointArray->objectAtIndex(i)
+				)
+					->m_color;
+			if (!std::isnan(color))
+				points.push_back(color);
+		}
+
+		if (points.size() > 0) {
+			std::sort(points.begin(), points.end());
+			points.push_back(points[0] + 360.f);
+
+			float start, size = -1;
+			for (unsigned int i = 0; i < points.size() - 1; ++i) {
+				float cSize = points[i + 1] - points[i];
+				if (cSize > size) {
+					start = points[i];
+					size = cSize;
+				}
+			}
+
+			float min = start + size * .3f;
+			float range = size * .4f;
+
+			float color = min + rand() / (float)RAND_MAX * range;
+			if (color > 360.f)
+				color -= 360.f;
+
+			checkpoint->m_color = color;
+		} else {
+			checkpoint->m_color = rand() / (float)RAND_MAX * 360.f;
+		}
+		checkpoint->refreshStyle(false);
+	}
+
 	unsigned int newCheckpointIndex =
 		storePersistentCheckpoint(checkpoint, true) + 1;
 	serializeCheckpoints();

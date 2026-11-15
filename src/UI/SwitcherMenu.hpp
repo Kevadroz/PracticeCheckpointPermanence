@@ -17,7 +17,8 @@ class SwitcherMenu : public CCMenu {
 public:
 	CCLabelBMFont* m_nameLabel = nullptr;
 	CCLabelBMFont* m_checkpointLabel = nullptr;
-	CCSprite* m_checkpointSprite = nullptr;
+	CCSprite* m_checkpointSpriteBase = nullptr;
+	CCSprite* m_checkpointSpriteColor = nullptr;
 	CCLabelBMFont* m_layerLabel = nullptr;
 	CCLabelBMFont* m_errorLabel = nullptr;
 	CCNodeRGBA* m_previousBtn = nullptr;
