@@ -114,6 +114,7 @@ void PersistentCheckpoint::serialize(OutStream& out) {
 	}
 
 	checkData = serializeCheckpoint(m_checkpoint);
+	checkData = ZipUtils::compressString(checkData, false, -1, 0xb);
 	out << checkData;
 
 	// Custom data
@@ -126,11 +127,13 @@ void PersistentCheckpoint::deserialize(
 ) {
 	std::string checkData;
 	in >> checkData;
+
 	if (checkData.empty() || m_isDegraded) {
 		m_isDegraded = true;
 		return;
 	}
 
+	checkData = ZipUtils::decompressString(checkData, false, 0xb);
 	deserializeCheckpoint(m_checkpoint, checkData, layer);
 
 	// Custom data
