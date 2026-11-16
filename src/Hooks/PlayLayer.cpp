@@ -1,21 +1,6 @@
 #include "PlayLayer.hpp"
 #include "UILayer.hpp"
 
-// Copied from PlatformerSaves
-#if defined(GEODE_IS_WINDOWS)
-#define UNIQUE_ID_OFFSET 0x6ba158
-#elif defined(GEODE_IS_ANDROID64)
-#define UNIQUE_ID_OFFSET 0x122f018
-#elif defined(GEODE_IS_ANDROID32)
-#define UNIQUE_ID_OFFSET 0xab900c
-#elif defined(GEODE_IS_ARM_MAC)
-#define UNIQUE_ID_OFFSET 0x8b58ac
-#elif defined(GEODE_IS_INTEL_MAC)
-#define UNIQUE_ID_OFFSET 0x99e600
-#elif defined(GEODE_IS_IOS)
-#define UNIQUE_ID_OFFSET 0x84c1e8
-#endif
-
 $execute {
 	SettingChangedEvent(Mod::get(), "progressbar-checkpoint-opacity")
 		.listen(+[](std::shared_ptr<SettingV3> setting) {
