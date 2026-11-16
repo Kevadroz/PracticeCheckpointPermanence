@@ -1,5 +1,6 @@
 ## Unreleased
 - Ported to GD 2.2091 and Geode 6
+- Switched versioning to a propper MAJOR.MINOR.PATCH
 - It's now possible to modify layers in fallback mode (also removed fallback resaving)
 - Checkpoints loaded in fallback mode now become "degraded", having a distinctive icon
 - Added the ability to color the checkpoints (manually and automatically)
