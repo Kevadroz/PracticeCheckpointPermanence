@@ -237,6 +237,26 @@
 				"arrow-step": 0.1
 			}
 		},
+		"switcher-label-error": {
+			"name": "Show Error Label",
+			"type": "bool",
+			"default": true
+		},
+		"switcher-label-layers": {
+			"name": "Show Layers Label",
+			"type": "bool",
+			"default": true
+		},
+		"switcher-label-checkpoints": {
+			"name": "Show Checkpoint Label",
+			"type": "bool",
+			"default": true
+		},
+		"switcher-label-name": {
+			"name": "Show Name Label",
+			"type": "bool",
+			"default": true
+		},
 		"title-keybinds": {
 			"type": "title",
 			"name": "Keybinds"

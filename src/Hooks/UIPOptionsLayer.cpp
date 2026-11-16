@@ -10,6 +10,8 @@ bool ModUIPOptionsLayer::init() {
 	if (!UIPOptionsLayer::init())
 		return false;
 
+	Mod* mod = Mod::get();
+
 	createCheckpointCreateButton(m_practiceNode->getChildByIndex(0), nullptr);
 	createCheckpointRemoveButton(m_practiceNode->getChildByIndex(1), nullptr);
 
@@ -20,14 +22,19 @@ bool ModUIPOptionsLayer::init() {
 	m_fields->m_switcherMenu = SwitcherMenu::createWithTouch(
 		nullptr,
 		[this, pui](CCTouch* touch, CCEvent* event) {
-			if (pui && !pui->getSettingValue<bool>("preview-drag") && m_fields->m_switcherMenu->getParent()->getScale() > 0.75f)
+			if (
+				pui && !pui->getSettingValue<bool>("preview-drag") &&
+				m_fields->m_switcherMenu->getParent()->getScale() > 0.75f
+			)
 				return false;
 			CCPoint touchPos =
 				m_fields->m_switcherMenu->convertTouchToNodeSpace(touch);
 			float w = m_fields->m_switcherMenu->getContentWidth();
 			float h = m_fields->m_switcherMenu->getContentHeight();
-			if (touchPos.x >= 0 && touchPos.x < w && touchPos.y >= 0 &&
-				 touchPos.y < h) {
+			if (
+				touchPos.x >= 0 && touchPos.x < w && touchPos.y >= 0 &&
+				touchPos.y < h
+			) {
 				m_fields->m_movingSwitcher = true;
 				m_fields->m_lastPos = touch->getLocation();
 				return true;
@@ -74,6 +81,17 @@ bool ModUIPOptionsLayer::init() {
 	);
 
 	m_fields->m_switcherMenu->setTouchPriority(-700);
+
+	m_fields->m_switcherMenu->m_labelMenu->setOpacity(
+		255 * mod->getSettingValue<float>("switcher-label-active-opacity")
+	);
+	m_fields->m_switcherMenu->m_buttonMenu->setOpacity(
+		255 * mod->getSettingValue<float>("switcher-button-active-opacity")
+	);
+	m_fields->m_switcherMenu->m_checkpointSpriteBase->setOpacity(
+		255 *
+		std::max(mod->getSettingValue<float>("switcher-icon-active-opacity"), .3f)
+	);
 
 	CCLabelBMFont* switcherScaleLabel =
 		CCLabelBMFont::create("Switcher Scale:", "chatFont.fnt");
@@ -163,7 +181,7 @@ bool ModUIPOptionsLayer::init() {
 		switcherScaleLabel->setAnchorPoint(ccp(1, .5f));
 		m_fields->m_switcherScaleInput->setScale(.8f);
 		m_fields->m_switcherScaleInput->getChildByIndex(0)->setContentSize(
-			ccp(112 / .8f, 48 / .8f)
+			ccp(70, 30)
 		);
 
 		m_mainLayer->addChild(m_fields->m_switcherMenu);
@@ -172,7 +190,7 @@ bool ModUIPOptionsLayer::init() {
 		m_mainLayer->addChild(m_fields->m_switcherScaleSlider);
 	}
 
-	CCPoint position = getSwitcherPosition();
+	CCPoint position = SwitcherMenu::getSwitcherPosition();
 	m_fields->m_switcherMenu->setPosition(position);
 
 	return true;

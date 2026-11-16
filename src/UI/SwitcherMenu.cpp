@@ -8,7 +8,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	SwitcherMenu* menu = new SwitcherMenu();
 	menu->setContentSize(size);
 	menu->setCascadeColorEnabled(true);
-	menu->setScale(getSwitcherScale());
+	menu->setScale(SwitcherMenu::getSwitcherScale());
 	menu->setZOrder(15);
 	menu->setID("switcher_menu"_spr);
 
@@ -60,13 +60,11 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	if (playLayer != nullptr) {
 		menu->m_checkpointSpriteBase =
 			CCSprite::createWithSpriteFrameName("inactiveCheckpoint_base.png"_spr);
-		menu->m_checkpointSpriteBase->setCascadeOpacityEnabled(true);
 		menu->m_checkpointSpriteBase->setOpacity(192);
 
 		menu->m_checkpointSpriteColor = CCSprite::createWithSpriteFrameName(
 			"inactiveCheckpoint_default.png"_spr
 		);
-		menu->m_checkpointSpriteColor->ignoreAnchorPointForPosition(true);
 
 		nameLabelString = "0%";
 		checkpointLabelString = "0/0";
@@ -74,13 +72,18 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	} else {
 		menu->m_checkpointSpriteBase =
 			CCSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
+		menu->m_checkpointSpriteColor = CCSprite::createWithSpriteFrameName(
+			"activeCheckpoint_default.png"_spr
+		);
 
 		nameLabelString = "First Ship Hard Part";
 		checkpointLabelString = "2 (4)/5";
 		layerLabelString = "Lay 12/26";
 	}
 	menu->m_checkpointSpriteBase->setID("checkpoint");
-	menu->m_checkpointSpriteColor->setID("color");
+	menu->m_checkpointSpriteColor->setID("checkpoint-color");
+	menu->m_checkpointSpriteBase->setCascadeOpacityEnabled(true);
+	menu->m_checkpointSpriteColor->ignoreAnchorPointForPosition(true);
 
 	menu->m_nameLabel =
 		CCLabelBMFont::create(nameLabelString, "bigFont.fnt", 125.0f);
@@ -117,17 +120,19 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 		menu->m_nextBtn, geode::Anchor::Center, ccp(25, 0)
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_nameLabel, geode::Anchor::Center, ccp(0, -35)
+		menu->m_nameLabel, geode::Anchor::Center
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_checkpointLabel, geode::Anchor::Center, ccp(0, -28)
+		menu->m_checkpointLabel, geode::Anchor::Center
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_layerLabel, geode::Anchor::Center, ccp(0, 31)
+		menu->m_layerLabel, geode::Anchor::Center
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_errorLabel, geode::Anchor::Center, ccp(0, 48)
+		menu->m_errorLabel, geode::Anchor::Center
 	);
+
+	menu->updateLabels();
 
 	menu->autorelease();
 	return menu;
@@ -151,6 +156,74 @@ SwitcherMenu* SwitcherMenu::createWithTouch(
 	return menu;
 }
 
+CCPoint SwitcherMenu::getSwitcherPosition() {
+	CCDirector* director = CCDirector::sharedDirector();
+	Mod* mod = Mod::get();
+	return ccp(
+		mod->getSavedValue<double>(
+			"switcherMenuPositionX", director->getScreenLeft() + SWITCHER_OFFSET_X
+		),
+		mod->getSavedValue<double>(
+			"switcherMenuPositionY", director->getScreenTop() - SWITCHER_OFFSET_Y
+		)
+	);
+}
+
+float SwitcherMenu::getSwitcherScale() {
+	return Mod::get()->getSavedValue<double>(
+		"switcherMenuScale", SWITCHER_SCALE
+	);
+}
+
+void SwitcherMenu::updateLabels() {
+	bool error = Mod::get()->getSettingValue<bool>("switcher-label-error");
+	bool layers = Mod::get()->getSettingValue<bool>("switcher-label-layers");
+	bool checkpoints =
+		Mod::get()->getSettingValue<bool>("switcher-label-checkpoints");
+	bool name = Mod::get()->getSettingValue<bool>("switcher-label-name");
+
+	m_errorLabel->setVisible(error);
+	m_layerLabel->setVisible(layers);
+	m_checkpointLabel->setVisible(checkpoints);
+	m_nameLabel->setVisible(name);
+
+	float errorPos = 48;
+	float layerPos = 31;
+	float checkPos = -28;
+	float namePos = -35;
+
+	if (
+		Mod::get()->getSettingValue<float>("switcher-icon-active-opacity") +
+			Mod::get()->getSettingValue<float>("switcher-icon-inactive-opacity") <=
+		0
+	) {
+		float offset = 10;
+		if (
+			Mod::get()->getSettingValue<float>("switcher-button-active-opacity") +
+				Mod::get()->getSettingValue<float>(
+					"switcher-button-inactive-opacity"
+				) <=
+			0
+		)
+			offset = 21;
+
+		errorPos -= offset;
+		layerPos -= offset;
+		checkPos += offset;
+		namePos += offset;
+	}
+
+	if (!layers)
+		errorPos -= 17;
+	if (!checkpoints)
+		namePos += 17;
+
+	m_errorLabel->updateAnchoredPosition(Anchor::Center, ccp(0, errorPos));
+	m_layerLabel->updateAnchoredPosition(Anchor::Center, ccp(0, layerPos));
+	m_checkpointLabel->updateAnchoredPosition(Anchor::Center, ccp(0, checkPos));
+	m_nameLabel->updateAnchoredPosition(Anchor::Center, ccp(0, namePos));
+}
+
 bool SwitcherMenu::ccTouchBegan(CCTouch* touch, CCEvent* event) {
 	if (m_touchBeganCallback != nullptr)
 		return m_touchBeganCallback(touch, event);
@@ -171,23 +244,4 @@ void SwitcherMenu::ccTouchEnded(CCTouch* touch, CCEvent* event) {
 void SwitcherMenu::ccTouchCancelled(CCTouch* touch, CCEvent* event) {
 	if (m_touchCancelledCallback != nullptr)
 		m_touchCancelledCallback(touch, event);
-}
-
-CCPoint getSwitcherPosition() {
-	CCDirector* director = CCDirector::sharedDirector();
-	Mod* mod = Mod::get();
-	return ccp(
-		mod->getSavedValue<double>(
-			"switcherMenuPositionX", director->getScreenLeft() + SWITCHER_OFFSET_X
-		),
-		mod->getSavedValue<double>(
-			"switcherMenuPositionY", director->getScreenTop() - SWITCHER_OFFSET_Y
-		)
-	);
-}
-
-float getSwitcherScale() {
-	return Mod::get()->getSavedValue<double>(
-		"switcherMenuScale", SWITCHER_SCALE
-	);
 }

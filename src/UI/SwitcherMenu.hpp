@@ -38,11 +38,19 @@ public:
 		std::function<void(CCTouch* touch, CCEvent* event)> touchCancelledCallback
 	);
 
+	static CCPoint getSwitcherPosition();
+	static float getSwitcherScale();
+	void updateLabels();
+
 private:
-	std::function<bool(CCTouch* touch, CCEvent* event)> m_touchBeganCallback = nullptr;
-	std::function<void(CCTouch* touch, CCEvent* event)> m_touchMovedCallback = nullptr;
-	std::function<void(CCTouch* touch, CCEvent* event)> m_touchEndedCallback = nullptr;
-	std::function<void(CCTouch* touch, CCEvent* event)> m_touchCancelledCallback = nullptr;
+	std::function<bool(CCTouch* touch, CCEvent* event)> m_touchBeganCallback =
+		nullptr;
+	std::function<void(CCTouch* touch, CCEvent* event)> m_touchMovedCallback =
+		nullptr;
+	std::function<void(CCTouch* touch, CCEvent* event)> m_touchEndedCallback =
+		nullptr;
+	std::function<void(CCTouch* touch, CCEvent* event)>
+		m_touchCancelledCallback = nullptr;
 
 	bool ccTouchBegan(CCTouch* touch, CCEvent* event) override;
 	void ccTouchMoved(CCTouch* touch, CCEvent* event) override;
@@ -50,5 +58,3 @@ private:
 	void ccTouchCancelled(CCTouch* touch, CCEvent* event) override;
 };
 
-CCPoint getSwitcherPosition();
-float getSwitcherScale();

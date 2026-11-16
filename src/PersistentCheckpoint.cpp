@@ -271,6 +271,9 @@ void PersistentCheckpoint::setupPhysicalObject() {
 		m_physicalObjectColor->setColor(style.color);
 	m_physicalObjectColor->ignoreAnchorPointForPosition(true);
 	m_physicalObject->addChild(m_physicalObjectColor);
+	m_physicalObjectColor->updateDisplayedOpacity(
+		m_physicalObject->getOpacity()
+	);
 }
 
 void PersistentCheckpoint::toggleActive(bool active, bool isGhost) {

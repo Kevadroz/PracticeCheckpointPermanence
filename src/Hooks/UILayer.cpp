@@ -23,6 +23,20 @@ $execute {
 			.leak();
 	}
 
+	for (std::string setting :
+		  {"switcher-button-active-opacity", "switcher-button-inactive-opacity",
+			"switcher-icon-active-opacity", "switcher-icon-inactive-opacity",
+			"switcher-label-error", "switcher-label-layers",
+			"switcher-label-checkpoints", "switcher-label-name"}) {
+		SettingChangedEvent(mod, setting)
+			.listen(+[](std::shared_ptr<SettingV3> setting) {
+				ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+				if (uiLayer != nullptr)
+					uiLayer->m_fields->m_switcherMenu->updateLabels();
+			})
+			.leak();
+	}
+
 	geode::listenForSettingChanges<std::string>(
 		"practice-buttons-position", [](std::string value) {
 			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
@@ -73,7 +87,7 @@ bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
 		return true;
 
 	m_fields->m_switcherMenu = SwitcherMenu::create(playLayer);
-	m_fields->m_switcherMenu->setPosition(getSwitcherPosition());
+	m_fields->m_switcherMenu->setPosition(SwitcherMenu::getSwitcherPosition());
 	m_fields->m_switcherMenu->setVisible(false);
 	m_fields->m_switcherMenu->setEnabled(false);
 
