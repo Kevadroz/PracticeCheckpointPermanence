@@ -74,6 +74,25 @@ $execute {
 			);
 		}
 	);
+
+	geode::listenForSettingChanges<float>(
+		"practice-buttons-distance", [](float value) {
+			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+			if (uiLayer == nullptr)
+				return;
+
+			setCheckpointButtonPosition(
+				uiLayer->m_fields->m_createCheckpointButton,
+				uiLayer->m_checkpointMenu->getChildByID("add-checkpoint-button"),
+				false
+			);
+			setCheckpointButtonPosition(
+				uiLayer->m_fields->m_removeCheckpointButton,
+				uiLayer->m_checkpointMenu->getChildByID("remove-checkpoint-button"),
+				true
+			);
+		}
+	);
 }
 
 bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
@@ -427,16 +446,19 @@ void setCheckpointButtonPosition(
 ) {
 	CCPoint offset;
 
-	std::string settingValue =
+	std::string side =
 		Mod::get()->getSettingValue<std::string>("practice-buttons-position");
+	float distance =
+		Mod::get()->getSettingValue<float>("practice-buttons-distance");
 
-	if (settingValue == "Above")
-		offset = ccp(0, sibling->getContentHeight() + 10);
-	else if (settingValue == "Below")
-		offset = ccp(0, -sibling->getContentHeight() - 10);
+	if (side == "Above")
+		offset = ccp(0, sibling->getContentHeight() + 10 + distance);
+	else if (side == "Below")
+		offset = ccp(0, -sibling->getContentHeight() - 10 - distance);
 	else
 		offset = ccp(
-			(-(sibling->getContentWidth() + button->getContentWidth()) / 2 - 10) *
+			(-(sibling->getContentWidth() + button->getContentWidth()) / 2 - 10 -
+			 distance) *
 				(invertX ? -1 : 1),
 			0
 		);

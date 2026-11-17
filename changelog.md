@@ -4,7 +4,8 @@
 - It's now possible to modify layers in fallback mode (also removed fallback resaving)
 - Checkpoints loaded in fallback mode now become "degraded", having a distinctive icon
 - Added the ability to color the checkpoints (manually and automatically)
-- Switcher labels can now be individually disabled and move closer to the center when the icon and arrows have 0 opacity (both active and inactive)
+- Switcher labels can now be individually disabled and move closer to the center when the icon and arrows have 0 opacity (both active and inactive) \[[Issue #46](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/46)\]
+- Added an option to move the practice buttons away from the vanilla buttons \[[Issue #10](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/10)\]
 
 ## 1.4.5 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v1.4.5) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v1.4.5) )
 - Fix Incompatibility with "Labeled Checkpoints" \[[Issue #54](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/54)\]
