@@ -8,11 +8,15 @@ void ModGJBaseGameLayer::loadStartPosObject(StartPosObject* spObject) {
 		for (PersistentCheckpoint* checkpoint : CCArrayExt<PersistentCheckpoint*>(
 				  playLayer->m_fields->m_persistentCheckpointArray
 			  ))
-			if (m_startPosObject == checkpoint->m_fallbackData.startPos) {
+			if (spObject == checkpoint->m_fallbackData.startPos) {
+				playLayer->m_fields->m_holdedFallbackObjects.inner()
+					->removeAllObjects();
+
 				FallbackData fallbackData = checkpoint->m_fallbackData;
 
-				m_player1->setYVelocity(fallbackData.p1Velocity.y, 0);
-				m_player1->m_platformerXVelocity = fallbackData.p1Velocity.x;
+				m_player1->setPosition(checkpoint->m_objectPos);
+				m_player1->m_position = checkpoint->m_objectPos;
+				m_player1->m_platformerXVelocity = fallbackData.p1XVelocity;
 
 				if (fallbackData.startPos->m_startSettings->m_startDual) {
 					m_player2->setPosition(fallbackData.p2Position);
@@ -59,19 +63,17 @@ void ModGJBaseGameLayer::loadStartPosObject(StartPosObject* spObject) {
 				}
 
 				if (fallbackData.freeMode) {
-					TeleportPortalObject* tpObj = TeleportPortalObject::create(
+					TeleportPortalObject* portal = TeleportPortalObject::create(
 						"edit_eGameRotBtn_001.png", true
 					);
-					tpObj->m_cameraIsFreeMode = true;
-					tpObj->m_cameraEasingValue = 10;
-					tpObj->m_cameraPaddingValue = .5f;
-					playerWillSwitchMode(m_player1, tpObj);
-					playLayer->m_fields->m_holdedTeleportObject = tpObj;
-				}
+					portal->m_cameraIsFreeMode = true;
 
-				m_gameState.m_cameraPosition = fallbackData.cameraPosition;
-				m_gameState.m_cameraOffset = fallbackData.cameraOffset;
-				m_gameState.m_cameraZoom = fallbackData.cameraZoom;
+					portal->m_cameraEasingValue = 10;
+					portal->m_cameraPaddingValue = .5f;
+
+					playerWillSwitchMode(m_player1, portal);
+					playLayer->m_fields->m_holdedFallbackObjects.push_back(portal);
+				}
 
 				break;
 			}

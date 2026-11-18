@@ -21,6 +21,8 @@ void OutStream::write(const char* str, size_t size) { stream.write(str, size); }
 
 void InStream::read(char* str, size_t size) { stream.read(str, size); }
 
+void InStream::ignore(std::streamsize count) { stream.ignore(count); }
+
 void OutStream::operator<<(std::string& txt) {
 	unsigned int size = txt.size();
 	SWRITE(size);

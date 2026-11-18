@@ -25,6 +25,7 @@ public:
 	~InStream();
 
 	void read(char* str, size_t size);
+	void ignore(std::streamsize count);
 
 	template <typename T> void operator>>(T& val) {
 		stream.read(reinterpret_cast<char*>(&val), sizeof(T));

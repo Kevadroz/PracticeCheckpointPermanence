@@ -5,20 +5,6 @@
 #include <Geode/binding/PlayLayer.hpp>
 #include <Geode/binding/PlayerCheckpoint.hpp>
 
-void serializeCCPoint(std::ofstream& out, CCPoint p) {
-	out << p.x;
-	out << p.y;
-}
-
-CCPoint deserializeCCPoint(std::ifstream& in) {
-	CCPoint p;
-
-	in >> p.x;
-	in >> p.y;
-
-	return p;
-}
-
 PersistentCheckpoint* PersistentCheckpoint::create() {
 	PersistentCheckpoint* checkpoint = new PersistentCheckpoint();
 	checkpoint->m_checkpoint = CheckpointObject::create();
@@ -47,35 +33,14 @@ void PersistentCheckpoint::storeData(
 	bool isDual =
 		p2Checkpoint != nullptr && m_checkpoint->m_gameState.m_isDualMode;
 
-	StartPosObject* startPos = StartPosObject::create();
+	StartPosObject* startPos = playLayer->createLiveStartPosObject();
 	LevelSettingsObject* spSettings = startPos->m_startSettings;
-
-	spSettings->m_startMode =
-		static_cast<int>(getGamemodeFromCheckpoint(p1Checkpoint));
-
-	spSettings->m_startSpeed =
-		p1Checkpoint->m_playerSpeed < 0.8f	 ? Speed::Slow
-		: p1Checkpoint->m_playerSpeed > 1.0f ? Speed::Fast
-		: p1Checkpoint->m_playerSpeed > 1.2f ? Speed::Faster
-		: p1Checkpoint->m_playerSpeed > 1.4f ? Speed::Fastest
-														 : Speed::Normal;
-
-	spSettings->m_startMini = p1Checkpoint->m_isMini;
-	spSettings->m_startDual = isDual;
-	spSettings->m_mirrorMode =
-		m_checkpoint->m_gameState.m_unkBool10; // Mirror Mode
-	spSettings->m_rotateGameplay = p1Checkpoint->m_isSideways;
-	spSettings->m_isFlipped = p1Checkpoint->m_isUpsideDown;
-	spSettings->m_reverseGameplay = p1Checkpoint->m_isGoingLeft;
 
 	// Space reserved, but I don't think that this is possible.
 	spSettings->m_targetOrder = 0;
 
-	spSettings->m_targetChannel = m_checkpoint->m_gameState.m_currentChannel;
-
 	// Custom Data
-	m_fallbackData.p1Velocity =
-		ccp(p1Checkpoint->m_platformerXVelocity, p1Checkpoint->m_yVelocity);
+	m_fallbackData.p1XVelocity = p1Checkpoint->m_yVelocity;
 
 	if (isDual) {
 		m_fallbackData.p2Velocity =
@@ -86,12 +51,6 @@ void PersistentCheckpoint::storeData(
 		m_fallbackData.p2IsFlipped = p2Checkpoint->m_isUpsideDown;
 		m_fallbackData.p2IsReverseGameplay = p2Checkpoint->m_isGoingLeft;
 	}
-
-	m_fallbackData.freeMode =
-		m_checkpoint->m_gameState.m_isFreeMode; // Free Mode
-	m_fallbackData.cameraPosition = m_checkpoint->m_gameState.m_cameraPosition;
-	m_fallbackData.cameraOffset = m_checkpoint->m_gameState.m_cameraOffset;
-	m_fallbackData.cameraZoom = m_checkpoint->m_gameState.m_cameraZoom;
 	// Custom Data end
 
 	startPos->setSettings(spSettings);
@@ -170,7 +129,8 @@ void PersistentCheckpoint::serializeExternal(OutStream& out) {
 	out << m_checkpoint->m_gameState.m_currentChannel;
 
 	// Custom Data
-	out << m_fallbackData.p1Velocity;
+	CCPoint p1Velocity(m_fallbackData.p1XVelocity, settings->m_yVelocity);
+	out << p1Velocity;
 
 	if (settings->m_startDual) {
 		int p2Gamemode = (int)m_fallbackData.p2Gamemode;
@@ -184,9 +144,6 @@ void PersistentCheckpoint::serializeExternal(OutStream& out) {
 	}
 
 	out << m_fallbackData.freeMode;
-	out << m_fallbackData.cameraPosition;
-	out << m_fallbackData.cameraOffset;
-	out << m_fallbackData.cameraZoom;
 }
 
 void PersistentCheckpoint::deserializeExternal(
@@ -197,7 +154,8 @@ void PersistentCheckpoint::deserializeExternal(
 	in >> m_percent;
 
 	in >> m_checkpointName;
-	in >> m_color;
+	if (header.saveVersion >= 4)
+		in >> m_color;
 
 	// Fallback
 	StartPosObject* startPos = StartPosObject::create();
@@ -222,9 +180,10 @@ void PersistentCheckpoint::deserializeExternal(
 	in >> settings->m_targetChannel;
 
 	// Custom Data
-	CCPoint cameraPosition;
-
-	in >> m_fallbackData.p1Velocity;
+	CCPoint p1Velocity;
+	in >> p1Velocity;
+	m_fallbackData.p1XVelocity = p1Velocity.x;
+	settings->m_yVelocity = p1Velocity.y;
 
 	if (settings->m_startDual) {
 		int p2Gamemode;
@@ -240,9 +199,11 @@ void PersistentCheckpoint::deserializeExternal(
 	}
 
 	in >> m_fallbackData.freeMode;
-	in >> m_fallbackData.cameraPosition;
-	in >> m_fallbackData.cameraOffset;
-	in >> m_fallbackData.cameraZoom;
+	if (header.saveVersion < 4) {
+		in.ignore(sizeof(CCPoint));
+		in.ignore(sizeof(CCPoint));
+		in.ignore(sizeof(float));
+	}
 	// Custom Data end
 
 	startPos->setSettings(settings);

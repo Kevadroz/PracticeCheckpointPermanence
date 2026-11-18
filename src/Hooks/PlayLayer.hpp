@@ -14,8 +14,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 		Ref<CCArray> m_persistentCheckpointArray = nullptr;
 		Ref<CCSpriteBatchNode> m_persistentCheckpointBatchNode = nullptr;
 
-		// For the Free Mode in the Fallback
-		Ref<TeleportPortalObject> m_holdedTeleportObject = nullptr;
+		CCArrayExt<GameObject> m_holdedFallbackObjects;
 
 		unsigned int m_activeCheckpoint = 0;
 		unsigned int m_activeSaveLayer = 0;

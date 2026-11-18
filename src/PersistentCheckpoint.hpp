@@ -20,7 +20,7 @@ enum class StartPosGameModes : int {
 struct FallbackData {
 	Ref<StartPosObject> startPos = nullptr;
 
-	CCPoint p1Velocity;
+	float p1XVelocity;
 	CCPoint p2Velocity;
 	CCPoint p2Position;
 	StartPosGameModes p2Gamemode;
@@ -29,9 +29,6 @@ struct FallbackData {
 	bool p2IsReverseGameplay;
 
 	bool freeMode;
-	CCPoint cameraPosition;
-	CCPoint cameraOffset;
-	float cameraZoom;
 };
 
 struct CheckpointStyle {

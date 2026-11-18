@@ -114,7 +114,13 @@
 			}
 		},
 		"show-checkpoints-in-normal-mode": {
-			"name": "Show checkpoints in Integrated Normal Mode",
+			"name": "Show checkpoints in Normal Mode",
+			"type": "bool",
+			"default": false,
+			"enable-if": "switch-in-out-normal-mode"
+		},
+		"show-checkpoints-in-normal-mode-progressbar": {
+			"name": "Show checkpoints in Normal Mode (Progress bar)",
 			"type": "bool",
 			"default": false,
 			"enable-if": "switch-in-out-normal-mode"

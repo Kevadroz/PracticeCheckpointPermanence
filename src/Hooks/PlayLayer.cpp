@@ -31,16 +31,20 @@ $execute {
 		})
 		.leak();
 
-	SettingChangedEvent(Mod::get(), "show-checkpoints-in-normal-mode")
-		.listen(+[](std::shared_ptr<SettingV3> setting) {
-			ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
-			if (
-				playLayer != nullptr && !playLayer->m_isPracticeMode &&
-				Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")
-			)
-				playLayer->updateModUI();
-		})
-		.leak();
+	for (const char* key :
+		  {"show-checkpoints-in-normal-mode",
+			"show-checkpoints-in-normal-mode-progressbar"})
+		SettingChangedEvent(Mod::get(), key)
+			.listen(+[](std::shared_ptr<SettingV3> setting) {
+				ModPlayLayer* playLayer =
+					static_cast<ModPlayLayer*>(PlayLayer::get());
+				if (
+					playLayer != nullptr && !playLayer->m_isPracticeMode &&
+					Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")
+				)
+					playLayer->updateModUI();
+			})
+			.leak();
 }
 
 bool ModPlayLayer::init(GJGameLevel* level, bool dontCreateObjects) {
@@ -319,6 +323,12 @@ void ModPlayLayer::updateModUI() {
 		return;
 
 	bool checkpointsVisible = isModUIVisible();
+	bool pbCheckpointsVisible =
+		m_isPracticeMode ||
+		(Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
+		 Mod::get()->getSettingValue<bool>(
+			 "show-checkpoints-in-normal-mode-progressbar"
+		 ));
 
 	m_fields->m_persistentCheckpointBatchNode->setVisible(checkpointsVisible);
 
@@ -326,7 +336,7 @@ void ModPlayLayer::updateModUI() {
 		return;
 
 	CCNodeRGBA* container = m_fields->m_pbCheckpointContainer;
-	container->setVisible(checkpointsVisible);
+	container->setVisible(pbCheckpointsVisible);
 	container->removeAllChildren();
 
 	unsigned int currentCheckpoint = 0;
