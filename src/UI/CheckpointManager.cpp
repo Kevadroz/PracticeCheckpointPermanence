@@ -227,12 +227,12 @@ void CheckpointManager::createList(bool resetPosition) {
 	float contentPosition;
 
 	if (recreated) {
-		m_cellsArray->removeAllObjects();
-		m_listView->removeFromParent();
-
 		if (carryPosition)
 			contentPosition =
 				m_listView->getChildByIndex(0)->getChildByIndex(0)->getPositionY();
+
+		m_cellsArray->removeAllObjects();
+		m_listView->removeFromParent();
 	}
 
 	CCArray* checkpointArray = playLayer->m_fields->m_persistentCheckpointArray;

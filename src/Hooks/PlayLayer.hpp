@@ -45,11 +45,13 @@ class $modify(ModPlayLayer, PlayLayer) {
 	// Custom
 	void registerKeybindListeners();
 	void updateModUI();
+	void updateCheckpointManager(bool fullUpdate = false);
 	bool isPersistentSystemActive();
 	bool isModUIVisible();
 	bool isDegradedCheckpoint();
 	bool isFallbackMode();
 	bool isUnloadableError();
+	bool keybindsAvailable();
 
 	// Data
 	void serializeCheckpoints();

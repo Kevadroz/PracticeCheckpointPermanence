@@ -8,6 +8,17 @@ public:
 	bool init();
 	static CheckpointManager* create();
 
+	void createList(bool resetPosition = false);
+	CCNode* createCheckpointCell(
+		PersistentCheckpoint* checkpoint,
+		std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
+		std::function<void(CCMenuItemSpriteExtra*)> removeCallback
+	);
+
+	void updateUIElements(bool resetListPosition = false);
+
 private:
 	float m_popupWidth = 300.0f;
 
@@ -24,17 +35,6 @@ private:
 	CCMenuItemSpriteExtra* m_errorButton = nullptr;
 
 	Ref<CCArray> m_cellsArray = CCArray::create();
-
-	void createList(bool resetPosition = false);
-	CCNode* createCheckpointCell(
-		PersistentCheckpoint* checkpoint,
-		std::function<void(CCMenuItemSpriteExtra*)> moveUpCallback,
-		std::function<void(CCMenuItemSpriteExtra*)> moveDownCallback,
-		std::function<void(CCMenuItemSpriteExtra*)> selectCallback,
-		std::function<void(CCMenuItemSpriteExtra*)> removeCallback
-	);
-
-	void updateUIElements(bool resetListPosition = false);
 
 	void forceLoadPopup();
 

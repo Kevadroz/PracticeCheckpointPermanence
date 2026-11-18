@@ -1,4 +1,5 @@
 #include "PlayLayer.hpp"
+#include "../UI/CheckpointManager.hpp"
 #include "UILayer.hpp"
 
 $execute {
@@ -224,9 +225,11 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-create-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down) {
-				if (!repeat)
+			if (isPersistentSystemActive() && down && keybindsAvailable()) {
+				if (!repeat) {
 					markPersistentCheckpoint();
+					updateCheckpointManager();
+				}
 				return true;
 			}
 			return false;
@@ -236,12 +239,14 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-remove-checkpoint"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down) {
+			if (isPersistentSystemActive() && down && keybindsAvailable()) {
 				if (!repeat) {
 					if (m_fields->m_ghostActiveCheckpoint != 0)
 						removeGhostPersistentCheckpoint();
 					else if (m_fields->m_activeCheckpoint != 0)
 						removeCurrentPersistentCheckpoint();
+
+					updateCheckpointManager();
 				}
 
 				return true;
@@ -255,9 +260,11 @@ void ModPlayLayer::registerKeybindListeners() {
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (
 				isPersistentSystemActive() && down &&
-				m_fields->m_persistentCheckpointArray->count() > 0
+				m_fields->m_persistentCheckpointArray->count() > 0 &&
+				keybindsAvailable()
 			) {
 				previousCheckpoint();
+				updateCheckpointManager();
 				return true;
 			}
 			return false;
@@ -269,9 +276,11 @@ void ModPlayLayer::registerKeybindListeners() {
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
 			if (
 				isPersistentSystemActive() && down &&
-				m_fields->m_persistentCheckpointArray->count() > 0
+				m_fields->m_persistentCheckpointArray->count() > 0 &&
+				keybindsAvailable()
 			) {
 				nextCheckpoint();
+				updateCheckpointManager();
 				return true;
 			}
 			return false;
@@ -281,8 +290,9 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-previous-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down) {
+			if (isPersistentSystemActive() && down && keybindsAvailable()) {
 				previousSaveLayer();
+				updateCheckpointManager(true);
 				return true;
 			}
 			return false;
@@ -292,8 +302,9 @@ void ModPlayLayer::registerKeybindListeners() {
 	this->addEventListener(
 		KeybindSettingPressedEventV3(Mod::get(), "keybind-next-layer"),
 		[this](Keybind const& keybind, bool down, bool repeat, double timestamp) {
-			if (isPersistentSystemActive() && down) {
+			if (isPersistentSystemActive() && down && keybindsAvailable()) {
 				nextSaveLayer();
+				updateCheckpointManager(true);
 				return true;
 			}
 			return false;
@@ -361,6 +372,19 @@ void ModPlayLayer::updateModUI() {
 	container->setOpacity(container->getOpacity());
 }
 
+void ModPlayLayer::updateCheckpointManager(bool fullUpdate) {
+	for (CCNode* layer :
+		  CCDirector::sharedDirector()->getRunningScene()->getChildrenExt())
+		if (
+			CheckpointManager* manager = dynamic_cast<CheckpointManager*>(layer)
+		) {
+			if (fullUpdate)
+				manager->updateUIElements(true);
+			else
+				manager->createList(false);
+		}
+}
+
 bool ModPlayLayer::isPersistentSystemActive() {
 	return Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") ||
 			 m_isPracticeMode;
@@ -400,4 +424,13 @@ bool ModPlayLayer::isFallbackMode() {
 bool ModPlayLayer::isUnloadableError() {
 	return m_fields->m_loadError != LoadError::None &&
 			 !SaveParser::isErrorFallbackCapable(m_fields->m_loadError);
+}
+
+bool ModPlayLayer::keybindsAvailable() {
+	for (CCNode* layer :
+		  CCDirector::sharedDirector()->getRunningScene()->getChildrenExt())
+		if (dynamic_cast<RenamePopup*>(layer))
+			return false;
+
+	return true;
 }
