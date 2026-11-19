@@ -268,7 +268,8 @@ void ModPlayLayer::registerKeybindListeners() {
 				keybindsAvailable()
 			) {
 				previousCheckpoint();
-				updateCheckpointManager(false, true);
+				updateCheckpointManager();
+				triggerHideMenuLayers();
 				return true;
 			}
 			return false;
@@ -284,7 +285,8 @@ void ModPlayLayer::registerKeybindListeners() {
 				keybindsAvailable()
 			) {
 				nextCheckpoint();
-				updateCheckpointManager(false, true);
+				updateCheckpointManager();
+				triggerHideMenuLayers();
 				return true;
 			}
 			return false;
@@ -382,7 +384,7 @@ void ModPlayLayer::updateModUI() {
 	container->setOpacity(container->getOpacity());
 }
 
-void ModPlayLayer::updateCheckpointManager(bool fullUpdate, bool triggerHide) {
+void ModPlayLayer::updateCheckpointManager(bool fullUpdate) {
 	for (CCNode* layer :
 		  CCDirector::sharedDirector()->getRunningScene()->getChildrenExt())
 		if (
@@ -392,10 +394,33 @@ void ModPlayLayer::updateCheckpointManager(bool fullUpdate, bool triggerHide) {
 				manager->updateUIElements(true);
 			else
 				manager->createList(false);
-
-			if (triggerHide)
-				manager->triggerHideLayer();
 		}
+}
+
+void ModPlayLayer::triggerHideMenuLayers() {
+	float hideTime = Mod::get()->getSettingValue<float>("manager-hide-time");
+	if (hideTime <= 0.f)
+		return;
+
+	std::vector<CCNode*> hideNodes;
+
+	for (CCNode* layer : CCDirector::get()->getRunningScene()->getChildrenExt())
+		if (
+			dynamic_cast<PauseLayer*>(layer) ||
+			dynamic_cast<CheckpointManager*>(layer)
+		)
+			hideNodes.push_back(layer);
+
+	for (CCNode* node : hideNodes) {
+		node->stopActionByTag(0x33D7);
+		node->setVisible(false);
+		CCSequence* sequence = CCSequence::create(
+			CCDelayTime::create(hideTime), CCToggleVisibility::create(), nullptr
+		);
+		sequence->setTag(0x33D7);
+
+		node->runAction(sequence);
+	}
 }
 
 bool ModPlayLayer::isPersistentSystemActive() {

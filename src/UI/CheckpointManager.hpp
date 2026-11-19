@@ -18,7 +18,6 @@ public:
 	);
 
 	void updateUIElements(bool resetListPosition = false);
-	void triggerHideLayer();
 
 private:
 	float m_popupWidth = 300.0f;
