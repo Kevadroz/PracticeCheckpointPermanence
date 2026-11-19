@@ -44,7 +44,7 @@ class $modify(ModPlayLayer, PlayLayer) {
 	// Custom
 	void registerKeybindListeners();
 	void updateModUI();
-	void updateCheckpointManager(bool fullUpdate = false);
+	void updateCheckpointManager(bool fullUpdate = false, bool triggerHide = false);
 	bool isPersistentSystemActive();
 	bool isModUIVisible();
 	bool isDegradedCheckpoint();

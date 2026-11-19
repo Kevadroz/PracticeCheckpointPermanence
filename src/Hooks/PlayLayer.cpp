@@ -268,7 +268,7 @@ void ModPlayLayer::registerKeybindListeners() {
 				keybindsAvailable()
 			) {
 				previousCheckpoint();
-				updateCheckpointManager();
+				updateCheckpointManager(false, true);
 				return true;
 			}
 			return false;
@@ -284,7 +284,7 @@ void ModPlayLayer::registerKeybindListeners() {
 				keybindsAvailable()
 			) {
 				nextCheckpoint();
-				updateCheckpointManager();
+				updateCheckpointManager(false, true);
 				return true;
 			}
 			return false;
@@ -382,7 +382,7 @@ void ModPlayLayer::updateModUI() {
 	container->setOpacity(container->getOpacity());
 }
 
-void ModPlayLayer::updateCheckpointManager(bool fullUpdate) {
+void ModPlayLayer::updateCheckpointManager(bool fullUpdate, bool triggerHide) {
 	for (CCNode* layer :
 		  CCDirector::sharedDirector()->getRunningScene()->getChildrenExt())
 		if (
@@ -392,6 +392,9 @@ void ModPlayLayer::updateCheckpointManager(bool fullUpdate) {
 				manager->updateUIElements(true);
 			else
 				manager->createList(false);
+
+			if (triggerHide)
+				manager->triggerHideLayer();
 		}
 }
 

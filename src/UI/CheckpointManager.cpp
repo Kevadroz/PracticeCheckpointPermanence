@@ -270,6 +270,8 @@ void CheckpointManager::createList(bool resetPosition) {
 
 				playLayer->switchCurrentCheckpoint(index);
 				createList();
+
+				triggerHideLayer();
 			},
 			[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 				bool updateLabel =
@@ -414,6 +416,28 @@ void CheckpointManager::updateUIElements(bool resetListPosition) {
 	}
 
 	m_buttonMenu->updateLayout(false);
+}
+
+void CheckpointManager::triggerHideLayer() {
+	float hideTime = Mod::get()->getSettingValue<float>("manager-hide-time");
+	if (hideTime <= 0.f)
+		return;
+	std::vector<CCNode*> hideNodes = {this};
+
+	for (CCNode* layer : CCDirector::get()->getRunningScene()->getChildrenExt())
+		if (PauseLayer* pLayer = dynamic_cast<PauseLayer*>(layer))
+			hideNodes.push_back(pLayer);
+
+	for (CCNode* node : hideNodes) {
+		node->stopActionByTag(0x33D7);
+		node->setVisible(false);
+		CCSequence* sequence = CCSequence::create(
+			CCDelayTime::create(hideTime), CCToggleVisibility::create(), nullptr
+		);
+		sequence->setTag(0x33D7);
+
+		node->runAction(sequence);
+	}
 }
 
 CCNode* CheckpointManager::createCheckpointCell(

@@ -6,6 +6,7 @@
 - Added the ability to color the checkpoints (manually and automatically)
 - Fixed the keybinds being able to desynchronize the Checkpoint Manager \[[Issue #60](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/60)\]
 - Switcher labels can now be individually disabled and move closer to the center when the icon and arrows have 0 opacity (both active and inactive) \[[Issue #46](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/46)\]
+- The Checkpoint Manager now hides for a bit when switching checkpoints \[[Issue #59](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/59)\]
 - Added an option to move the practice buttons away from the vanilla buttons \[[Issue #10](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/10)\]
 - Split Showing checkpoints in the progress bar in Intergrated Normal Mode into it's own setting
 

@@ -58,6 +58,20 @@
 				"arrow-step": 5.0
 			}
 		},
+		"manager-hide-time": {
+			"name": "Checkpoint Manager Hide Time",
+			"type": "float",
+			"default": 1.5,
+			"min": 0.0,
+			"max": 10.0,
+			"control": {
+				"slider": true,
+				"slider-step": 0.1,
+				"arrows": true,
+				"arrow-step": 0.5
+			},
+			"description": "Amount of time that the Checkpoint Manager hides when switching checkpoints"
+		},
 		"switch-in-out-normal-mode": {
 			"name": "Integrated Normal Mode",
 			"type": "bool",
