@@ -2,7 +2,7 @@
 #include "../UI/CheckpointManager.hpp"
 #include "PlayLayer.hpp"
 
-#include <filesystem>
+#include <asp/fs/fs.hpp>
 
 void ModPauseLayer::customSetup() {
 	ModPlayLayer* playLayer = static_cast<ModPlayLayer*>(PlayLayer::get());
@@ -23,8 +23,8 @@ void ModPauseLayer::customSetup() {
 			if (playLayer->isPersistentSystemActive())
 				CheckpointManager::create()->show();
 			else {
-				std::filesystem::path path = playLayer->getSavePath();
-				if (std::filesystem::exists(path))
+				asp::fs::Path path = playLayer->getSavePath();
+				if (path.exists())
 					geode::createQuickPopup(
 						"Persistent Checkpoints",
 						"Open in practice mode to manage checkpoints.", "Ok",
@@ -32,21 +32,32 @@ void ModPauseLayer::customSetup() {
 							if (confirmed)
 								geode::createQuickPopup(
 									"Delete All",
-									"Delete all saved checkpoints for this level?\n"
+									"Delete all saved checkpoints for this "
+									"level?\n"
 									"This action cannot be undone.",
 									"Cancel", "Delete",
-									[path, playLayer](auto, bool confirmed) {
-										if (confirmed)
-											std::filesystem::remove(path);
+									[playLayer](auto, bool confirmed) {
+										if (!confirmed)
+											return;
+										playLayer->m_fields->m_activeSaveLayer = 0;
 										while (true) {
-											playLayer->m_fields->m_activeSaveLayer++;
-											std::filesystem::path layerPath =
+											asp::fs::Path layerPath =
 												playLayer->getSavePath();
-											if (std::filesystem::exists(layerPath))
-												std::filesystem::remove(layerPath);
+											if (layerPath.exists())
+												asp::fs::remove(layerPath).inspectErr(
+													[layerPath](asp::fs::Error err) {
+														log::error(
+															"Cannot remove save layer with "
+															"path '{}': {}",
+															layerPath, err
+														);
+													}
+												);
 											else
 												break;
+											playLayer->m_fields->m_activeSaveLayer++;
 										}
+
 										playLayer->m_fields->m_activeSaveLayer = 0;
 									}
 								);

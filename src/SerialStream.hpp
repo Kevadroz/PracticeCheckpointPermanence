@@ -2,7 +2,7 @@ class OutStream {
 	std::ofstream stream;
 
 public:
-	OutStream(std::string path);
+	OutStream(asp::fs::Path path);
 	~OutStream();
 
 	void write(const char* str, size_t size);
@@ -21,7 +21,7 @@ class InStream {
 	std::ifstream stream;
 
 public:
-	InStream(std::string path);
+	InStream(asp::fs::Path path);
 	~InStream();
 
 	void read(char* str, size_t size);

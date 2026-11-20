@@ -58,8 +58,8 @@ class $modify(ModPlayLayer, PlayLayer) {
 	void deserializeCheckpoints(bool ignoreVerification = false);
 	void unloadPersistentCheckpoints();
 
-	std::filesystem::path getSavePath();
-	static std::filesystem::path
+	asp::fs::Path getSavePath();
+	static asp::fs::Path
 	getSavePath(GJGameLevel* level, bool lowDetail, unsigned int saveLayer);
 
 	// Checkpoints

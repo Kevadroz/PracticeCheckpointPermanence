@@ -6,7 +6,7 @@ using namespace geode::prelude;
 
 struct SaveLayerInfo {
 	SaveHeader header;
-	std::filesystem::path filePath;
+	asp::fs::Path filePath;
 };
 
 struct LevelSaveInfo {
@@ -25,6 +25,7 @@ public:
 
 	void previousPage();
 	void nextPage();
+
 private:
 	unsigned int m_page = 0;
 	CCLabelBMFont* m_pageLabel = nullptr;

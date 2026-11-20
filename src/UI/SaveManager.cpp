@@ -1,6 +1,8 @@
 #include "SaveManager.hpp"
 #include "ListMenu.hpp"
 
+#include <asp/fs/fs.hpp>
+
 SaveManager* SaveManager::create() {
 	SaveManager* ret = new SaveManager();
 	if (ret->init()) {
@@ -304,7 +306,13 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 			for (std::vector<SaveLayerInfo> layers :
 				  {info.standardLayers, info.ldmLayers})
 				for (SaveLayerInfo layer : layers)
-					std::filesystem::remove(layer.filePath);
+					asp::fs::remove(layer.filePath)
+						.inspectErr([path = layer.filePath](asp::fs::Error err) {
+							log::error(
+								"Couldn't remove save layer with path '{}': {}", path,
+								err
+							);
+						});
 
 			int levelID = info.levelID;
 			auto index = std::find_if(
@@ -413,8 +421,7 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 	std::map<int, LevelSaveInfo> editorLevels;
 
 	for (std::map<int, LevelSaveInfo>* levelList : {&levels, &editorLevels}) {
-		std::vector<std::pair<SaveHeader, std::filesystem::directory_entry>>
-			saves;
+		std::vector<std::pair<SaveHeader, asp::fs::DirectoryEntry>> saves;
 
 		const char* subPath;
 		bool isEditor;
@@ -426,31 +433,34 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 			isEditor = true;
 		}
 
-		for (std::filesystem::directory_entry entry :
-			  std::filesystem::directory_iterator(
-				  fmt::format(
-					  "{}/saves/{}", Mod::get()->getSaveDir().string(),
-					  subPath
-				  )
-			  )) {
-			if (entry.is_directory())
+		Result<asp::fs::DirectoryIterator> iterator = asp::fs::iterDir(
+			fmt::format("{}/saves/{}", Mod::get()->getSaveDir().string(), subPath)
+		);
+		if (iterator.isErr())
+			continue;
+
+		for (auto rawEntry : iterator.unwrap()) {
+			if (rawEntry.isErr())
+				continue;
+
+			asp::fs::DirectoryEntry entry = rawEntry.unwrap();
+			if (entry.isDir())
 				continue;
 
 			saves.push_back(
 				std::pair(
-					SaveParser::fromPath(entry.path(), nullptr, isEditor).value(),
+					SaveParser::fromPath(entry.path, nullptr, isEditor).value(),
 					entry
 				)
 			);
 		}
 
-		for (std::pair<SaveHeader, std::filesystem::directory_entry> save :
-			  saves) {
-			if (save.second.is_directory())
+		for (std::pair<SaveHeader, asp::fs::DirectoryEntry> save : saves) {
+			if (save.second.isDir())
 				continue;
 
-			std::filesystem::path path = save.second.path();
-			std::string filename = path.filename().string();
+			asp::fs::Path path = save.second.path;
+			std::string filename = path.filename()->string();
 			std::string filenameNoExtension = string::split(filename, ".").front();
 
 			std::vector<std::string> layerSplit =
@@ -484,7 +494,7 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 				lowDetail ? &info->ldmLayers : &info->standardLayers;
 			layers->push_back(saveLayerInfo);
 
-			info->fullFileSize += save.second.file_size();
+			info->fullFileSize += asp::fs::fileSize(save.second.path).unwrapOr(0);
 		}
 	}
 

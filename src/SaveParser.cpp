@@ -67,10 +67,9 @@ SaveHeader SaveParser::fromStream(
 							levelVersion, checkpointCount, levelName};
 }
 
-std::optional<SaveHeader> SaveParser::fromPath(
-	std::filesystem::path path, GJGameLevel* level, bool isEditor
-) {
-	if (!std::filesystem::exists(path))
+std::optional<SaveHeader>
+SaveParser::fromPath(asp::fs::Path path, GJGameLevel* level, bool isEditor) {
+	if (!path.exists())
 		return std::nullopt;
 
 	InStream stream(path.string());

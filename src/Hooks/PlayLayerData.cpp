@@ -52,8 +52,8 @@ void ModPlayLayer::deserializeCheckpoints(bool ignoreVerification) {
 	unloadPersistentCheckpoints();
 	m_fields->m_loadError = LoadError::None;
 
-	std::string savePath = getSavePath().string();
-	if (!std::filesystem::exists(savePath))
+	asp::fs::Path savePath = getSavePath();
+	if (!savePath.exists())
 		return;
 
 	removeAllCheckpoints();
@@ -134,11 +134,11 @@ void ModPlayLayer::unloadPersistentCheckpoints() {
 	m_fields->m_persistentCheckpointArray->removeAllObjects();
 }
 
-std::filesystem::path ModPlayLayer::getSavePath() {
+asp::fs::Path ModPlayLayer::getSavePath() {
 	return getSavePath(m_level, m_lowDetailMode, m_fields->m_activeSaveLayer);
 }
 
-std::filesystem::path ModPlayLayer::getSavePath(
+asp::fs::Path ModPlayLayer::getSavePath(
 	GJGameLevel* level, bool lowDetail, unsigned int saveLayer
 ) {
 	std::string savePath =
@@ -156,5 +156,5 @@ std::filesystem::path ModPlayLayer::getSavePath(
 
 	savePath.append(fmt::format("_{}.pcp", saveLayer));
 
-	return savePath;
+	return asp::fs::Path(savePath);
 }

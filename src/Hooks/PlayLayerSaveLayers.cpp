@@ -1,5 +1,7 @@
 #include "PlayLayer.hpp"
 
+#include <asp/fs/fs.hpp>
+
 void ModPlayLayer::nextSaveLayer() {
 	if (m_fields->m_saveLayerCount == 0)
 		return;
@@ -35,19 +37,25 @@ void ModPlayLayer::switchCurrentSaveLayer(unsigned int saveLayer) {
 void ModPlayLayer::removeCurrentSaveLayer() {
 	unsigned int deletedSaveLayer = m_fields->m_activeSaveLayer;
 
-	std::filesystem::path path = getSavePath();
-	if (std::filesystem::exists(path))
-		std::filesystem::remove(path);
+	asp::fs::Path path = getSavePath();
+	if (path.exists())
+		asp::fs::remove(path).inspectErr([path](asp::fs::Error err) {
+			log::error("Couldn't remove save layer with path '{}': {}", path, err);
+		});
 	else
 		return;
 
 	while (true) {
 		m_fields->m_activeSaveLayer++;
-		std::filesystem::path lastPath = path;
+		asp::fs::Path lastPath = path;
 		path = getSavePath();
 
-		if (std::filesystem::exists(path))
-			std::filesystem::rename(path, lastPath);
+		if (path.exists())
+			asp::fs::rename(path, lastPath).inspectErr([path](asp::fs::Error err) {
+				log::error(
+					"Couldn't rename save layer with path '{}': {}", path, err
+				);
+			});
 		else
 			break;
 	}
@@ -62,28 +70,44 @@ void ModPlayLayer::removeCurrentSaveLayer() {
 }
 
 void ModPlayLayer::swapSaveLayers(unsigned int left, unsigned int right) {
-	if (left >= m_fields->m_saveLayerCount ||
-		 right >= m_fields->m_saveLayerCount)
+	if (
+		left >= m_fields->m_saveLayerCount || right >= m_fields->m_saveLayerCount
+	)
 		return;
 
 	unsigned int activeSaveLayer = m_fields->m_activeSaveLayer;
 
 	m_fields->m_activeSaveLayer = left;
-	std::filesystem::path leftPath = getSavePath();
-	if (!std::filesystem::exists(leftPath))
+	asp::fs::Path leftPath = getSavePath();
+	if (!leftPath.exists())
 		return;
 
 	m_fields->m_activeSaveLayer = right;
-	std::filesystem::path rightPath = getSavePath();
-	if (!std::filesystem::exists(rightPath))
+	asp::fs::Path rightPath = getSavePath();
+	if (!rightPath.exists())
 		return;
 
-	std::filesystem::path tempPath = leftPath;
+	asp::fs::Path tempPath = leftPath;
 	tempPath.concat(".temp_move");
 
-	std::filesystem::rename(leftPath, tempPath);
-	std::filesystem::rename(rightPath, leftPath);
-	std::filesystem::rename(tempPath, rightPath);
+	asp::fs::rename(leftPath, tempPath)
+		.inspectErr([leftPath](asp::fs::Error err) {
+			log::error(
+				"Couldn't rename save layer with path '{}': {}", leftPath, err
+			);
+		});
+	asp::fs::rename(rightPath, leftPath)
+		.inspectErr([rightPath](asp::fs::Error err) {
+			log::error(
+				"Couldn't rename save layer with path '{}': {}", rightPath, err
+			);
+		});
+	asp::fs::rename(tempPath, rightPath)
+		.inspectErr([tempPath](asp::fs::Error err) {
+			log::error(
+				"Couldn't rename save layer with path '{}': {}", tempPath, err
+			);
+		});
 
 	m_fields->m_activeSaveLayer = activeSaveLayer;
 }

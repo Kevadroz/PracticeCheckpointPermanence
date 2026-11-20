@@ -1,5 +1,7 @@
 #include "SerialStream.hpp"
 
+#include <asp/fs/std.hpp>
+
 #define SWRITE(val)                                                            \
 	{                                                                           \
 		auto __val = val;                                                        \
@@ -7,11 +9,13 @@
 	}
 #define SREAD(val) stream.read(reinterpret_cast<char*>(&val), sizeof(val))
 
-OutStream::OutStream(std::string path) {
-	stream.open(path, std::ios::binary | std::ios::trunc);
+OutStream::OutStream(asp::fs::Path path) {
+	stream.open(path.toStdPath().unwrap(), std::ios::binary | std::ios::trunc);
 }
 
-InStream::InStream(std::string path) { stream.open(path, std::ios::binary); }
+InStream::InStream(asp::fs::Path path) {
+	stream.open(path.toStdPath().unwrap(), std::ios::binary);
+}
 
 OutStream::~OutStream() { stream.close(); }
 
