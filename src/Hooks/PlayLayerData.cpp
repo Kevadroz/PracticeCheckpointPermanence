@@ -1,5 +1,5 @@
 #include "PlayLayer.hpp"
-// #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <cvolton.level-id-api/EditorIDs.hpp>
 
 const std::hash<std::string> c_stringHasher;
 
@@ -145,9 +145,7 @@ asp::fs::Path ModPlayLayer::getSavePath(
 		fmt::format("{}/saves/", Mod::get()->getSaveDir().string());
 
 	if (level->m_levelType == GJLevelType::Editor)
-		savePath.append(
-			fmt::format("editor/{}", 0)
-		); // EditorIDs::getID(level)));
+		savePath.append(fmt::format("editor/{}", EditorIDs::getID(level)));
 	else
 		savePath.append(fmt::to_string(level->m_levelID.value()));
 
