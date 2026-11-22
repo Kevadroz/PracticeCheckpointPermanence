@@ -1,4 +1,4 @@
-## 2.0.0-alpha.1 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v2.0.0-alpha.1) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v2.0.0-alpha.1) )
+## 2.0.0-alpha.2 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v2.0.0-alpha.2) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v2.0.0-alpha.2) )
 - Ported to GD 2.2091 and Geode 6
 - Switched versioning to a propper MAJOR.MINOR.PATCH
 - It's now possible to modify layers in fallback mode (also removed fallback resaving)
