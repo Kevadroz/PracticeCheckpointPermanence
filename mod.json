@@ -1,5 +1,5 @@
 {
-	"geode": "6.0.0-beta.1",
+	"geode": "6.0.0-beta.2",
 	"gd": {
 		"win": "2.2091",
 		"mac": "2.2091",
@@ -7,7 +7,7 @@
 	},
 	"id": "kevadroz.practicecheckpointpermanence",
 	"name": "Practice Checkpoint Permanence",
-	"version": "v2.0.0-alpha.2",
+	"version": "v2.0.0-alpha.3",
 	"developer": "Kevadroz",
 	"description": "Make checkpoints that persist across sessions",
 	"links": {

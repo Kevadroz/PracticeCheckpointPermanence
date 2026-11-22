@@ -385,10 +385,13 @@ void ModPlayLayer::updateModUI() {
 }
 
 void ModPlayLayer::updateCheckpointManager(bool fullUpdate) {
-	for (CCNode* layer :
-		  CCDirector::sharedDirector()->getRunningScene()->getChildrenExt())
+	CCScene* scene = CCScene::get();
+	if (scene == nullptr)
+		return;
+
+	for (CCNode* layer : scene->getChildrenExt())
 		if (
-			CheckpointManager* manager = dynamic_cast<CheckpointManager*>(layer)
+			CheckpointManager* manager = typeinfo_cast<CheckpointManager*>(layer)
 		) {
 			if (fullUpdate)
 				manager->updateUIElements(true);
@@ -398,16 +401,19 @@ void ModPlayLayer::updateCheckpointManager(bool fullUpdate) {
 }
 
 void ModPlayLayer::triggerHideMenuLayers() {
+	CCScene* scene = CCScene::get();
+	if (scene == nullptr)
+		return;
+
 	float hideTime = Mod::get()->getSettingValue<float>("manager-hide-time");
 	if (hideTime <= 0.f)
 		return;
 
 	std::vector<CCNode*> hideNodes;
-
-	for (CCNode* layer : CCDirector::get()->getRunningScene()->getChildrenExt())
+	for (CCNode* layer : scene->getChildrenExt())
 		if (
-			dynamic_cast<PauseLayer*>(layer) ||
-			dynamic_cast<CheckpointManager*>(layer)
+			typeinfo_cast<PauseLayer*>(layer) ||
+			typeinfo_cast<CheckpointManager*>(layer)
 		)
 			hideNodes.push_back(layer);
 
@@ -465,9 +471,12 @@ bool ModPlayLayer::isUnloadableError() {
 }
 
 bool ModPlayLayer::keybindsAvailable() {
-	for (CCNode* layer :
-		  CCDirector::sharedDirector()->getRunningScene()->getChildrenExt())
-		if (dynamic_cast<RenamePopup*>(layer))
+	CCScene* scene = CCScene::get();
+	if (scene == nullptr)
+		return false;
+
+	for (CCNode* layer : scene->getChildrenExt())
+		if (typeinfo_cast<RenamePopup*>(layer))
 			return false;
 
 	return true;
