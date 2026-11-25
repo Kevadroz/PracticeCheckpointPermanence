@@ -421,7 +421,7 @@ void createButtonBindsLabel(
 	bool first = true;
 	for (auto bind : Mod::get()->getSettingValue<std::vector<Keybind>>(action)) {
 		if (!first) {
-			bindContainer->addChild(CCLabelBMFont::create("/", "bigFont.fnt"));
+			bindContainer->addChild(Label::create("/", "bigFont.fnt"));
 		}
 		first = false;
 		bindContainer->addChild(bind.createNode());

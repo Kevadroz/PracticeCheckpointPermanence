@@ -72,7 +72,7 @@ bool CheckpointManager::init() {
 		m_deleteButton->setOpacity(205);
 	}
 
-	m_saveLayerLabel = CCLabelBMFont::create("", "bigFont.fnt");
+	m_saveLayerLabel = Label::create("", "bigFont.fnt");
 	m_saveLayerLabel->setScale(.6);
 
 	CCSprite* previousLayerSpr =
@@ -151,26 +151,21 @@ bool CheckpointManager::init() {
 	m_buttonMenu->addChildAtPosition(
 		m_previousLayerBtn, Anchor::Top, ccp(0, -45)
 	);
-	m_buttonMenu->addChildAtPosition(
-		m_nextLayerBtn, Anchor::Top, ccp(0, -45)
-	);
+	m_buttonMenu->addChildAtPosition(m_nextLayerBtn, Anchor::Top, ccp(0, -45));
 	m_buttonMenu->addChildAtPosition(
 		m_moveLayerBackBtn, Anchor::TopLeft, ccp(15, -45)
 	);
 	m_buttonMenu->addChildAtPosition(
 		m_moveLayerForwardBtn, Anchor::TopRight, ccp(-15, -45)
 	);
-	m_mainLayer->addChildAtPosition(
-		m_saveLayerLabel, Anchor::Top, ccp(0, -45)
-	);
-	m_mainLayer->addChildAtPosition(
-		m_listContainer, Anchor::Top, ccp(0, -65)
-	);
+	m_mainLayer->addChildAtPosition(m_saveLayerLabel, Anchor::Top, ccp(0, -45));
+	m_mainLayer->addChildAtPosition(m_listContainer, Anchor::Top, ccp(0, -65));
 
-	m_emptyListLabel = CCLabelBMFont::create("", "bigFont.fnt", 215);
+	m_emptyListLabel = Label::create("", "bigFont.fnt");
 	m_emptyListLabel->setScale(.7);
 	m_emptyListLabel->setOpacity(150);
-	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
+	m_emptyListLabel->setMaxWidth(215.f);
+	m_emptyListLabel->setAlignment(Label::Alignment::Center);
 	m_emptyListLabel->setVisible(!hasCheckpoints);
 
 	CCSprite* errorBtnSpr =
@@ -481,10 +476,9 @@ CCNode* CheckpointManager::createCheckpointCell(
 	CCMenuItemSpriteExtra* selectBtn =
 		CCMenuItemExt::createSpriteExtra(checkpointSpriteBase, selectCallback);
 
-	CCLabelBMFont* label = CCLabelBMFont::create(
-		nameString.c_str(), "goldFont.fnt", m_popupWidth - 155.0f
-	);
-	label->setLineBreakWithoutSpace(true);
+	Label* label = Label::create(nameString.c_str(), "goldFont.fnt");
+	label->setMaxWidth(m_popupWidth - 80.f);
+	label->setBreakWords(true);
 	label->setAnchorPoint(ccp(0, .5));
 	label->setScale(.65);
 
@@ -582,7 +576,7 @@ bool RenamePopup::init(
 	m_checkpointColorEnabled = !std::isnan(checkpoint->m_color);
 	m_checkpointColor = m_checkpointColorEnabled ? checkpoint->m_color : 180.f;
 
-	CCLabelBMFont* nameLabel = CCLabelBMFont::create("Name", "goldFont.fnt");
+	Label* nameLabel = Label::create("Name", "goldFont.fnt");
 	nameLabel->setAnchorPoint(ccp(0.0f, 0.5f));
 
 	TextInput* nameInput = TextInput::create(
@@ -593,7 +587,7 @@ bool RenamePopup::init(
 	nameInput->setMaxCharCount(22);
 	nameInput->setCallback([this](const std::string name) { m_name = name; });
 
-	CCLabelBMFont* colorLabel = CCLabelBMFont::create("Color", "goldFont.fnt");
+	Label* colorLabel = Label::create("Color", "goldFont.fnt");
 	colorLabel->setAnchorPoint(ccp(0.0f, 0.5f));
 
 	SliderNode* colorSlider = SliderNode::createCustom(

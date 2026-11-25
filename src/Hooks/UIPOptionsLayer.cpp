@@ -93,8 +93,8 @@ bool ModUIPOptionsLayer::init() {
 		std::max(mod->getSettingValue<float>("switcher-icon-active-opacity"), .3f)
 	);
 
-	CCLabelBMFont* switcherScaleLabel =
-		CCLabelBMFont::create("Switcher Scale:", "chatFont.fnt");
+	Label* switcherScaleLabel =
+		Label::create("Switcher Scale:", "chatFont.fnt");
 	switcherScaleLabel->setID("switcher_scale_label"_spr);
 
 	if (pui) {

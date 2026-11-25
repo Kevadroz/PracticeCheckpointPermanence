@@ -41,20 +41,20 @@ bool SaveManager::init() {
 		}
 	);
 
-	m_pageLabel = CCLabelBMFont::create("Page 0/0", "bigFont.fnt");
+	m_pageLabel = Label::create("Page 0/0", "bigFont.fnt");
 	m_pageLabel->setScale(.6);
 
-	m_totalSizeLabel = CCLabelBMFont::create("Total:\n0B", "bigFont.fnt");
+	m_totalSizeLabel = Label::create("Total:\n0B", "bigFont.fnt");
 	m_totalSizeLabel->setScale(.35);
 	m_totalSizeLabel->setOpacity(160);
 	m_totalSizeLabel->setAnchorPoint(ccp(0.0, 0.5));
-	m_totalSizeLabel->limitLabelWidth(350.0, .35, 0.1);
+	m_totalSizeLabel->setLimitLabelWidth(350.f, .35f, .1f);
 
-	m_levelCountLabel = CCLabelBMFont::create("70 to 80\nof 136", "bigFont.fnt");
+	m_levelCountLabel = Label::create("70 to 80\nof 136", "bigFont.fnt");
 	m_levelCountLabel->setScale(.35);
 	m_levelCountLabel->setOpacity(160);
 	m_levelCountLabel->setAnchorPoint(ccp(1.0, 0.5));
-	m_levelCountLabel->setAlignment(CCTextAlignment::kCCTextAlignmentRight);
+	m_levelCountLabel->setAlignment(Label::Alignment::Center);
 
 	CCSprite* previousPageSpr =
 		CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png");
@@ -80,11 +80,10 @@ bool SaveManager::init() {
 	m_listContainer->setOpacity(255);
 	m_listContainer->setZOrder(5);
 
-	m_emptyListLabel =
-		CCLabelBMFont::create("No saves found", "bigFont.fnt", 215);
+	m_emptyListLabel = Label::create("No saves\nfound", "bigFont.fnt");
 	m_emptyListLabel->setScale(.7);
 	m_emptyListLabel->setOpacity(220);
-	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
+	m_emptyListLabel->setAlignment(Label::Alignment::Center);
 
 	m_listContainer->addChildAtPosition(m_emptyListLabel, Anchor::Center);
 
@@ -95,18 +94,14 @@ bool SaveManager::init() {
 	m_buttonMenu->addChildAtPosition(
 		m_nextPageBtn, Anchor::TopRight, ccp(-25, -50)
 	);
-	m_mainLayer->addChildAtPosition(
-		m_pageLabel, Anchor::Top, ccp(0, -50)
-	);
+	m_mainLayer->addChildAtPosition(m_pageLabel, Anchor::Top, ccp(0, -50));
 	m_mainLayer->addChildAtPosition(
 		m_totalSizeLabel, Anchor::TopLeft, ccp(25, -20)
 	);
 	m_mainLayer->addChildAtPosition(
 		m_levelCountLabel, Anchor::TopRight, ccp(-10, -20)
 	);
-	m_mainLayer->addChildAtPosition(
-		m_listContainer, Anchor::Top, ccp(0, -73)
-	);
+	m_mainLayer->addChildAtPosition(m_listContainer, Anchor::Top, ccp(0, -73));
 
 	m_saveList = getSaveList();
 
@@ -169,8 +164,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	CCMenu* menu = ListMenu::create(m_listContainer);
 	menu->setContentSize(ccp(400, 50));
 
-	CCLabelBMFont* nameLabel =
-		CCLabelBMFont::create(info.levelName.c_str(), "bigFont.fnt");
+	Label* nameLabel = Label::create(info.levelName.c_str(), "bigFont.fnt");
 	nameLabel->setAnchorPoint(ccp(0, .5));
 	nameLabel->setScale(.75);
 
@@ -207,8 +201,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	detailItemLayout->setAutoGrowAxis(0.0F);
 	detailItemLayout->setGap(7.0F);
 
-	CCLabelBMFont* sizeLabel =
-		CCLabelBMFont::create(fileSizeString.c_str(), "bigFont.fnt");
+	Label* sizeLabel = Label::create(fileSizeString.c_str(), "bigFont.fnt");
 	sizeLabel->setAnchorPoint(ccp(0, .5));
 	sizeLabel->setScale(.55);
 
@@ -219,9 +212,8 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 		CCSprite::createWithSpriteFrameName("activeCheckpoint.png"_spr);
 	checkpointSprite->setScale(.55);
 
-	CCLabelBMFont* checkpointCountLabel = CCLabelBMFont::create(
-		numToString(totalCheckpointCount).c_str(), "bigFont.fnt"
-	);
+	Label* checkpointCountLabel =
+		Label::create(numToString(totalCheckpointCount).c_str(), "bigFont.fnt");
 	checkpointCountLabel->setScale(.55);
 
 	checkpointsMenu->addChild(checkpointSprite);
@@ -235,7 +227,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 		CCSprite::createWithSpriteFrameName("folderIcon_001.png");
 	standardLayersSprite->setScale(.55);
 
-	CCLabelBMFont* standardLayersCountLabel = CCLabelBMFont::create(
+	Label* standardLayersCountLabel = Label::create(
 		numToString(info.standardLayers.size()).c_str(), "bigFont.fnt"
 	);
 	standardLayersCountLabel->setScale(.55);
@@ -251,9 +243,8 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 		CCSprite::createWithSpriteFrameName("ldmFolder.png"_spr);
 	ldmLayersSprite->setScale(.55);
 
-	CCLabelBMFont* ldmLayersCountLabel = CCLabelBMFont::create(
-		numToString(info.ldmLayers.size()).c_str(), "bigFont.fnt"
-	);
+	Label* ldmLayersCountLabel =
+		Label::create(numToString(info.ldmLayers.size()).c_str(), "bigFont.fnt");
 	ldmLayersCountLabel->setScale(.55);
 
 	ldmLayersMenu->addChild(ldmLayersSprite);
@@ -275,8 +266,8 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 		errorMenu->setLayout(errorMenuLayout);
 
 		if (criticalErrorCount > 0) {
-			CCLabelBMFont* criticalIndicator =
-				CCLabelBMFont::create(allErrors ? "!!" : "!", "bigFont.fnt");
+			Label* criticalIndicator =
+				Label::create(allErrors ? "!!" : "!", "bigFont.fnt");
 			criticalIndicator->setColor(ccc3(224, 111, 111));
 			criticalIndicator->setScale(.7);
 
@@ -284,7 +275,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 		}
 
 		if (warningErrorCount > 0) {
-			CCLabelBMFont* warningIndicator = CCLabelBMFont::create(
+			Label* warningIndicator = Label::create(
 				allErrors && criticalErrorCount == 0 ? "!!" : "!", "bigFont.fnt"
 			);
 			warningIndicator->setColor(ccc3(224, 166, 111));

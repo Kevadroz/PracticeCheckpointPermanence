@@ -28,16 +28,16 @@ public:
 
 private:
 	unsigned int m_page = 0;
-	CCLabelBMFont* m_pageLabel = nullptr;
+	Label* m_pageLabel = nullptr;
 	CCMenuItemSpriteExtra* m_previousPageBtn = nullptr;
 	CCMenuItemSpriteExtra* m_nextPageBtn = nullptr;
 
-	CCLabelBMFont* m_levelCountLabel = nullptr;
-	CCLabelBMFont* m_totalSizeLabel = nullptr;
+	Label* m_levelCountLabel = nullptr;
+	Label* m_totalSizeLabel = nullptr;
 
 	CCLayerColor* m_listContainer = nullptr;
 	ListView* m_listView = nullptr;
-	CCLabelBMFont* m_emptyListLabel = nullptr;
+	Label* m_emptyListLabel = nullptr;
 
 	Ref<CCArray> m_cellsArray = CCArray::create();
 

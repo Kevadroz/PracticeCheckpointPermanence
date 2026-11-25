@@ -85,24 +85,24 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->m_checkpointSpriteBase->setCascadeOpacityEnabled(true);
 	menu->m_checkpointSpriteColor->ignoreAnchorPointForPosition(true);
 
-	menu->m_nameLabel =
-		CCLabelBMFont::create(nameLabelString, "bigFont.fnt", 125.0f);
+	menu->m_nameLabel = Label::create(nameLabelString, "bigFont.fnt");
 	menu->m_nameLabel->setID("name-label");
-	menu->m_nameLabel->setLineBreakWithoutSpace(true);
+	menu->m_nameLabel->setMaxWidth(200.0f);
+	menu->m_nameLabel->setBreakWords(true);
 	menu->m_nameLabel->setScale(.6f);
 	menu->m_nameLabel->setAnchorPoint(ccp(0.5f, 1.0f));
-	menu->m_nameLabel->setAlignment(kCCTextAlignmentCenter);
+	menu->m_nameLabel->setAlignment(Label::Alignment::Center);
 
 	menu->m_checkpointLabel =
-		CCLabelBMFont::create(checkpointLabelString, "bigFont.fnt");
+		Label::create(checkpointLabelString, "bigFont.fnt");
 	menu->m_checkpointLabel->setID("checkpoint-label");
 	menu->m_checkpointLabel->setScale(.6f);
 
-	menu->m_layerLabel = CCLabelBMFont::create(layerLabelString, "bigFont.fnt");
+	menu->m_layerLabel = Label::create(layerLabelString, "bigFont.fnt");
 	menu->m_layerLabel->setID("layer-label");
 	menu->m_layerLabel->setScale(.6f);
 
-	menu->m_errorLabel = CCLabelBMFont::create("NO ERROR", "bigFont.fnt");
+	menu->m_errorLabel = Label::create("NO ERROR", "bigFont.fnt");
 	menu->m_errorLabel->setID("error-label");
 	menu->m_errorLabel->setScale(.6f);
 
@@ -110,27 +110,19 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 
 	menu->addChildAtPosition(menu->m_buttonMenu, Anchor::Center);
 	menu->addChildAtPosition(menu->m_labelMenu, Anchor::Center);
-	menu->addChildAtPosition(
-		menu->m_checkpointSpriteBase, Anchor::Center
-	);
+	menu->addChildAtPosition(menu->m_checkpointSpriteBase, Anchor::Center);
 	menu->m_buttonMenu->addChildAtPosition(
 		menu->m_previousBtn, Anchor::Center, ccp(-25, 0)
 	);
 	menu->m_buttonMenu->addChildAtPosition(
 		menu->m_nextBtn, Anchor::Center, ccp(25, 0)
 	);
-	menu->m_labelMenu->addChildAtPosition(
-		menu->m_nameLabel, Anchor::Center
-	);
+	menu->m_labelMenu->addChildAtPosition(menu->m_nameLabel, Anchor::Center);
 	menu->m_labelMenu->addChildAtPosition(
 		menu->m_checkpointLabel, Anchor::Center
 	);
-	menu->m_labelMenu->addChildAtPosition(
-		menu->m_layerLabel, Anchor::Center
-	);
-	menu->m_labelMenu->addChildAtPosition(
-		menu->m_errorLabel, Anchor::Center
-	);
+	menu->m_labelMenu->addChildAtPosition(menu->m_layerLabel, Anchor::Center);
+	menu->m_labelMenu->addChildAtPosition(menu->m_errorLabel, Anchor::Center);
 
 	menu->updateLabels();
 

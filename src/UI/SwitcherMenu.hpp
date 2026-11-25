@@ -15,12 +15,12 @@ using namespace geode::prelude;
 
 class SwitcherMenu : public CCMenu {
 public:
-	CCLabelBMFont* m_nameLabel = nullptr;
-	CCLabelBMFont* m_checkpointLabel = nullptr;
+	Label* m_nameLabel = nullptr;
+	Label* m_checkpointLabel = nullptr;
 	CCSprite* m_checkpointSpriteBase = nullptr;
 	CCSprite* m_checkpointSpriteColor = nullptr;
-	CCLabelBMFont* m_layerLabel = nullptr;
-	CCLabelBMFont* m_errorLabel = nullptr;
+	Label* m_layerLabel = nullptr;
+	Label* m_errorLabel = nullptr;
 	CCNodeRGBA* m_previousBtn = nullptr;
 	CCNodeRGBA* m_nextBtn = nullptr;
 
