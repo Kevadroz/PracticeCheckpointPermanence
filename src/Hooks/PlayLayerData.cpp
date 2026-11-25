@@ -17,7 +17,7 @@ void ModPlayLayer::serializeCheckpoints() {
 
 	char platform = PLATFORM;
 	unsigned int saveVersion = CURRENT_VERSION;
-	std::string gameVersion = geode::Loader::get()->getGameVersion();
+	std::string gameVersion = Loader::get()->getGameVersion();
 
 	OutStream stream(getSavePath().string());
 

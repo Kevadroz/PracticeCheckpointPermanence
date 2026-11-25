@@ -32,5 +32,5 @@ void createButtonBindsLabel(
 	CCNode* parent, const std::string& action, bool right
 );
 
-std::tuple<geode::Anchor, CCPoint, CCPoint>
+std::tuple<Anchor, CCPoint, CCPoint>
 getCheckpointButtonLabelPosition(bool right);

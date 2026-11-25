@@ -4,7 +4,7 @@
 $execute {
 	Mod* mod = Mod::get();
 
-	geode::listenForSettingChanges<bool>("switcher-enabled", [](bool value) {
+	listenForSettingChanges<bool>("switcher-enabled", [](bool value) {
 		ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
 		if (uiLayer != nullptr)
 			uiLayer->updateSwitcher();
@@ -37,7 +37,7 @@ $execute {
 			.leak();
 	}
 
-	geode::listenForSettingChanges<std::string>(
+	listenForSettingChanges<std::string>(
 		"practice-buttons-position", [](std::string value) {
 			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
 			if (uiLayer == nullptr)
@@ -54,9 +54,9 @@ $execute {
 				true
 			);
 
-			std::tuple<geode::Anchor, CCPoint, CCPoint> leftPosition =
+			std::tuple<Anchor, CCPoint, CCPoint> leftPosition =
 				getCheckpointButtonLabelPosition(false);
-			std::tuple<geode::Anchor, CCPoint, CCPoint> rightPosition =
+			std::tuple<Anchor, CCPoint, CCPoint> rightPosition =
 				getCheckpointButtonLabelPosition(true);
 
 			CCNode* leftBind =
@@ -75,7 +75,7 @@ $execute {
 		}
 	);
 
-	geode::listenForSettingChanges<float>(
+	listenForSettingChanges<float>(
 		"practice-buttons-distance", [](float value) {
 			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
 			if (uiLayer == nullptr)
@@ -429,9 +429,9 @@ void createButtonBindsLabel(
 	bindContainer->setID("binds");
 	bindContainer->setContentSize({95, 40.f});
 	CCPoint anchorPoint, positionOffset;
-	bindContainer->setLayout(geode::RowLayout::create());
+	bindContainer->setLayout(RowLayout::create());
 
-	std::tuple<geode::Anchor, CCPoint, CCPoint> position =
+	std::tuple<Anchor, CCPoint, CCPoint> position =
 		getCheckpointButtonLabelPosition(right);
 	bindContainer->setAnchorPoint(std::get<2>(position));
 	parent->addChildAtPosition(
@@ -466,7 +466,7 @@ void setCheckpointButtonPosition(
 	button->setPosition(sibling->getPosition() + offset);
 }
 
-std::tuple<geode::Anchor, CCPoint, CCPoint>
+std::tuple<Anchor, CCPoint, CCPoint>
 getCheckpointButtonLabelPosition(bool right) {
 	std::string settingValue =
 		Mod::get()->getSettingValue<std::string>("practice-buttons-position");
@@ -474,15 +474,15 @@ getCheckpointButtonLabelPosition(bool right) {
 	if (settingValue == "Horizontal") {
 		if (right)
 			return std::make_tuple(
-				geode::Anchor::BottomLeft, ccp(-4.f, -1.f), ccp(0.f, 0.5f)
+				Anchor::BottomLeft, ccp(-4.f, -1.f), ccp(0.f, 0.5f)
 			);
 		else
 			return std::make_tuple(
-				geode::Anchor::BottomRight, ccp(4.f, -1.f), ccp(1.f, 0.5f)
+				Anchor::BottomRight, ccp(4.f, -1.f), ccp(1.f, 0.5f)
 			);
 	}
 
 	return std::make_tuple(
-		geode::Anchor::Bottom, ccp(0.f, -1.f), ccp(0.5f, 0.5f)
+		Anchor::Bottom, ccp(0.f, -1.f), ccp(0.5f, 0.5f)
 	);
 }

@@ -1,5 +1,7 @@
 #include "SerialStream.hpp"
 
+using namespace geode::prelude;
+
 #if defined(GEODE_IS_WINDOWS)
 #define PLATFORM 0
 #elif defined(GEODE_IS_ANDROID64)

@@ -3,7 +3,7 @@
 
 #include <Geode/modify/UIPOptionsLayer.hpp>
 
-using namespace geode::prelude;
+using namespace prelude;
 
 class $modify(ModUIPOptionsLayer, UIPOptionsLayer) {
 	struct Fields {

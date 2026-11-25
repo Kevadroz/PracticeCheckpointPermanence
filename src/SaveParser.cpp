@@ -43,7 +43,7 @@ SaveHeader SaveParser::fromStream(
 	stream >> levelName;
 	stream >> checkpointCount;
 
-	if (gameVersion != geode::Loader::get()->getGameVersion())
+	if (gameVersion != Loader::get()->getGameVersion())
 		loadError = LoadError::GameVersionMismatch;
 
 	if (platform != PLATFORM)

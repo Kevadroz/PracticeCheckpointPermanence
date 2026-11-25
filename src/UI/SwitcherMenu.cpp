@@ -108,28 +108,28 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 
 	menu->m_checkpointSpriteBase->addChild(menu->m_checkpointSpriteColor);
 
-	menu->addChildAtPosition(menu->m_buttonMenu, geode::Anchor::Center);
-	menu->addChildAtPosition(menu->m_labelMenu, geode::Anchor::Center);
+	menu->addChildAtPosition(menu->m_buttonMenu, Anchor::Center);
+	menu->addChildAtPosition(menu->m_labelMenu, Anchor::Center);
 	menu->addChildAtPosition(
-		menu->m_checkpointSpriteBase, geode::Anchor::Center
+		menu->m_checkpointSpriteBase, Anchor::Center
 	);
 	menu->m_buttonMenu->addChildAtPosition(
-		menu->m_previousBtn, geode::Anchor::Center, ccp(-25, 0)
+		menu->m_previousBtn, Anchor::Center, ccp(-25, 0)
 	);
 	menu->m_buttonMenu->addChildAtPosition(
-		menu->m_nextBtn, geode::Anchor::Center, ccp(25, 0)
+		menu->m_nextBtn, Anchor::Center, ccp(25, 0)
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_nameLabel, geode::Anchor::Center
+		menu->m_nameLabel, Anchor::Center
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_checkpointLabel, geode::Anchor::Center
+		menu->m_checkpointLabel, Anchor::Center
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_layerLabel, geode::Anchor::Center
+		menu->m_layerLabel, Anchor::Center
 	);
 	menu->m_labelMenu->addChildAtPosition(
-		menu->m_errorLabel, geode::Anchor::Center
+		menu->m_errorLabel, Anchor::Center
 	);
 
 	menu->updateLabels();

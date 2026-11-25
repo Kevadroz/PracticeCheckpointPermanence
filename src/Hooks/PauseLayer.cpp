@@ -25,12 +25,12 @@ void ModPauseLayer::customSetup() {
 			else {
 				asp::fs::Path path = playLayer->getSavePath();
 				if (path.exists())
-					geode::createQuickPopup(
+					createQuickPopup(
 						"Persistent Checkpoints",
 						"Open in practice mode to manage checkpoints.", "Ok",
 						"Delete Saved", [path, playLayer](auto, bool confirmed) {
 							if (confirmed)
-								geode::createQuickPopup(
+								createQuickPopup(
 									"Delete All",
 									"Delete all saved checkpoints for this "
 									"level?\n"

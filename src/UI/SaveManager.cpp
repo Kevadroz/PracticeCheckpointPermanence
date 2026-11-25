@@ -86,26 +86,26 @@ bool SaveManager::init() {
 	m_emptyListLabel->setOpacity(220);
 	m_emptyListLabel->setAlignment(CCTextAlignment::kCCTextAlignmentCenter);
 
-	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
+	m_listContainer->addChildAtPosition(m_emptyListLabel, Anchor::Center);
 
-	m_buttonMenu->addChildAtPosition(infoBtn, geode::Anchor::BottomRight);
+	m_buttonMenu->addChildAtPosition(infoBtn, Anchor::BottomRight);
 	m_buttonMenu->addChildAtPosition(
-		m_previousPageBtn, geode::Anchor::TopLeft, ccp(25, -50)
+		m_previousPageBtn, Anchor::TopLeft, ccp(25, -50)
 	);
 	m_buttonMenu->addChildAtPosition(
-		m_nextPageBtn, geode::Anchor::TopRight, ccp(-25, -50)
+		m_nextPageBtn, Anchor::TopRight, ccp(-25, -50)
 	);
 	m_mainLayer->addChildAtPosition(
-		m_pageLabel, geode::Anchor::Top, ccp(0, -50)
+		m_pageLabel, Anchor::Top, ccp(0, -50)
 	);
 	m_mainLayer->addChildAtPosition(
-		m_totalSizeLabel, geode::Anchor::TopLeft, ccp(25, -20)
+		m_totalSizeLabel, Anchor::TopLeft, ccp(25, -20)
 	);
 	m_mainLayer->addChildAtPosition(
-		m_levelCountLabel, geode::Anchor::TopRight, ccp(-10, -20)
+		m_levelCountLabel, Anchor::TopRight, ccp(-10, -20)
 	);
 	m_mainLayer->addChildAtPosition(
-		m_listContainer, geode::Anchor::Top, ccp(0, -73)
+		m_listContainer, Anchor::Top, ccp(0, -73)
 	);
 
 	m_saveList = getSaveList();
@@ -118,7 +118,7 @@ bool SaveManager::init() {
 	borders->setSpriteFrames(
 		"darkGrayNegativeBorderTop.png"_spr, "darkGrayNegativeBorderSide.png"_spr
 	);
-	m_listContainer->addChildAtPosition(borders, geode::Anchor::Center);
+	m_listContainer->addChildAtPosition(borders, Anchor::Center);
 
 	updatePageUI();
 	updateGeneralInfoUI();
@@ -162,7 +162,7 @@ void SaveManager::createList(bool resetPosition) {
 			listContent->setPositionY(0);
 	}
 
-	m_listContainer->addChildAtPosition(m_listView, geode::Anchor::BottomLeft);
+	m_listContainer->addChildAtPosition(m_listView, Anchor::BottomLeft);
 }
 
 CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
@@ -332,9 +332,9 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	removeBtn->m_baseScale = .9;
 	removeBtn->setScale(.9);
 
-	menu->addChildAtPosition(nameLabel, geode::Anchor::Left, ccp(5, 12));
-	menu->addChildAtPosition(detailMenu, geode::Anchor::Left, ccp(5, -12));
-	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-25, 0));
+	menu->addChildAtPosition(nameLabel, Anchor::Left, ccp(5, 12));
+	menu->addChildAtPosition(detailMenu, Anchor::Left, ccp(5, -12));
+	menu->addChildAtPosition(removeBtn, Anchor::Right, ccp(-25, 0));
 
 	menu->updateLayout();
 
@@ -466,7 +466,7 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 			std::vector<std::string> layerSplit =
 				string::split(filenameNoExtension, "_");
 			std::optional<unsigned int> saveLayerResult =
-				geode::utils::numFromString<unsigned int>(layerSplit.back()).ok();
+				utils::numFromString<unsigned int>(layerSplit.back()).ok();
 			if (!saveLayerResult.has_value())
 				continue;
 			unsigned int saveLayer = saveLayerResult.value();
@@ -476,7 +476,7 @@ std::vector<LevelSaveInfo> SaveManager::getSaveList() {
 			bool lowDetail = lowDetailSplit.back() == "lowDetail";
 
 			std::optional<int> levelIDResult =
-				geode::utils::numFromString<int>(lowDetailSplit.front()).ok();
+				utils::numFromString<int>(lowDetailSplit.front()).ok();
 			if (!levelIDResult.has_value())
 				continue;
 			int levelID = levelIDResult.value();

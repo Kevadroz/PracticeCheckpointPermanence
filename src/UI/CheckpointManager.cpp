@@ -33,7 +33,7 @@ bool CheckpointManager::init() {
 		CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
 	CCMenuItemSpriteExtra* optionsButton =
 		CCMenuItemExt::createSpriteExtra(optionsSpr, [](CCNode* sender) {
-			geode::openSettingsPopup(Mod::get(), true);
+			openSettingsPopup(Mod::get(), true);
 		});
 	optionsButton->m_baseScale = .6;
 	optionsButton->setScale(.6);
@@ -46,7 +46,7 @@ bool CheckpointManager::init() {
 				playLayer->m_fields->m_persistentCheckpointArray->count() > 0 ||
 				playLayer->m_fields->m_loadError != LoadError::None
 			)
-				geode::createQuickPopup(
+				createQuickPopup(
 					"Delete All",
 					"Delete all saved checkpoints for this layer?\n"
 					"This action cannot be undone.",
@@ -143,28 +143,28 @@ bool CheckpointManager::init() {
 	m_listContainer->setZOrder(5);
 
 	m_buttonMenu->addChildAtPosition(
-		optionsButton, geode::Anchor::BottomLeft, ccp(3, 3)
+		optionsButton, Anchor::BottomLeft, ccp(3, 3)
 	);
 	m_buttonMenu->addChildAtPosition(
-		m_deleteButton, geode::Anchor::BottomRight, ccp(-3, 3)
+		m_deleteButton, Anchor::BottomRight, ccp(-3, 3)
 	);
 	m_buttonMenu->addChildAtPosition(
-		m_previousLayerBtn, geode::Anchor::Top, ccp(0, -45)
+		m_previousLayerBtn, Anchor::Top, ccp(0, -45)
 	);
 	m_buttonMenu->addChildAtPosition(
-		m_nextLayerBtn, geode::Anchor::Top, ccp(0, -45)
+		m_nextLayerBtn, Anchor::Top, ccp(0, -45)
 	);
 	m_buttonMenu->addChildAtPosition(
-		m_moveLayerBackBtn, geode::Anchor::TopLeft, ccp(15, -45)
+		m_moveLayerBackBtn, Anchor::TopLeft, ccp(15, -45)
 	);
 	m_buttonMenu->addChildAtPosition(
-		m_moveLayerForwardBtn, geode::Anchor::TopRight, ccp(-15, -45)
+		m_moveLayerForwardBtn, Anchor::TopRight, ccp(-15, -45)
 	);
 	m_mainLayer->addChildAtPosition(
-		m_saveLayerLabel, geode::Anchor::Top, ccp(0, -45)
+		m_saveLayerLabel, Anchor::Top, ccp(0, -45)
 	);
 	m_mainLayer->addChildAtPosition(
-		m_listContainer, geode::Anchor::Top, ccp(0, -65)
+		m_listContainer, Anchor::Top, ccp(0, -65)
 	);
 
 	m_emptyListLabel = CCLabelBMFont::create("", "bigFont.fnt", 215);
@@ -206,10 +206,10 @@ bool CheckpointManager::init() {
 		"GJ_commentTop2_001.png", "GJ_commentSide2_001.png"
 	);
 
-	m_listContainer->addChildAtPosition(borders, geode::Anchor::Center);
-	m_listContainer->addChildAtPosition(m_emptyListLabel, geode::Anchor::Center);
-	m_buttonMenu->addChildAtPosition(m_forceLoadButton, geode::Anchor::Bottom);
-	m_buttonMenu->addChildAtPosition(m_errorButton, geode::Anchor::TopRight);
+	m_listContainer->addChildAtPosition(borders, Anchor::Center);
+	m_listContainer->addChildAtPosition(m_emptyListLabel, Anchor::Center);
+	m_buttonMenu->addChildAtPosition(m_forceLoadButton, Anchor::Bottom);
+	m_buttonMenu->addChildAtPosition(m_errorButton, Anchor::TopRight);
 
 	return true;
 }
@@ -301,7 +301,7 @@ void CheckpointManager::createList(bool resetPosition) {
 			listContent->setPositionY(0);
 	}
 
-	m_listContainer->addChildAtPosition(m_listView, geode::Anchor::BottomLeft);
+	m_listContainer->addChildAtPosition(m_listView, Anchor::BottomLeft);
 }
 
 void CheckpointManager::updateUIElements(bool resetListPosition) {
@@ -521,17 +521,17 @@ CCNode* CheckpointManager::createCheckpointCell(
 	removeBtn->m_baseScale = .75;
 	removeBtn->setScale(.75);
 
-	menu->addChildAtPosition(moveUpBtn, geode::Anchor::Left, ccp(15, 10));
-	menu->addChildAtPosition(moveDownBtn, geode::Anchor::Left, ccp(15, -10));
-	menu->addChildAtPosition(selectBtn, geode::Anchor::Left, ccp(35, 0));
-	menu->addChildAtPosition(label, geode::Anchor::Left, ccp(50, 0));
-	menu->addChildAtPosition(renameBtn, geode::Anchor::Right, ccp(-55, 0));
-	menu->addChildAtPosition(removeBtn, geode::Anchor::Right, ccp(-20, 0));
+	menu->addChildAtPosition(moveUpBtn, Anchor::Left, ccp(15, 10));
+	menu->addChildAtPosition(moveDownBtn, Anchor::Left, ccp(15, -10));
+	menu->addChildAtPosition(selectBtn, Anchor::Left, ccp(35, 0));
+	menu->addChildAtPosition(label, Anchor::Left, ccp(50, 0));
+	menu->addChildAtPosition(renameBtn, Anchor::Right, ccp(-55, 0));
+	menu->addChildAtPosition(removeBtn, Anchor::Right, ccp(-20, 0));
 
 	return menu;
 }
 void CheckpointManager::forceLoadPopup() {
-	geode::createQuickPopup(
+	createQuickPopup(
 		"Force Load",
 		"This will force load and resave this layer.\n"
 		"When switching to a checkpoint <cr>the game will likely crash or the "
