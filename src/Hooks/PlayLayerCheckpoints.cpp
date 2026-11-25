@@ -29,13 +29,13 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	bool nextExists = 0 < nextIndex && nextIndex <= checkpointCount;
 	PersistentCheckpoint* lastCheckpoint;
 	if (lastExists)
-		lastCheckpoint = reinterpret_cast<PersistentCheckpoint*>(
+		lastCheckpoint = static_cast<PersistentCheckpoint*>(
 			(m_fields->m_persistentCheckpointArray)
 				->objectAtIndex(m_fields->m_activeCheckpoint - 1)
 		);
 	PersistentCheckpoint* nextCheckpoint;
 	if (nextExists)
-		nextCheckpoint = reinterpret_cast<PersistentCheckpoint*>(
+		nextCheckpoint = static_cast<PersistentCheckpoint*>(
 			(m_fields->m_persistentCheckpointArray)->objectAtIndex(nextIndex - 1)
 		);
 
@@ -141,7 +141,7 @@ void ModPlayLayer::markPersistentCheckpoint() {
 		for (unsigned int i = 0;
 			  i < m_fields->m_persistentCheckpointArray->count(); ++i) {
 			float color =
-				reinterpret_cast<PersistentCheckpoint*>(
+				static_cast<PersistentCheckpoint*>(
 					m_fields->m_persistentCheckpointArray->objectAtIndex(i)
 				)
 					->m_color;
@@ -270,12 +270,11 @@ void ModPlayLayer::removeCurrentPersistentCheckpoint() {
 	}
 
 	if (m_fields->m_activeCheckpoint > 0) {
-		PersistentCheckpoint* checkpoint =
-			reinterpret_cast<PersistentCheckpoint*>(
-				m_fields->m_persistentCheckpointArray->objectAtIndex(
-					m_fields->m_activeCheckpoint - 1
-				)
-			);
+		PersistentCheckpoint* checkpoint = static_cast<PersistentCheckpoint*>(
+			m_fields->m_persistentCheckpointArray->objectAtIndex(
+				m_fields->m_activeCheckpoint - 1
+			)
+		);
 		removePersistentCheckpoint(checkpoint);
 	}
 }
@@ -285,12 +284,11 @@ void ModPlayLayer::removeGhostPersistentCheckpoint() {
 		return;
 
 	if (m_fields->m_ghostActiveCheckpoint > 0) {
-		PersistentCheckpoint* checkpoint =
-			reinterpret_cast<PersistentCheckpoint*>(
-				m_fields->m_persistentCheckpointArray->objectAtIndex(
-					m_fields->m_ghostActiveCheckpoint - 1
-				)
-			);
+		PersistentCheckpoint* checkpoint = static_cast<PersistentCheckpoint*>(
+			m_fields->m_persistentCheckpointArray->objectAtIndex(
+				m_fields->m_ghostActiveCheckpoint - 1
+			)
+		);
 		removePersistentCheckpoint(checkpoint);
 	}
 }

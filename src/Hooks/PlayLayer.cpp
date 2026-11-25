@@ -129,7 +129,7 @@ void ModPlayLayer::resetLevel() {
 				loadIndex = m_fields->m_activeCheckpoint;
 
 			if (loadIndex != 0) {
-				checkpoint = reinterpret_cast<PersistentCheckpoint*>(
+				checkpoint = static_cast<PersistentCheckpoint*>(
 					m_fields->m_persistentCheckpointArray->objectAtIndex(
 						loadIndex - 1
 					)
@@ -190,7 +190,7 @@ void ModPlayLayer::handleTogglePracticeMode(bool enabled) {
 	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")) {
 		if (!enabled && m_fields->m_activeCheckpoint > 0) {
 			PersistentCheckpoint* checkpoint =
-				reinterpret_cast<PersistentCheckpoint*>(
+				static_cast<PersistentCheckpoint*>(
 					m_fields->m_persistentCheckpointArray->objectAtIndex(
 						m_fields->m_activeCheckpoint - 1
 					)
@@ -449,7 +449,7 @@ bool ModPlayLayer::isModUIVisible() {
 bool ModPlayLayer::isDegradedCheckpoint() {
 	if (m_fields->m_activeCheckpoint > 0) {
 		PersistentCheckpoint* checkpoint =
-			reinterpret_cast<PersistentCheckpoint*>(
+			static_cast<PersistentCheckpoint*>(
 				m_fields->m_persistentCheckpointArray->objectAtIndex(
 					m_fields->m_activeCheckpoint - 1
 				)
