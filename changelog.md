@@ -1,3 +1,8 @@
+## 2.0.0-alpha.4 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v2.0.0-alpha.4) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v2.0.0-alpha.4) )
+- Added settings to control immediate restart on checkpoint switch \[[Issue #63](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/63)\]
+- Set missing Node IDs \[[Issue #61](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/61)\]
+- Migrated all labels to `geode::Label`
+
 ## 2.0.0-alpha.3 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v2.0.0-alpha.3) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v2.0.0-alpha.3) )
 - Ported to GD 2.2091 and Geode 6
 - Switched versioning to a propper MAJOR.MINOR.PATCH
