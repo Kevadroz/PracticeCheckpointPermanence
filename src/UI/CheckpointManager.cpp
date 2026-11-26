@@ -265,8 +265,6 @@ void CheckpointManager::createList(bool resetPosition) {
 
 				playLayer->switchCurrentCheckpoint(index);
 				createList();
-
-				playLayer->triggerHideMenuLayers();
 			},
 			[this, checkpoint, playLayer](CCMenuItemSpriteExtra* sender) {
 				bool updateLabel =

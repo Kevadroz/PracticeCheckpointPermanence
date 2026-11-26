@@ -1,3 +1,4 @@
+#include "../UI/CheckpointManager.hpp"
 #include "PlayLayer.hpp"
 
 void ModPlayLayer::nextCheckpoint() {
@@ -69,8 +70,10 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	if (nextExists && nextCheckpoint->m_isDegraded)
 		setActiveStartPosObject(nextCheckpoint->m_fallbackData.startPos);
 
+	Mod* mod = Mod::get();
+
 	if (
-		Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode") &&
+		mod->getSettingValue<bool>("switch-in-out-normal-mode") &&
 		(nextIndex != 0) != m_isPracticeMode
 	) {
 		PlayLayer::togglePracticeMode(!m_isPracticeMode);
@@ -78,9 +81,7 @@ void ModPlayLayer::switchCurrentCheckpoint(
 			return;
 	}
 
-	if (
-		!noVisualUpdates && Mod::get()->getSettingValue<bool>("reset-attempts")
-	) {
+	if (!noVisualUpdates && mod->getSettingValue<bool>("reset-attempts")) {
 		m_attempts = 0;
 		m_clicks = 0;
 		m_jumps = 0;
@@ -92,9 +93,29 @@ void ModPlayLayer::switchCurrentCheckpoint(
 	if (!noVisualUpdates)
 		updateModUI();
 
-	PlayLayer::resetLevel();
-	if (!noVisualUpdates && nextExists && nextCheckpoint->m_isDegraded)
-		startMusic();
+	bool immediateRestart = false;
+	std::string irSetting =
+		mod->getSettingValue<std::string>("restart-on-switch");
+	if (irSetting == "Always")
+		immediateRestart = true;
+	else if (irSetting == "On Manager") {
+		CCScene* scene = CCScene::get();
+		if (scene != nullptr) {
+			for (CCNode* child : scene->getChildrenExt())
+				if (typeinfo_cast<CheckpointManager*>(child)) {
+					immediateRestart = true;
+					break;
+				}
+		}
+	} else if (irSetting == "On Pause")
+		immediateRestart = m_isPaused;
+
+	if (immediateRestart) {
+		PlayLayer::resetLevel();
+		if (!noVisualUpdates && nextExists && nextCheckpoint->m_isDegraded)
+			startMusic();
+		triggerHideMenuLayers();
+	}
 }
 
 void ModPlayLayer::switchGhostCheckpoint(

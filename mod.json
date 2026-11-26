@@ -69,6 +69,12 @@
 			},
 			"description": "Amount of time that the Checkpoint Manager hides when switching checkpoints"
 		},
+		"restart-on-switch": {
+			"name": "Restart on Switch",
+			"type": "string",
+			"one-of": [ "Never", "On Manager", "On Pause", "Always" ],
+			"default": "Always"
+		},
 		"switch-in-out-normal-mode": {
 			"name": "Integrated Normal Mode",
 			"type": "bool",

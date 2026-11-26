@@ -189,12 +189,11 @@ void ModPlayLayer::handleTogglePracticeMode(bool enabled) {
 
 	if (Mod::get()->getSettingValue<bool>("switch-in-out-normal-mode")) {
 		if (!enabled && m_fields->m_activeCheckpoint > 0) {
-			PersistentCheckpoint* checkpoint =
-				static_cast<PersistentCheckpoint*>(
-					m_fields->m_persistentCheckpointArray->objectAtIndex(
-						m_fields->m_activeCheckpoint - 1
-					)
-				);
+			PersistentCheckpoint* checkpoint = static_cast<PersistentCheckpoint*>(
+				m_fields->m_persistentCheckpointArray->objectAtIndex(
+					m_fields->m_activeCheckpoint - 1
+				)
+			);
 			if (checkpoint != nullptr) {
 				checkpoint->toggleActive(false);
 				setActiveStartPosObject(nullptr);
@@ -269,7 +268,6 @@ void ModPlayLayer::registerKeybindListeners() {
 			) {
 				previousCheckpoint();
 				updateCheckpointManager();
-				triggerHideMenuLayers();
 				return true;
 			}
 			return false;
@@ -286,7 +284,6 @@ void ModPlayLayer::registerKeybindListeners() {
 			) {
 				nextCheckpoint();
 				updateCheckpointManager();
-				triggerHideMenuLayers();
 				return true;
 			}
 			return false;
@@ -420,6 +417,7 @@ void ModPlayLayer::triggerHideMenuLayers() {
 	for (CCNode* node : hideNodes) {
 		node->stopActionByTag(0x33D7);
 		node->setVisible(false);
+
 		CCSequence* sequence = CCSequence::create(
 			CCDelayTime::create(hideTime), CCToggleVisibility::create(), nullptr
 		);
@@ -448,12 +446,11 @@ bool ModPlayLayer::isModUIVisible() {
 
 bool ModPlayLayer::isDegradedCheckpoint() {
 	if (m_fields->m_activeCheckpoint > 0) {
-		PersistentCheckpoint* checkpoint =
-			static_cast<PersistentCheckpoint*>(
-				m_fields->m_persistentCheckpointArray->objectAtIndex(
-					m_fields->m_activeCheckpoint - 1
-				)
-			);
+		PersistentCheckpoint* checkpoint = static_cast<PersistentCheckpoint*>(
+			m_fields->m_persistentCheckpointArray->objectAtIndex(
+				m_fields->m_activeCheckpoint - 1
+			)
+		);
 		return checkpoint->m_isDegraded;
 	}
 
