@@ -35,6 +35,7 @@ bool CheckpointManager::init() {
 		CCMenuItemExt::createSpriteExtra(optionsSpr, [](CCNode* sender) {
 			openSettingsPopup(Mod::get(), true);
 		});
+	optionsButton->setID("options");
 	optionsButton->m_baseScale = .6;
 	optionsButton->setScale(.6);
 
@@ -64,6 +65,7 @@ bool CheckpointManager::init() {
 					->show();
 		}
 	);
+	m_deleteButton->setID("delete");
 	m_deleteButton->m_baseScale = .6;
 	m_deleteButton->setScale(.6);
 
@@ -73,6 +75,7 @@ bool CheckpointManager::init() {
 	}
 
 	m_saveLayerLabel = Label::create("", "bigFont.fnt");
+	m_saveLayerLabel->setID("layer-label");
 	m_saveLayerLabel->setScale(.6);
 
 	CCSprite* previousLayerSpr =
@@ -93,6 +96,8 @@ bool CheckpointManager::init() {
 			updateUIElements(true);
 		}
 	);
+	m_previousLayerBtn->setID("previous-layer");
+	m_nextLayerBtn->setID("next-layer");
 	m_previousLayerBtn->m_baseScale = .6;
 	m_nextLayerBtn->m_baseScale = .6;
 	m_previousLayerBtn->setScale(.6);
@@ -130,12 +135,15 @@ bool CheckpointManager::init() {
 			}
 		}
 	);
+	m_moveLayerBackBtn->setID("move-layer-back");
+	m_moveLayerForwardBtn->setID("move-layer-forward");
 	m_moveLayerBackBtn->m_baseScale = .4;
 	m_moveLayerForwardBtn->m_baseScale = .4;
 	m_moveLayerBackBtn->setScale(.4);
 	m_moveLayerForwardBtn->setScale(.4);
 
 	m_listContainer = CCLayerColor::create();
+	m_listContainer->setID("checkpoint-list");
 	m_listContainer->setContentSize(ccp(m_popupWidth - 30.0f, 190));
 	m_listContainer->setAnchorPoint(ccp(.5, 1));
 	m_listContainer->setColor(ccc3(74, 97, 225));
@@ -162,6 +170,7 @@ bool CheckpointManager::init() {
 	m_mainLayer->addChildAtPosition(m_listContainer, Anchor::Top, ccp(0, -65));
 
 	m_emptyListLabel = Label::create("", "bigFont.fnt");
+	m_emptyListLabel->setID("empty-list-label");
 	m_emptyListLabel->setScale(.7);
 	m_emptyListLabel->setOpacity(150);
 	m_emptyListLabel->setMaxWidth(215.f);
@@ -177,6 +186,7 @@ bool CheckpointManager::init() {
 			FLAlertLayer::create("Load Error", text, "Ok")->show();
 		}
 	);
+	m_errorButton->setID("error-info");
 	m_errorButton->m_baseScale = .6;
 	m_errorButton->setScale(.6);
 	m_errorButton->setVisible(loadError != LoadError::None);
@@ -186,6 +196,7 @@ bool CheckpointManager::init() {
 		saveMenuButtonSprite,
 		[this](CCMenuItemSpriteExtra* forceButton) { forceLoadPopup(); }
 	);
+	m_forceLoadButton->setID("force-load");
 	bool forceLoadButtonActive = playLayer->isUnloadableError();
 	m_forceLoadButton->setVisible(forceLoadButtonActive);
 	m_forceLoadButton->setEnabled(forceLoadButtonActive);
@@ -195,6 +206,7 @@ bool CheckpointManager::init() {
 	updateUIElements();
 
 	ListBorders* borders = ListBorders::create();
+	borders->setID("borders");
 	borders->setContentSize(m_listView->getContentSize() + ccp(7, 7));
 	borders->setZOrder(15);
 	borders->setSpriteFrames(
@@ -283,6 +295,7 @@ void CheckpointManager::createList(bool resetPosition) {
 		m_cellsArray, 40, m_listContainer->getContentWidth(),
 		m_listContainer->getContentHeight()
 	);
+	m_listView->setID("view");
 	m_listView->setPrimaryCellColor(ccc3(76, 105, 250));
 	m_listView->setSecondaryCellColor(ccc3(68, 91, 210));
 	m_listView->setZOrder(10);
@@ -451,6 +464,8 @@ CCNode* CheckpointManager::createCheckpointCell(
 		moveDownSpr->setOpacity(200);
 		moveDownBtn = moveDownSpr;
 	}
+	moveUpBtn->setID("move-up");
+	moveDownBtn->setID("move-down");
 	moveUpBtn->setScale(.3);
 	moveDownBtn->setScale(.3);
 	moveUpBtn->setRotation(90);
@@ -466,6 +481,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 	CCSprite* checkpointSpriteColor = CCSprite::createWithSpriteFrame(
 		checkpoint->m_physicalObjectColor->displayFrame()
 	);
+	checkpointSpriteColor->setID("color");
 	checkpointSpriteColor->ignoreAnchorPointForPosition(true);
 	checkpointSpriteColor->setColor(
 		checkpoint->m_physicalObjectColor->getColor()
@@ -473,8 +489,10 @@ CCNode* CheckpointManager::createCheckpointCell(
 	checkpointSpriteBase->addChild(checkpointSpriteColor);
 	CCMenuItemSpriteExtra* selectBtn =
 		CCMenuItemExt::createSpriteExtra(checkpointSpriteBase, selectCallback);
+	selectBtn->setID("select");
 
 	Label* label = Label::create(nameString.c_str(), "goldFont.fnt");
+	label->setID("name");
 	label->setMaxWidth(m_popupWidth - 80.f);
 	label->setBreakWords(true);
 	label->setAnchorPoint(ccp(0, .5));
@@ -503,6 +521,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 				->show();
 		}
 	);
+	renameBtn->setID("style");
 	renameBtn->m_baseScale = .75;
 	renameBtn->setScale(.75);
 
@@ -510,6 +529,7 @@ CCNode* CheckpointManager::createCheckpointCell(
 		CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
 	CCMenuItemSpriteExtra* removeBtn =
 		CCMenuItemExt::createSpriteExtra(removeSprite, removeCallback);
+	removeBtn->setID("remove");
 	removeBtn->m_baseScale = .75;
 	removeBtn->setScale(.75);
 
@@ -575,17 +595,20 @@ bool RenamePopup::init(
 	m_checkpointColor = m_checkpointColorEnabled ? checkpoint->m_color : 180.f;
 
 	Label* nameLabel = Label::create("Name", "goldFont.fnt");
+	nameLabel->setID("name-label");
 	nameLabel->setAnchorPoint(ccp(0.0f, 0.5f));
 
 	TextInput* nameInput = TextInput::create(
 		width - 36.0f, checkpoint->getDefaultLabel(playLayer->m_isPlatformer)
 	);
+	nameInput->setID("name-input");
 	nameInput->setString(m_name);
 	nameInput->setCommonFilter(CommonFilter::Any);
 	nameInput->setMaxCharCount(22);
 	nameInput->setCallback([this](const std::string name) { m_name = name; });
 
 	Label* colorLabel = Label::create("Color", "goldFont.fnt");
+	colorLabel->setID("color-label");
 	colorLabel->setAnchorPoint(ccp(0.0f, 0.5f));
 
 	SliderNode* colorSlider = SliderNode::createCustom(
@@ -601,6 +624,7 @@ bool RenamePopup::init(
 			);
 		}
 	);
+	colorSlider->setID("color-slider");
 	colorSlider->applyScale(.5f);
 	colorSlider->setContentHeight(16.f);
 	colorSlider->getBar()->setVisible(false);
@@ -625,6 +649,7 @@ bool RenamePopup::init(
 			colorSlider->setReadOnly(!enabled);
 		}
 	);
+	colorToggler->setID("color-toggler");
 	colorToggler->applyScale(.8f);
 	colorToggler->setToggled(m_checkpointColorEnabled);
 
@@ -638,6 +663,7 @@ bool RenamePopup::init(
 			updateCallback();
 		}
 	);
+	confirmBtn->setID("confirm");
 
 	m_mainLayer->addChildAtPosition(
 		nameLabel, Anchor::TopLeft, ccp(20.0f, -20.0f)

@@ -10,7 +10,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 	menu->setCascadeColorEnabled(true);
 	menu->setScale(SwitcherMenu::getSwitcherScale());
 	menu->setZOrder(15);
-	menu->setID("switcher_menu"_spr);
+	menu->setID("switcher-menu"_spr);
 
 	menu->m_buttonMenu = CCMenu::create();
 	menu->m_labelMenu = CCMenu::create();
@@ -81,7 +81,7 @@ SwitcherMenu* SwitcherMenu::create(ModPlayLayer* playLayer) {
 		layerLabelString = "Lay 12/26";
 	}
 	menu->m_checkpointSpriteBase->setID("checkpoint");
-	menu->m_checkpointSpriteColor->setID("checkpoint-color");
+	menu->m_checkpointSpriteColor->setID("color");
 	menu->m_checkpointSpriteBase->setCascadeOpacityEnabled(true);
 	menu->m_checkpointSpriteColor->ignoreAnchorPointForPosition(true);
 

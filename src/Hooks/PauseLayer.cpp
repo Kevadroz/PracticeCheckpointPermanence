@@ -72,6 +72,7 @@ void ModPauseLayer::customSetup() {
 			}
 		}
 	);
+	button->setID("save-manager"_spr);
 
 	CCMenu* menu =
 		static_cast<CCMenu*>(m_mainLayer->getChildByID("right-button-menu"));

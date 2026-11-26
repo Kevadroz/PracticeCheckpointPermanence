@@ -184,11 +184,13 @@ void PersistentCheckpoint::deserializeExternal(
 	in >> settings->m_targetOrder;
 	in >> settings->m_targetChannel;
 
-	// Custom Data
 	CCPoint p1Velocity;
 	in >> p1Velocity;
-	m_fallbackData.p1XVelocity = p1Velocity.x;
 	settings->m_yVelocity = p1Velocity.y;
+
+	// Custom Data
+
+	m_fallbackData.p1XVelocity = p1Velocity.x;
 
 	if (settings->m_startDual) {
 		int p2Gamemode;
@@ -235,6 +237,7 @@ void PersistentCheckpoint::setupPhysicalObject() {
 		CCSprite::createWithSpriteFrameName(style.colorFrame);
 	if (!std::isnan(m_color))
 		m_physicalObjectColor->setColor(style.color);
+	m_physicalObjectColor->setID("color");
 	m_physicalObjectColor->ignoreAnchorPointForPosition(true);
 	m_physicalObject->addChild(m_physicalObjectColor);
 	m_physicalObjectColor->updateDisplayedOpacity(

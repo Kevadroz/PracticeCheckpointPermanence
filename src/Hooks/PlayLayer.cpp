@@ -97,7 +97,7 @@ void ModPlayLayer::setupHasCompleted() {
 		255 *
 		Mod::get()->getSettingValue<double>("progressbar-checkpoint-opacity")
 	);
-	m_fields->m_pbCheckpointContainer->setID("checkpoint_container"_spr);
+	m_fields->m_pbCheckpointContainer->setID("checkpoint-container"_spr);
 	m_progressBar->addChild(m_fields->m_pbCheckpointContainer);
 
 	if (
@@ -368,6 +368,7 @@ void ModPlayLayer::updateModUI() {
 			baseSprite->setZOrder(1);
 
 		CCSprite* colorSprite = CCSprite::createWithSpriteFrame(colorFrame);
+		colorSprite->setID("color");
 		colorSprite->ignoreAnchorPointForPosition(true);
 		colorSprite->setColor(color);
 

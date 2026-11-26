@@ -75,24 +75,21 @@ $execute {
 		}
 	);
 
-	listenForSettingChanges<float>(
-		"practice-buttons-distance", [](float value) {
-			ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
-			if (uiLayer == nullptr)
-				return;
+	listenForSettingChanges<float>("practice-buttons-distance", [](float value) {
+		ModUILayer* uiLayer = static_cast<ModUILayer*>(UILayer::get());
+		if (uiLayer == nullptr)
+			return;
 
-			setCheckpointButtonPosition(
-				uiLayer->m_fields->m_createCheckpointButton,
-				uiLayer->m_checkpointMenu->getChildByID("add-checkpoint-button"),
-				false
-			);
-			setCheckpointButtonPosition(
-				uiLayer->m_fields->m_removeCheckpointButton,
-				uiLayer->m_checkpointMenu->getChildByID("remove-checkpoint-button"),
-				true
-			);
-		}
-	);
+		setCheckpointButtonPosition(
+			uiLayer->m_fields->m_createCheckpointButton,
+			uiLayer->m_checkpointMenu->getChildByID("add-checkpoint-button"), false
+		);
+		setCheckpointButtonPosition(
+			uiLayer->m_fields->m_removeCheckpointButton,
+			uiLayer->m_checkpointMenu->getChildByID("remove-checkpoint-button"),
+			true
+		);
+	});
 }
 
 bool ModUILayer::init(GJBaseGameLayer* baseGameLayer) {
@@ -363,7 +360,7 @@ createCheckpointCreateButton(CCNode* sibling, ModPlayLayer* playLayer) {
 		button = sprite;
 
 	setCheckpointButtonPosition(button, sibling, false);
-	button->setID("markPersistentCheckpoint"_spr);
+	button->setID("mark-persistent-checkpoint"_spr);
 
 #ifdef GEODE_IS_DESKTOP
 	if (playLayer != nullptr)
@@ -397,7 +394,7 @@ createCheckpointRemoveButton(CCNode* sibling, ModPlayLayer* playLayer) {
 		button = sprite;
 
 	setCheckpointButtonPosition(button, sibling, true);
-	button->setID("removePersistentCheckpoint"_spr);
+	button->setID("remove-persistent-checkpoint"_spr);
 
 #ifdef GEODE_IS_DESKTOP
 	if (playLayer != nullptr)
@@ -419,10 +416,11 @@ void createButtonBindsLabel(
 	CCNodeRGBA* bindContainer = CCNodeRGBA::create();
 	bindContainer->setScale(.65f);
 	bool first = true;
-	for (auto bind : Mod::get()->getSettingValue<std::vector<Keybind>>(action)) {
-		if (!first) {
+	for (Keybind bind :
+		  Mod::get()->getSettingValue<std::vector<Keybind>>(action)) {
+		if (!first)
 			bindContainer->addChild(Label::create("/", "bigFont.fnt"));
-		}
+
 		first = false;
 		bindContainer->addChild(bind.createNode());
 	}
@@ -482,7 +480,5 @@ getCheckpointButtonLabelPosition(bool right) {
 			);
 	}
 
-	return std::make_tuple(
-		Anchor::Bottom, ccp(0.f, -1.f), ccp(0.5f, 0.5f)
-	);
+	return std::make_tuple(Anchor::Bottom, ccp(0.f, -1.f), ccp(0.5f, 0.5f));
 }

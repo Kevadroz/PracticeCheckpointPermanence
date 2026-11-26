@@ -40,17 +40,21 @@ bool SaveManager::init() {
 				->show();
 		}
 	);
+	infoBtn->setID("info");
 
 	m_pageLabel = Label::create("Page 0/0", "bigFont.fnt");
+	m_pageLabel->setID("page-label");
 	m_pageLabel->setScale(.6);
 
 	m_totalSizeLabel = Label::create("Total:\n0B", "bigFont.fnt");
+	m_totalSizeLabel->setID("total-size");
 	m_totalSizeLabel->setScale(.35);
 	m_totalSizeLabel->setOpacity(160);
 	m_totalSizeLabel->setAnchorPoint(ccp(0.0, 0.5));
 	m_totalSizeLabel->setLimitLabelWidth(350.f, .35f, .1f);
 
 	m_levelCountLabel = Label::create("70 to 80\nof 136", "bigFont.fnt");
+	m_levelCountLabel->setID("level-count");
 	m_levelCountLabel->setScale(.35);
 	m_levelCountLabel->setOpacity(160);
 	m_levelCountLabel->setAnchorPoint(ccp(1.0, 0.5));
@@ -68,12 +72,15 @@ bool SaveManager::init() {
 	m_nextPageBtn = CCMenuItemExt::createSpriteExtra(
 		nextPageSpr, [this](CCMenuItemSpriteExtra* sender) { nextPage(); }
 	);
+	m_previousPageBtn->setID("previous-page");
+	m_nextPageBtn->setID("next-page");
 	m_previousPageBtn->m_baseScale = .6;
 	m_nextPageBtn->m_baseScale = .6;
 	m_previousPageBtn->setScale(.6);
 	m_nextPageBtn->setScale(.6);
 
 	m_listContainer = CCLayerColor::create();
+	m_listContainer->setID("level-list");
 	m_listContainer->setContentSize(ccp(400, 170));
 	m_listContainer->setAnchorPoint(ccp(.5, 1));
 	m_listContainer->setColor(ccc3(27, 27, 27));
@@ -81,6 +88,7 @@ bool SaveManager::init() {
 	m_listContainer->setZOrder(5);
 
 	m_emptyListLabel = Label::create("No saves\nfound", "bigFont.fnt");
+	m_emptyListLabel->setID("empty-list-label");
 	m_emptyListLabel->setScale(.7);
 	m_emptyListLabel->setOpacity(220);
 	m_emptyListLabel->setAlignment(Label::Alignment::Center);
@@ -108,6 +116,7 @@ bool SaveManager::init() {
 	createList();
 
 	ListBorders* borders = ListBorders::create();
+	borders->setID("borders");
 	borders->setContentSize(m_listView->getContentSize() + ccp(7, 7));
 	borders->setZOrder(15);
 	borders->setSpriteFrames(
@@ -146,6 +155,7 @@ void SaveManager::createList(bool resetPosition) {
 		m_cellsArray, 50, m_listContainer->getContentWidth(),
 		m_listContainer->getContentHeight()
 	);
+	m_listView->setID("view");
 	m_listView->setPrimaryCellColor(ccc3(35, 35, 35));
 	m_listView->setSecondaryCellColor(ccc3(30, 30, 30));
 	m_listView->setZOrder(10);
@@ -165,6 +175,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	menu->setContentSize(ccp(400, 50));
 
 	Label* nameLabel = Label::create(info.levelName.c_str(), "bigFont.fnt");
+	nameLabel->setID("name");
 	nameLabel->setAnchorPoint(ccp(0, .5));
 	nameLabel->setScale(.75);
 
@@ -189,6 +200,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 		}
 
 	CCMenu* detailMenu = CCMenu::create();
+	detailMenu->setID("details");
 	detailMenu->setAnchorPoint(ccp(0.0, 0.5));
 	RowLayout* detailMenuLayout = RowLayout::create();
 	detailMenuLayout->setAutoScale(false);
@@ -202,10 +214,12 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	detailItemLayout->setGap(7.0F);
 
 	Label* sizeLabel = Label::create(fileSizeString.c_str(), "bigFont.fnt");
+	sizeLabel->setID("size");
 	sizeLabel->setAnchorPoint(ccp(0, .5));
 	sizeLabel->setScale(.55);
 
 	CCMenu* checkpointsMenu = CCMenu::create();
+	checkpointsMenu->setID("checkpoints");
 	checkpointsMenu->setLayout(detailItemLayout);
 
 	CCSprite* checkpointSprite =
@@ -221,6 +235,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	checkpointsMenu->updateLayout();
 
 	CCMenu* standardLayersMenu = CCMenu::create();
+	standardLayersMenu->setID("standard-layers");
 	standardLayersMenu->setLayout(detailItemLayout);
 
 	CCSprite* standardLayersSprite =
@@ -237,6 +252,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 	standardLayersMenu->updateLayout();
 
 	CCMenu* ldmLayersMenu = CCMenu::create();
+	ldmLayersMenu->setID("ldm-layers");
 	ldmLayersMenu->setLayout(detailItemLayout);
 
 	CCSprite* ldmLayersSprite =
@@ -258,6 +274,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 
 	if (warningErrorCount > 0 || criticalErrorCount > 0) {
 		CCMenu* errorMenu = CCMenu::create();
+		errorMenu->setID("errors");
 
 		RowLayout* errorMenuLayout = RowLayout::create();
 		errorMenuLayout->setAutoScale(false);
@@ -320,6 +337,7 @@ CCNode* SaveManager::createLevelCell(LevelSaveInfo info) {
 			updateGeneralInfoUI();
 		}
 	);
+	removeBtn->setID("remove");
 	removeBtn->m_baseScale = .9;
 	removeBtn->setScale(.9);
 
