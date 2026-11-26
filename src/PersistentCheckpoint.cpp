@@ -84,6 +84,11 @@ void PersistentCheckpoint::serialize(OutStream& out) {
 void PersistentCheckpoint::deserialize(
 	InStream& in, SaveHeader header, GJBaseGameLayer* layer
 ) {
+	if (header.saveVersion < 4) {
+		m_isDegraded = true;
+		return;
+	}
+
 	std::string checkData;
 	in >> checkData;
 
