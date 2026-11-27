@@ -199,7 +199,6 @@ void ModPlayLayer::handleTogglePracticeMode(bool enabled) {
 				setActiveStartPosObject(nullptr);
 				m_fields->m_activeCheckpoint = 0;
 			}
-			resetLevelFromStart();
 		}
 		updateModUI();
 
