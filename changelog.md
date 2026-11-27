@@ -1,3 +1,6 @@
+## Unreleased
+- Fixed disabling practice mode on Integrated Normal Mode increasing the attempt count twice \[[PR #66](https://github.com/Kevadroz/PracticeCheckpointPermanence/pull/66), by [0x5abe](https://github.com/0x5abe)\]
+
 ## 2.0.0-alpha.4 ( [Release](https://github.com/Kevadroz/PracticeCheckpointPermanence/releases/tag/v2.0.0-alpha.4) | [Source](https://github.com/Kevadroz/PracticeCheckpointPermanence/tree/v2.0.0-alpha.4) )
 - Added settings to control immediate restart on checkpoint switch \[[Issue #63](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/63)\]
 - Set missing Node IDs \[[Issue #61](https://github.com/Kevadroz/PracticeCheckpointPermanence/issues/61)\]
